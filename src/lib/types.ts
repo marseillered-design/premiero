@@ -77,5 +77,7 @@ export interface TitleDetail {
   nextEpisode: { date: string; season: number; episode: number } | null;
   popularity: number;
   anime: boolean;
+  imdbId: string | null;
+  imdb: { rating: number; votes: number } | null;
   tmdbUrl: string;
 }

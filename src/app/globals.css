@@ -392,3 +392,12 @@ a.rel-c:hover{border-color:var(--muted)}
   .title-page .hero > .poster{width:160px}
   .bar .search{max-width:none;order:3;flex-basis:100%}
 }
+/* ---------- рейтинги IMDb и TMDB на странице фильма ---------- */
+.ratings{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.imdb,.tmdb-r{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px 0 4px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:14px;text-decoration:none;color:var(--fg)}
+.imdb:hover{border-color:#F5C518}
+.imdb b,.tmdb-r b{font-family:var(--mono);font-weight:600;font-size:15px}
+.imdb small,.tmdb-r small{color:var(--muted);font-family:var(--mono);font-size:12px}
+.imdb-logo{background:#F5C518;color:#000;font-weight:800;font-size:12px;letter-spacing:-.02em;border-radius:5px;padding:4px 6px;line-height:1}
+.tmdb-logo{background:linear-gradient(90deg,#90CEA1,#01B4E4);color:#0D253F;font-weight:800;font-size:11px;border-radius:5px;padding:4px 6px;line-height:1}
+.imdb:not(:has(b)){padding-right:4px}

@@ -198,6 +198,22 @@ export async function getNowPlaying(country: CountryCode, lang: Lang): Promise<C
   });
 }
 
+/* ---------- IMDb rating via OMDb (нужен OMDB_API_KEY, бесплатно до 1000 запросов в день) ---------- */
+async function fetchImdbRating(imdbId: string): Promise<{ rating: number; votes: number } | null> {
+  'use cache';
+  cacheLife('days');
+  const res = await fetch(`https://www.omdbapi.com/?i=${encodeURIComponent(imdbId)}&apikey=${process.env.OMDB_API_KEY}`);
+  if (!res.ok) return null;
+  const j = await res.json() as { Response?: string; imdbRating?: string; imdbVotes?: string };
+  const rating = Number(j.imdbRating);
+  if (j.Response !== 'True' || !Number.isFinite(rating) || rating <= 0) return null;
+  return { rating, votes: Number((j.imdbVotes ?? '0').replace(/[^\d]/g, '')) || 0 };
+}
+async function getImdbRating(imdbId: string | null | undefined) {
+  if (!imdbId || !process.env.OMDB_API_KEY) return null;
+  return safe(fetchImdbRating(imdbId));
+}
+
 /* ---------- title details ---------- */
 interface Credits { cast: { name: string }[]; crew: { name: string; job: string }[] }
 interface Videos { results: { key: string; site: string; type: string; iso_639_1: string; official: boolean }[] }
@@ -205,13 +221,14 @@ interface EpisodeRef { air_date: string | null; season_number: number; episode_n
 interface MovieFull {
   id: number; title: string; original_title: string; overview: string; poster_path: string | null; backdrop_path: string | null;
   runtime: number | null; release_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
-  popularity: number; original_language: string;
+  popularity: number; original_language: string; imdb_id: string | null;
   credits: Credits; videos: Videos; release_dates: ReleaseDates; 'watch/providers': Providers;
 }
 interface TvFull {
   id: number; name: string; original_name: string; overview: string; poster_path: string | null; backdrop_path: string | null;
   episode_run_time: number[]; first_air_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
   popularity: number; original_language: string; created_by: { name: string }[]; networks: { name: string }[];
+  external_ids: { imdb_id: string | null };
   last_episode_to_air: EpisodeRef | null; next_episode_to_air: EpisodeRef | null;
   credits: Credits; videos: Videos; 'watch/providers': Providers; content_ratings: { results: { iso_3166_1: string; rating: string }[] };
 }
@@ -255,11 +272,12 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
       theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(m.release_date),
       digital: minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date))),
       nextEpisode: null, popularity: m.popularity, anime: isAnime(m.genres.map(g => g.id), m.original_language),
+      imdbId: m.imdb_id || null, imdb: await getImdbRating(m.imdb_id),
       tmdbUrl: `https://www.themoviedb.org/movie/${id}`,
     };
   }
 
-  const t = await safe(tmdb<TvFull>(`/tv/${id}`, { language, append_to_response: 'credits,videos,watch/providers,content_ratings', include_video_language: videoLangs }));
+  const t = await safe(tmdb<TvFull>(`/tv/${id}`, { language, append_to_response: 'credits,videos,watch/providers,content_ratings,external_ids', include_video_language: videoLangs }));
   if (!t) return null;
   // показываем сезон, который выходит сейчас или вышел последним
   const seasonNo = t.next_episode_to_air?.season_number || t.last_episode_to_air?.season_number || null;
@@ -278,6 +296,7 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
     network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null,
     nextEpisode: nx?.air_date ? { date: nx.air_date, season: nx.season_number, episode: nx.episode_number } : null,
     popularity: t.popularity, anime: isAnime(t.genres.map(g => g.id), t.original_language),
+    imdbId: t.external_ids?.imdb_id || null, imdb: await getImdbRating(t.external_ids?.imdb_id),
     tmdbUrl: `https://www.themoviedb.org/tv/${id}`,
   };
 }

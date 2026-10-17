@@ -59,6 +59,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
   const d = r.detail;
   const fullDate = new Intl.DateTimeFormat(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric' });
   const day = (k: string) => fullDate.format(fromKey(k));
+  const compact = new Intl.NumberFormat(LOCALE[lang], { notation: 'compact', maximumFractionDigits: 1 });
   const cName = nameIn(COUNTRIES[country].name, lang);
   const core: TitleCore = {
     id: d.id, media, title: d.title, poster: d.poster, cert: d.cert, popularity: d.popularity,
@@ -91,7 +92,19 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
           <span className={`tag t-${kindCls}`}>{t(kindKey)}{d.network ? ` · ${d.network}` : ''}</span>
           <h1>{d.title}</h1>
           {d.original && d.original !== d.title && <p className="orig">{d.original}</p>}
-          <div className="meta">{meta.map(m => <span key={m}>{m}</span>)}{d.rating ? <span className="stars"><I.Star />{d.rating.toFixed(1)}</span> : null}</div>
+          <div className="meta">{meta.map(m => <span key={m}>{m}</span>)}</div>
+          {(d.imdbId || d.rating) && (
+            <div className="ratings">
+              {d.imdbId && (
+                <a className="imdb" href={`https://www.imdb.com/title/${d.imdbId}/`} target="_blank" rel="noreferrer"
+                  aria-label={d.imdb ? t('imdb_l', d.imdb.rating.toFixed(1), compact.format(d.imdb.votes)) : 'IMDb'}>
+                  <span className="imdb-logo">IMDb</span>
+                  {d.imdb && <><b>{d.imdb.rating.toFixed(1)}</b><small>/10 · {compact.format(d.imdb.votes)}</small></>}
+                </a>
+              )}
+              {d.rating ? <span className="tmdb-r" aria-label={t('tmdb_l', d.rating.toFixed(1))}><span className="tmdb-logo">TMDB</span><b>{d.rating.toFixed(1)}</b><small>/10</small></span> : null}
+            </div>
+          )}
           <div className="key-dates">
             {d.theatrical && <span><b>{t('in_cinema_on')}</b> {day(d.theatrical)}</span>}
             {d.digital && <span><b>{t('online_on')}</b> {day(d.digital)}</span>}
