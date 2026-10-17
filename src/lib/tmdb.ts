@@ -203,7 +203,8 @@ async function fetchImdbRating(imdbId: string): Promise<{ rating: number; votes:
   'use cache';
   cacheLife('days');
   const res = await fetch(`https://www.omdbapi.com/?i=${encodeURIComponent(imdbId)}&apikey=${process.env.OMDB_API_KEY}`);
-  if (!res.ok) return null;
+  // ошибку ключа или лимита бросаем, чтобы она не попала в суточный кэш
+  if (!res.ok) throw new Error(`OMDb ${res.status}`);
   const j = await res.json() as { Response?: string; imdbRating?: string; imdbVotes?: string };
   const rating = Number(j.imdbRating);
   if (j.Response !== 'True' || !Number.isFinite(rating) || rating <= 0) return null;
