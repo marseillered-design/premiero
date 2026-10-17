@@ -32,6 +32,7 @@ export default function CalendarApp() {
   const [onlyTickets, setOnlyTickets] = useState(false);
   const [onlyWatch, setOnlyWatch] = useState(false);
   const [showEps, setShowEps] = useState(true);
+  const [showAnime, setShowAnime] = useState(false);
   const [q, setQ] = useState('');
   const [showPast, setShowPast] = useState(false);
   const [page, setPage] = useState<'calendar' | 'cinemas'>('calendar');
@@ -56,6 +57,7 @@ export default function CalendarApp() {
     const v = store.get<string>('premiero.view', 'feed');
     setView(v === 'month' || v === 'list' ? v : 'feed');
     setWatch(new Set(store.get<string[]>('premiero.watch', [])));
+    setShowAnime(store.get<boolean>('premiero.anime', false));
     setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
     setBoot({ today: sod(now), nowMin: now.getHours() * 60 + now.getMinutes() });
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -145,10 +147,11 @@ export default function CalendarApp() {
       if (onlyWatch && !watch.has(it.key)) return false;
       if (onlyTickets && !hasTickets(it, today)) return false;
       if (!showEps && ev.kind === 'series' && !ev.premiere) return false;
+      if (!showAnime && it.anime) return false;
       if (needle && !it.title.toLowerCase().includes(needle)) return false;
       return true;
     }).sort((a, b) => a.date.localeCompare(b.date) || TYPE_ORDER[a.kind] - TYPE_ORDER[b.kind] || data.items[b.item].popularity - data.items[a.item].popularity);
-  }, [data, q, cat, genres, onlyWatch, watch, onlyTickets, today, showEps]);
+  }, [data, q, cat, genres, onlyWatch, watch, onlyTickets, today, showEps, showAnime]);
 
   useEffect(() => {
     if (!pendingScroll || load.status !== 'ok') return;
@@ -421,6 +424,7 @@ export default function CalendarApp() {
                 <label className="toggle"><input type="checkbox" checked={onlyTickets} onChange={e => setOnlyTickets(e.target.checked)} /> {t('only_t')}</label>
                 <label className="toggle"><input type="checkbox" checked={onlyWatch} onChange={e => setOnlyWatch(e.target.checked)} /> {t('my_list')} ({watch.size})</label>
                 <label className="toggle"><input type="checkbox" checked={showEps} onChange={e => setShowEps(e.target.checked)} /> {t('new_eps')}</label>
+                <label className="toggle"><input type="checkbox" checked={showAnime} onChange={e => { setShowAnime(e.target.checked); store.set('premiero.anime', e.target.checked); }} /> {t('anime')}</label>
               </div>
             </div>
             {dirty && <button className="reset" onClick={resetFilters}>{t('reset')}</button>}

@@ -19,6 +19,7 @@ export interface CalItem {
   platform?: string | null;   // канал или стриминг сериала
   season?: number;
   totalEps?: number;
+  anime?: boolean;            // японская анимация: жанр «анимация» + язык оригинала ja
 }
 
 export interface CalEvent {

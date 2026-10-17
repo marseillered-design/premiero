@@ -37,15 +37,17 @@ const day = (s: string | null | undefined) => (s ? s.slice(0, 10) : null);
 const minDate = (dates: (string | null)[]) => dates.filter(Boolean).sort()[0] ?? null;
 const inMonth = (d: string | null | undefined, month: string) => !!d && d.startsWith(month);
 const ratingOf = (avg: number, votes: number) => (votes >= MIN_VOTES ? Math.round(avg * 10) / 10 : null);
+const ANIMATION = 16;
+const isAnime = (genres: number[], lang: string | undefined) => genres.includes(ANIMATION) && lang === 'ja';
 
 /* ---------- raw TMDB shapes (only the fields we read) ---------- */
 interface Page<T> { results: T[]; total_results: number }
-interface RawMovie { id: number; title: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; release_date: string }
-interface RawTv { id: number; name: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number }
+interface RawMovie { id: number; title: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; release_date: string; original_language: string }
+interface RawTv { id: number; name: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; original_language: string }
 interface ReleaseDates { results: { iso_3166_1: string; release_dates: { type: number; release_date: string; certification: string }[] }[] }
 interface TvDetails {
   id: number; name: string; poster_path: string | null; genres: { id: number }[]; popularity: number; vote_average: number; vote_count: number;
-  networks: { name: string }[];
+  original_language: string; networks: { name: string }[];
   last_episode_to_air: { season_number: number } | null; next_episode_to_air: { season_number: number } | null;
   content_ratings?: { results: { iso_3166_1: string; rating: string }[] };
 }
@@ -113,6 +115,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
       key, id: mv.id, media: 'movie', title: mv.title, poster: mv.poster_path, genres: mv.genre_ids,
       popularity: mv.popularity, rating: ratingOf(mv.vote_average, mv.vote_count),
       cert: regional.map(r => r.certification).find(Boolean) || null, theatrical, digital,
+      anime: isAnime(mv.genre_ids, mv.original_language),
     };
     let used = false;
     if (inMonth(theatrical, month)) { events.push({ item: key, date: theatrical!, kind: 'cinema', approx }); used = true; }
@@ -147,6 +150,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
         genres: det.genres.map(g => g.id), popularity: det.popularity, rating: ratingOf(det.vote_average, det.vote_count),
         cert: det.content_ratings?.results.find(r => r.iso_3166_1 === C.region)?.rating || null,
         platform: det.networks[0]?.name ?? null, season: sn, totalEps: total,
+        anime: isAnime(det.genres.map(g => g.id), det.original_language ?? show.original_language),
       };
       for (const [date, eps] of byDate) {
         events.push({ item: key, date, kind: 'series', eps: eps.sort((a, b) => a - b), premiere: eps.includes(1), finale: eps.includes(total) });
@@ -176,6 +180,7 @@ export async function getNowPlaying(country: CountryCode, lang: Lang): Promise<C
       cert: regional.map(r => r.certification).find(Boolean) || null,
       theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(mv.release_date),
       digital: minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date))),
+      anime: isAnime(mv.genre_ids, mv.original_language),
     };
   });
 }
