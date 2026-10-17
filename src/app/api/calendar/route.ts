@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { getCalendar, hasToken } from '@/lib/tmdb';
 import { isCountry, isLang } from '@/lib/regions';
+import { CDN_CACHE } from '@/lib/http';
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
   }
   if (!hasToken()) return Response.json({ error: 'no_token' }, { status: 503 });
   try {
-    return Response.json(await getCalendar(country, lang, month));
+    return Response.json(await getCalendar(country, lang, month), { headers: CDN_CACHE });
   } catch (e) {
     console.error('calendar', e);
     return Response.json({ error: 'tmdb' }, { status: 502 });

@@ -334,3 +334,61 @@ dialog::backdrop{background:var(--overlay)}
   *{transition:none!important;animation:none!important}
   html{scroll-behavior:auto}
 }
+
+/* ---------- v2: ссылки в шапке, поиск в панели, страница фильма ---------- */
+.brand{text-decoration:none;color:inherit}
+.nav a{padding:6px 14px;border-radius:999px;color:var(--muted);font-weight:500;text-decoration:none}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.bar .search{flex:1 1 180px;max-width:320px}
+a.buy,a.btn{display:inline-flex;align-items:center;text-decoration:none}
+a.buy{line-height:30px}
+.card-t a,.m-ev,.l-title{text-decoration:none;color:inherit}
+.card-t a:hover{color:var(--accent)}
+.film-row h4 a{text-decoration:none;color:inherit}
+.film-row h4 a:hover{color:var(--accent)}
+
+.title-page{padding-block:18px 60px;display:flex;flex-direction:column;gap:30px}
+.crumbs a{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:14px}
+.crumbs a:hover{color:var(--accent)}
+.title-page .hero{grid-template-columns:260px minmax(0,1fr)}
+.title-page h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.02em;margin:8px 0 4px;text-wrap:balance}
+.title-page .sec h2{font-family:var(--display);font-weight:700;font-size:19px;margin:0 0 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.title-page .sec h2 small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted)}
+.title-page .sec{scroll-margin-top:20px}
+.key-dates{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.key-dates span{border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px;background:var(--surface)}
+.key-dates b{font-weight:600;color:var(--accent);margin-right:4px}
+a.rel-c{text-decoration:none;color:inherit}
+a.rel-c:hover{border-color:var(--muted)}
+
+.trailer{position:relative;aspect-ratio:16/9;max-width:860px;width:100%;border-radius:12px;overflow:hidden;background:#000}
+.trailer iframe,.trailer-cover,.trailer-cover img{position:absolute;inset:0;width:100%;height:100%;border:0}
+.trailer-cover img{object-fit:cover;opacity:.75;transition:opacity .2s}
+.trailer-cover:hover img{opacity:.9}
+.trailer-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:8px;background:var(--buy);color:var(--buy-ink);font-weight:600;padding:12px 20px;border-radius:999px;box-shadow:var(--shadow)}
+
+.cal-menu{position:relative}
+.cal-menu summary{list-style:none;cursor:pointer}
+.cal-menu summary::-webkit-details-marker{display:none}
+.cal-pop{position:absolute;z-index:4;top:calc(100% + 6px);left:0;min-width:280px;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;display:flex;flex-direction:column;gap:4px}
+.cal-row{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-radius:8px}
+.cal-row+.cal-row{border-top:1px solid var(--line)}
+.cal-when{font-size:13px;color:var(--muted)}
+.cal-when b{color:var(--fg);font-weight:600}
+.cal-links{display:flex;gap:14px;flex-wrap:wrap}
+.cal-links a,.cal-links button{color:var(--accent);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+
+.subs-dlg{max-width:min(640px,calc(100vw - 24px))}
+.prov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.prov-pick{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:14px;min-width:0}
+.prov-pick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prov-pick.on{border-color:var(--accent);background:var(--accent-soft)}
+.prov-pick input{accent-color:var(--accent);margin:0;flex:none}
+.prov-pick img,.prov-ph{width:32px;height:32px;border-radius:8px;flex:none;background:var(--surface-2)}
+.toggle input:disabled+*{opacity:.5}
+
+@media (max-width:640px){
+  .title-page .hero{grid-template-columns:minmax(0,1fr)}
+  .title-page .hero > .poster{width:160px}
+  .bar .search{max-width:none;order:3;flex-basis:100%}
+}

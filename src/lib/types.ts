@@ -1,7 +1,12 @@
-export type Lang = 'uk' | 'en' | 'es' | 'ru';
-export type CountryCode = 'ua' | 'us' | 'mx' | 'kz' | 'uz' | 'am' | 'kg' | 'by';
+export type Lang = 'uk' | 'en' | 'es' | 'pl' | 'de' | 'ru';
+export type CountryCode =
+  | 'ua' | 'pl' | 'de' | 'gb' | 'fr' | 'es' | 'it' | 'nl' | 'cz' | 'ro' | 'lt' | 'lv' | 'ee' | 'md' | 'by'
+  | 'us' | 'mx'
+  | 'ge' | 'am' | 'kz' | 'uz' | 'kg';
 export type Media = 'movie' | 'tv';
 export type Kind = 'cinema' | 'online' | 'series';
+
+export interface Provider { id: number; name: string; logo: string | null }
 
 /** Фильм или сериал в календаре месяца. Ключ: `${media}-${id}`. */
 export interface CalItem {
@@ -20,6 +25,7 @@ export interface CalItem {
   season?: number;
   totalEps?: number;
   anime?: boolean;            // японская анимация: жанр «анимация» + язык оригинала ja
+  providers?: number[];       // стриминги по подписке в выбранной стране (id TMDB)
 }
 
 export interface CalEvent {
@@ -39,6 +45,7 @@ export interface CalendarData {
   items: Record<string, CalItem>;
   events: CalEvent[];
   genres: Record<number, string>;
+  providers: Record<number, Provider>;
   approxRegion: boolean;
 }
 
@@ -58,12 +65,17 @@ export interface TitleDetail {
   people: string[];          // режиссёр фильма или авторы сериала
   cast: string[];
   trailer: string | null;    // ключ видео на YouTube
-  providers: { name: string; logo: string | null }[];
+  providers: Provider[];
   providersLink: string | null;
   releases: { country: CountryCode; date: string | null }[];
   cert: string | null;
   rating: number | null;
   network: string | null;
   season: { number: number; episodes: Episode[] } | null;
+  theatrical: string | null; // дата в кино в выбранной стране
+  digital: string | null;
+  nextEpisode: { date: string; season: number; episode: number } | null;
+  popularity: number;
+  anime: boolean;
   tmdbUrl: string;
 }

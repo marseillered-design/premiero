@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { COUNTRIES, COUNTRY_CODES, LOCALE } from './regions';
-import type { CalendarData, CalEvent, CalItem, CountryCode, Episode, Lang, Media, TitleDetail } from './types';
+import type { CalendarData, CalEvent, CalItem, CountryCode, Episode, Lang, Media, Provider, TitleDetail } from './types';
 
 const BASE = 'https://api.themoviedb.org/3';
 // жанры без календарной ценности: новости, реалити, мыльные оперы, ток-шоу
@@ -45,11 +45,21 @@ interface Page<T> { results: T[]; total_results: number }
 interface RawMovie { id: number; title: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; release_date: string; original_language: string }
 interface RawTv { id: number; name: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; original_language: string }
 interface ReleaseDates { results: { iso_3166_1: string; release_dates: { type: number; release_date: string; certification: string }[] }[] }
+interface Providers { results: Record<string, { link: string; flatrate?: { provider_id: number; provider_name: string; logo_path: string | null }[] }> }
+interface MovieExtras { release_dates: ReleaseDates; 'watch/providers'?: Providers }
 interface TvDetails {
   id: number; name: string; poster_path: string | null; genres: { id: number }[]; popularity: number; vote_average: number; vote_count: number;
   original_language: string; networks: { name: string }[];
   last_episode_to_air: { season_number: number } | null; next_episode_to_air: { season_number: number } | null;
   content_ratings?: { results: { iso_3166_1: string; rating: string }[] };
+  'watch/providers'?: Providers;
+}
+
+/** Стриминги по подписке в стране: id для фильтра и справочник для подписей. */
+function flatrate(p: Providers | undefined, region: string, into: Record<number, Provider>) {
+  const list = p?.results[region]?.flatrate ?? [];
+  for (const x of list) into[x.provider_id] ??= { id: x.provider_id, name: x.provider_name, logo: x.logo_path };
+  return list.map(x => x.provider_id);
 }
 interface Season { season_number: number; episodes: { episode_number: number; name: string; air_date: string | null }[] }
 
@@ -77,6 +87,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   const end = `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
   const items: Record<string, CalItem> = {};
   const events: CalEvent[] = [];
+  const providers: Record<number, Provider> = {};
 
   // Фильмы: кинопрокат и цифровые релизы в выбранной стране
   const discover = (type: string, page: number) => tmdb<Page<RawMovie>>('/discover/movie', {
@@ -103,9 +114,9 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   const approxIds = new Set(worldwide.map(r => r.id));
 
   const list = [...movies.values()].slice(0, 80);
-  const dates = await mapLimit(list, 8, mv => safe(tmdb<ReleaseDates>(`/movie/${mv.id}/release_dates`)));
+  const extras = await mapLimit(list, 8, mv => safe(tmdb<MovieExtras>(`/movie/${mv.id}`, { append_to_response: 'release_dates,watch/providers' })));
   list.forEach((mv, i) => {
-    const regional = dates[i]?.results.find(r => r.iso_3166_1 === C.region)?.release_dates ?? [];
+    const regional = extras[i]?.release_dates.results.find(r => r.iso_3166_1 === C.region)?.release_dates ?? [];
     let theatrical = minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date)));
     const digital = minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date)));
     const approx = !theatrical && approxIds.has(mv.id);
@@ -116,6 +127,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
       popularity: mv.popularity, rating: ratingOf(mv.vote_average, mv.vote_count),
       cert: regional.map(r => r.certification).find(Boolean) || null, theatrical, digital,
       anime: isAnime(mv.genre_ids, mv.original_language),
+      providers: flatrate(extras[i]?.['watch/providers'], C.region, providers),
     };
     let used = false;
     if (inMonth(theatrical, month)) { events.push({ item: key, date: theatrical!, kind: 'cinema', approx }); used = true; }
@@ -131,7 +143,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   const tvPages = await Promise.all([1, 2].map(page => safe(tmdb<Page<RawTv>>('/discover/tv', { ...tvParams, page }))));
   const shows = tvPages.flatMap(p => p?.results ?? []).slice(0, 30);
   await mapLimit(shows, 6, async show => {
-    const det = await safe(tmdb<TvDetails>(`/tv/${show.id}`, { language, append_to_response: 'content_ratings' }));
+    const det = await safe(tmdb<TvDetails>(`/tv/${show.id}`, { language, append_to_response: 'content_ratings,watch/providers' }));
     if (!det) return;
     const seasonNums = [...new Set([det.last_episode_to_air?.season_number, det.next_episode_to_air?.season_number].filter((n): n is number => typeof n === 'number' && n > 0))];
     for (const sn of seasonNums) {
@@ -151,6 +163,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
         cert: det.content_ratings?.results.find(r => r.iso_3166_1 === C.region)?.rating || null,
         platform: det.networks[0]?.name ?? null, season: sn, totalEps: total,
         anime: isAnime(det.genres.map(g => g.id), det.original_language ?? show.original_language),
+        providers: flatrate(det['watch/providers'], C.region, providers),
       };
       for (const [date, eps] of byDate) {
         events.push({ item: key, date, kind: 'series', eps: eps.sort((a, b) => a - b), premiere: eps.includes(1), finale: eps.includes(total) });
@@ -159,7 +172,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   });
 
   const genres = await safe(getGenres(lang)) ?? {};
-  return { month, country, lang, items, events, genres, approxRegion };
+  return { month, country, lang, items, events, genres, providers, approxRegion };
 }
 
 /* ---------- now playing (для кинотеатров и сеансов) ---------- */
@@ -188,20 +201,23 @@ export async function getNowPlaying(country: CountryCode, lang: Lang): Promise<C
 /* ---------- title details ---------- */
 interface Credits { cast: { name: string }[]; crew: { name: string; job: string }[] }
 interface Videos { results: { key: string; site: string; type: string; iso_639_1: string; official: boolean }[] }
-interface Providers { results: Record<string, { link: string; flatrate?: { provider_name: string; logo_path: string | null }[] }> }
+interface EpisodeRef { air_date: string | null; season_number: number; episode_number: number }
 interface MovieFull {
   id: number; title: string; original_title: string; overview: string; poster_path: string | null; backdrop_path: string | null;
-  runtime: number | null; release_date: string; genres: { name: string }[]; vote_average: number; vote_count: number;
+  runtime: number | null; release_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
+  popularity: number; original_language: string;
   credits: Credits; videos: Videos; release_dates: ReleaseDates; 'watch/providers': Providers;
 }
 interface TvFull {
   id: number; name: string; original_name: string; overview: string; poster_path: string | null; backdrop_path: string | null;
-  episode_run_time: number[]; first_air_date: string; genres: { name: string }[]; vote_average: number; vote_count: number;
-  created_by: { name: string }[]; networks: { name: string }[];
+  episode_run_time: number[]; first_air_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
+  popularity: number; original_language: string; created_by: { name: string }[]; networks: { name: string }[];
+  last_episode_to_air: EpisodeRef | null; next_episode_to_air: EpisodeRef | null;
   credits: Credits; videos: Videos; 'watch/providers': Providers; content_ratings: { results: { iso_3166_1: string; rating: string }[] };
 }
 
-export async function getTitle(media: Media, id: number, lang: Lang, country: CountryCode, seasonNo: number | null): Promise<TitleDetail> {
+/** Карточка фильма или сериала; `null`, если такого тайтла в TMDB нет. */
+export async function getTitle(media: Media, id: number, lang: Lang, country: CountryCode): Promise<TitleDetail | null> {
   'use cache';
   cacheLife('hours');
 
@@ -215,11 +231,15 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
   };
   const providersOf = (p: Providers) => {
     const r = p.results[C.region];
-    return { providers: (r?.flatrate ?? []).map(x => ({ name: x.provider_name, logo: x.logo_path })), providersLink: r?.link ?? null };
+    return {
+      providers: (r?.flatrate ?? []).map<Provider>(x => ({ id: x.provider_id, name: x.provider_name, logo: x.logo_path })),
+      providersLink: r?.link ?? null,
+    };
   };
 
   if (media === 'movie') {
-    const m = await tmdb<MovieFull>(`/movie/${id}`, { language, append_to_response: 'credits,videos,release_dates,watch/providers', include_video_language: videoLangs });
+    const m = await safe(tmdb<MovieFull>(`/movie/${id}`, { language, append_to_response: 'credits,videos,release_dates,watch/providers', include_video_language: videoLangs }));
+    if (!m) return null;
     const releases = COUNTRY_CODES.map(code => {
       const rd = m.release_dates.results.find(r => r.iso_3166_1 === COUNTRIES[code].region)?.release_dates ?? [];
       return { country: code, date: minDate(rd.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) };
@@ -231,22 +251,33 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
       people: m.credits.crew.filter(c => c.job === 'Director').map(c => c.name).slice(0, 2),
       cast: m.credits.cast.slice(0, 5).map(c => c.name), trailer: pickTrailer(m.videos), ...providersOf(m['watch/providers']),
       releases, cert: regional.map(r => r.certification).find(Boolean) || null, rating: ratingOf(m.vote_average, m.vote_count),
-      network: null, season: null, tmdbUrl: `https://www.themoviedb.org/movie/${id}`,
+      network: null, season: null,
+      theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(m.release_date),
+      digital: minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date))),
+      nextEpisode: null, popularity: m.popularity, anime: isAnime(m.genres.map(g => g.id), m.original_language),
+      tmdbUrl: `https://www.themoviedb.org/movie/${id}`,
     };
   }
 
-  const t = await tmdb<TvFull>(`/tv/${id}`, { language, append_to_response: 'credits,videos,watch/providers,content_ratings', include_video_language: videoLangs });
+  const t = await safe(tmdb<TvFull>(`/tv/${id}`, { language, append_to_response: 'credits,videos,watch/providers,content_ratings', include_video_language: videoLangs }));
+  if (!t) return null;
+  // показываем сезон, который выходит сейчас или вышел последним
+  const seasonNo = t.next_episode_to_air?.season_number || t.last_episode_to_air?.season_number || null;
   let season: TitleDetail['season'] = null;
   if (seasonNo) {
     const s = await safe(tmdb<Season>(`/tv/${id}/season/${seasonNo}`, { language }));
     if (s) season = { number: s.season_number, episodes: s.episodes.map<Episode>(e => ({ n: e.episode_number, name: e.name, date: e.air_date })) };
   }
+  const nx = t.next_episode_to_air;
   return {
     id, media, title: t.name, original: t.original_name, overview: t.overview, poster: t.poster_path, backdrop: t.backdrop_path,
     runtime: t.episode_run_time[0] ?? null, year: t.first_air_date?.slice(0, 4) || null, genres: t.genres.map(g => g.name.toLowerCase()),
     people: t.created_by.map(c => c.name).slice(0, 3), cast: t.credits.cast.slice(0, 5).map(c => c.name),
     trailer: pickTrailer(t.videos), ...providersOf(t['watch/providers']), releases: [],
     cert: t.content_ratings.results.find(r => r.iso_3166_1 === C.region)?.rating || null, rating: ratingOf(t.vote_average, t.vote_count),
-    network: t.networks[0]?.name ?? null, season, tmdbUrl: `https://www.themoviedb.org/tv/${id}`,
+    network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null,
+    nextEpisode: nx?.air_date ? { date: nx.air_date, season: nx.season_number, episode: nx.episode_number } : null,
+    popularity: t.popularity, anime: isAnime(t.genres.map(g => g.id), t.original_language),
+    tmdbUrl: `https://www.themoviedb.org/tv/${id}`,
   };
 }
