@@ -1,0 +1,1370 @@
+<title>Premiero</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: календарь премьер как программка кинозала; лента по дням, фильтры сбоку, регион и язык сверху. Палитра общая с MovieMood */
+:root{
+  --bg:#F3EBDF; --surface:#FBF6EE; --surface-2:#E9DCCB; --line:#DCCBB2; --fg:#2B1D14; --muted:#7A6656;
+  --accent:#8A6020; --accent-ink:#FBF6EE; --accent-soft:rgba(184,134,59,.16);
+  --buy:#DC2626; --buy-ink:#FFFFFF;
+  --t-cinema:#8A6020; --t-series:#9A5A2E; --t-online:#C42525;
+  --ok:#3F7D4F; --seat:#D9C8B0; --overlay:rgba(43,29,20,.45);
+  --shadow:0 18px 50px rgba(43,29,20,.18);
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#120C09; --surface:#1B130E; --surface-2:#251A13; --line:#3A2A1D; --fg:#F5EDE3; --muted:#A8968A;
+    --accent:#E8C27A; --accent-ink:#1B130E; --accent-soft:rgba(232,194,122,.14);
+    --buy:#E50914; --buy-ink:#FFFFFF;
+    --t-cinema:#E8C27A; --t-series:#C47A45; --t-online:#F0605A;
+    --ok:#7CC48F; --seat:#3A2A1D; --overlay:rgba(0,0,0,.7);
+    --shadow:0 18px 50px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#120C09; --surface:#1B130E; --surface-2:#251A13; --line:#3A2A1D; --fg:#F5EDE3; --muted:#A8968A;
+  --accent:#E8C27A; --accent-ink:#1B130E; --accent-soft:rgba(232,194,122,.14);
+  --buy:#E50914; --buy-ink:#FFFFFF;
+  --t-cinema:#E8C27A; --t-series:#C47A45; --t-online:#F0605A;
+  --ok:#7CC48F; --seat:#3A2A1D; --overlay:rgba(0,0,0,.7);
+  --shadow:0 18px 50px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- header ---------- */
+.top{border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em}
+.brand small{font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);letter-spacing:0;max-width:11em;line-height:1.2}
+.bulbs{display:grid;grid-template-columns:repeat(3,5px);gap:3px}
+.bulbs i{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.bulbs i:nth-child(2n){opacity:.45;box-shadow:none}
+.nav{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.nav button{padding:6px 14px;border-radius:999px;color:var(--muted);font-weight:500}
+.nav button[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.search{flex:1 1 200px;min-width:0;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px}
+.search input{flex:1;min-width:0;border:0;background:none;padding:9px 0;outline:none}
+.search svg{flex:none;color:var(--muted)}
+.region{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.region select{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:46vw}
+.demo{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:4px 8px}
+
+/* ---------- toolbar ---------- */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:10px}
+.cats{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:14px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip .sw{width:8px;height:8px;border-radius:50%}
+.month-nav{display:flex;align-items:center;gap:6px;margin-left:auto}
+.month-nav h2{font-family:var(--display);font-weight:700;font-size:17px;min-width:9.5em;text-align:center}
+.icon-btn{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:9px;border:1px solid var(--line);background:var(--surface)}
+.icon-btn:hover{border-color:var(--muted)}
+.today-btn{padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.views{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.views button{width:38px;height:34px;display:grid;place-items:center;color:var(--muted);background:var(--surface)}
+.views button+button{border-left:1px solid var(--line)}
+.views button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.bar-note{color:var(--muted);font-size:14px}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px;padding-block:22px 60px}
+.side{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:22px}
+.side h3{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.genres{display:flex;flex-wrap:wrap;gap:6px}
+.genres .chip{font-size:13px;padding:5px 10px}
+.toggles{display:flex;flex-direction:column;gap:10px}
+.toggle{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.reset{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
+.side-note{font-size:13px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:16px}
+
+.summary{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-bottom:18px;color:var(--muted);font-size:14px}
+.summary b{color:var(--fg);font-family:var(--mono);font-weight:600}
+.summary .k{display:inline-flex;align-items:center;gap:6px}
+.summary .sw{width:8px;height:8px;border-radius:50%}
+
+/* ---------- feed ---------- */
+.day{scroll-margin-top:130px;margin-bottom:34px}
+.day-h{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.day-h h2{font-family:var(--display);font-weight:700;font-size:19px;white-space:nowrap}
+.day-h .wd{font-family:var(--body);font-weight:400;font-size:14px;color:var(--muted);margin-left:6px}
+.day-h .rel{font-size:13px;color:var(--accent);white-space:nowrap}
+.day-h .rule{flex:1;height:1px;background:var(--line);align-self:center;min-width:12px}
+.day-h .cnt{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.day.is-today .day-h h2{color:var(--accent)}
+.day.is-past{opacity:.72}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:22px 18px}
+.card{display:flex;flex-direction:column;gap:9px;min-width:0}
+.poster-btn{display:block;border-radius:8px;transition:transform .18s ease}
+.poster-btn:hover{transform:translateY(-3px)}
+.card-t{font-size:15px;font-weight:600;line-height:1.25}
+.card-t button{text-align:left}
+.card-t button:hover{color:var(--accent)}
+.card-m{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.card-a{display:flex;gap:6px;align-items:center;margin-top:auto}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:.02em;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.t-cinema{--tc:var(--t-cinema)} .t-series{--tc:var(--t-series)} .t-online{--tc:var(--t-online)}
+.tag{color:var(--tc);background:color-mix(in srgb,var(--tc) 15%,transparent)}
+.watch{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 9px;border-radius:8px;background:var(--surface-2);font-family:var(--mono);font-size:12px;color:var(--muted)}
+.watch[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
+.watch[aria-pressed="true"] svg{fill:currentColor}
+.buy{height:30px;padding:0 11px;border-radius:8px;background:var(--buy);color:var(--buy-ink);font-size:13px;font-weight:600;white-space:nowrap}
+.buy:hover{filter:brightness(1.08)}
+.buy.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.buy.ghost:hover{border-color:var(--muted);filter:none}
+
+/* ---------- poster ---------- */
+.poster{container-type:inline-size;position:relative;aspect-ratio:2/3;width:100%;max-width:100%;border-radius:8px;overflow:hidden;background:linear-gradient(165deg,var(--p1),var(--p2));color:var(--pi);isolation:isolate;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.poster::before,.poster::after{content:"";position:absolute;z-index:-1}
+.p-t{position:absolute;left:8%;right:8%;bottom:9%;font-family:var(--display);font-weight:800;text-transform:uppercase;line-height:1.03;letter-spacing:-.01em;overflow-wrap:break-word}
+.p-lg{font-size:12.5cqw} .p-md{font-size:10cqw} .p-sm{font-size:8.2cqw} .p-xs{font-size:6.8cqw}
+.p-top{position:absolute;left:8%;right:26%;top:7%;font-family:var(--mono);font-size:5cqw;letter-spacing:.05em;text-transform:uppercase;opacity:.85;line-height:1.25}
+.p-age{position:absolute;right:6%;top:6%;font-family:var(--mono);font-weight:600;font-size:5.4cqw;border:.5cqw solid currentColor;border-radius:1.6cqw;padding:.4cqw 1.4cqw;opacity:.9}
+.poster.mini span{display:none}
+.v0::before{width:64%;aspect-ratio:1;left:18%;top:19%;border-radius:50%;background:var(--p3);opacity:.92}
+.v0::after{left:0;right:0;top:50%;bottom:0;background:linear-gradient(to bottom,color-mix(in srgb,var(--p2) 75%,transparent),var(--p2))}
+.v1::before{inset:0;background:repeating-linear-gradient(118deg,transparent 0 9cqw,color-mix(in srgb,var(--p3) 45%,transparent) 9cqw 11cqw)}
+.v1::after{left:0;right:0;top:45%;bottom:0;background:linear-gradient(transparent,var(--p2) 70%)}
+.v2::before{width:150%;aspect-ratio:1;left:-25%;top:-32%;border-radius:50%;background:repeating-radial-gradient(circle at center,color-mix(in srgb,var(--p3) 55%,transparent) 0 1.2cqw,transparent 1.2cqw 7cqw)}
+.v2::after{left:0;right:0;top:50%;bottom:0;background:linear-gradient(transparent,var(--p2) 70%)}
+.v3::before{left:14%;width:22%;top:0;bottom:0;background:var(--p3);opacity:.85;box-shadow:36cqw 0 0 0 color-mix(in srgb,var(--p3) 40%,transparent)}
+.v3::after{left:0;right:0;top:46%;bottom:0;background:linear-gradient(transparent,var(--p2) 75%)}
+.v4::before{inset:0;background:radial-gradient(circle,var(--p3) 0 1.6cqw,transparent 1.8cqw) 0 0/9cqw 9cqw;opacity:.55;-webkit-mask:linear-gradient(#000 15%,transparent 72%);mask:linear-gradient(#000 15%,transparent 72%)}
+.v4::after{width:46%;aspect-ratio:1;right:-8%;top:22%;border:2.4cqw solid var(--p3);border-radius:50%}
+
+/* ---------- month grid ---------- */
+.month{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}
+.month .wdh{background:var(--surface);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 10px}
+.cell{background:var(--bg);min-height:128px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cell.out{background:color-mix(in srgb,var(--bg) 55%,var(--surface-2))}
+.cell.out .cell-d{opacity:.4}
+.cell-d{align-self:flex-start;font-family:var(--mono);font-size:13px;font-weight:600;width:28px;height:28px;border-radius:50%;display:grid;place-items:center}
+.cell-d:hover{background:var(--surface-2)}
+.cell.today .cell-d{background:var(--accent);color:var(--accent-ink)}
+.cell ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;min-width:0}
+.m-ev{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:2px 4px 2px 2px;border-radius:6px;font-size:12px;line-height:1.2;min-width:0}
+.m-ev:hover{background:var(--surface-2)}
+.m-ev .poster{width:20px;flex:none;border-radius:3px}
+.m-ev .m-t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.m-ev .m-t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--tc);margin-right:5px;vertical-align:1px}
+.more{font-size:12px;color:var(--accent);text-align:left;padding:2px 4px}
+.dots{display:none;flex-wrap:wrap;gap:3px;padding:0 4px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--tc)}
+
+/* ---------- list ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+th{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.date{font-family:var(--mono);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.date small{display:block;color:var(--muted);font-size:11px}
+.l-title{display:flex;align-items:center;gap:10px;font-weight:600;text-align:left}
+.l-title .poster{width:30px;flex:none;border-radius:4px}
+.l-title:hover{color:var(--accent)}
+td.muted{color:var(--muted)}
+
+/* ---------- cinemas ---------- */
+.cin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.cin{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.cin h3{font-family:var(--display);font-size:17px;font-weight:700}
+.cin .addr{font-size:13px;color:var(--muted)}
+.fmts{display:flex;flex-wrap:wrap;gap:5px}
+.fmt{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:2px 6px;color:var(--muted)}
+.fmt.hi{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.cin .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:6px}
+.cin .stat{font-size:13px;color:var(--muted)}
+.cin .stat b{color:var(--fg);font-family:var(--mono)}
+.thumbs{display:flex;gap:4px;min-height:45px}
+.thumbs .poster{width:30px;border-radius:3px}
+
+.show-past{display:flex;width:100%;justify-content:center;margin-bottom:22px;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center}
+.empty b{color:var(--fg);font-size:16px}
+
+/* ---------- dialog ---------- */
+dialog{width:100%;max-width:min(980px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);box-shadow:var(--shadow);overflow:auto;overscroll-behavior:contain}
+dialog::backdrop{background:var(--overlay)}
+.m-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 16px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.m-head .crumb{flex:1;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-body{padding:22px 24px 28px;display:flex;flex-direction:column;gap:26px}
+.m-title{font-family:var(--display);font-weight:800;font-size:clamp(22px,4vw,30px);line-height:1.15;letter-spacing:-.02em}
+.m-sub{color:var(--muted);margin-top:6px}
+.hero{display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:start}
+.hero h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.1;letter-spacing:-.02em;margin:8px 0 10px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);font-size:14px;margin-bottom:14px}
+.meta span{white-space:nowrap}
+.desc{font-size:16px;line-height:1.55;max-width:62ch;margin-bottom:14px}
+.credits{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:18px}
+.credits b{color:var(--fg);font-weight:500}
+.hero-a{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--surface-2)}
+.btn.primary{background:var(--buy);color:var(--buy-ink);border-color:var(--buy)}
+.btn[aria-pressed="true"]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,transparent);background:var(--accent-soft)}
+.btn[aria-pressed="true"] svg{fill:currentColor}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.sec h3{font-family:var(--display);font-weight:700;font-size:17px;margin-bottom:12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec h3 small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted)}
+.rel-table{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.rel-c{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px}
+.rel-c b{display:block;font-family:var(--mono);font-size:13px;font-weight:600;margin-top:2px}
+.rel-c.cur{border-color:var(--accent);background:var(--accent-soft)}
+.rel-c .na{color:var(--muted);font-weight:400}
+.datestrip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.ds{flex:none;display:flex;flex-direction:column;align-items:center;min-width:58px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}
+.ds b{font-family:var(--mono);font-size:17px;color:var(--fg);font-weight:600}
+.ds[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.ds[aria-pressed="true"] b{color:var(--bg)}
+.venues{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.venue{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:14px;padding:14px 16px;align-items:start}
+.venue+.venue{border-top:1px solid var(--line)}
+.venue h4{margin:0;font-size:15px;font-weight:600}
+.venue h4 button:hover{color:var(--accent)}
+.venue .addr{font-size:12.5px;color:var(--muted);margin-top:2px}
+.sess{display:flex;flex-wrap:wrap;gap:8px}
+.ses{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);min-width:84px;text-align:left}
+.ses:hover{border-color:var(--accent)}
+.ses .tm{font-family:var(--mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.ses .fx{font-size:11px;color:var(--muted)}
+.ses .pr{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.ses.past{opacity:.4;pointer-events:none}
+.note{font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:14px 16px;line-height:1.5}
+.eps{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ep{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:12px;padding:10px 14px;font-size:14px;align-items:center}
+.ep+.ep{border-top:1px solid var(--line)}
+.ep .n{font-family:var(--mono);color:var(--muted)}
+.ep .d{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.ep.out .d{color:var(--ok)}
+.film-row{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;padding:14px 16px;align-items:start}
+.film-row+.film-row{border-top:1px solid var(--line)}
+.film-row > button{display:block;width:100%}
+.film-row h4{margin:0 0 8px;font-size:15px;font-weight:600}
+.film-row h4 button:hover{color:var(--accent)}
+.film-row h4 small{color:var(--muted);font-weight:400;margin-left:6px}
+
+/* seats */
+.screen{margin:0 auto 22px;width:80%;height:26px;border-top:3px solid var(--accent);border-radius:50% 50% 0 0/100% 100% 0 0;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--muted);padding-top:8px;box-shadow:0 -10px 24px -12px var(--accent)}
+.hall-wrap{overflow-x:auto;padding-bottom:6px}
+.hall{display:grid;gap:5px;justify-content:center;margin:0 auto;width:max-content}
+.hall .rn{font-family:var(--mono);font-size:11px;color:var(--muted);display:grid;place-items:center;width:22px}
+.seat{width:24px;height:22px;border-radius:6px 6px 4px 4px;background:var(--seat);font-family:var(--mono);font-size:9px;color:transparent;transition:transform .1s}
+.seat:hover:not(:disabled){transform:scale(1.15);color:var(--fg)}
+.seat.comfort{background:color-mix(in srgb,var(--t-series) 45%,var(--seat))}
+.seat:disabled{background:transparent;border:1.5px solid var(--line);cursor:not-allowed}
+.seat[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.aisle{width:14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;font-size:12.5px;color:var(--muted);margin-top:16px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:13px;border-radius:4px;background:var(--seat);display:inline-block}
+.legend i.lc{background:color-mix(in srgb,var(--t-series) 45%,var(--seat))}
+.legend i.lt{background:transparent;border:1.5px solid var(--line)}
+.legend i.ls{background:var(--accent)}
+.checkout{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:14px 16px;padding-bottom:max(14px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.checkout .sel{font-size:14px;color:var(--muted);min-width:0}
+.checkout .sel b{color:var(--fg);font-family:var(--mono);font-size:18px;display:block}
+
+.sum-box{display:grid;grid-template-columns:90px minmax(0,1fr);gap:16px;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface-2)}
+.sum-box dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:14px}
+.sum-box dt{color:var(--muted)}
+.sum-box dd{margin:0;font-weight:500}
+.pay-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.opt{border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.opt h4{margin:0;font-family:var(--display);font-size:16px;font-weight:700}
+.opt p{font-size:14px;color:var(--muted);line-height:1.5}
+.opt .btn{align-self:flex-start;margin-top:auto}
+.opt.main{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+
+.ticket{display:grid;grid-template-columns:minmax(0,1fr) auto;max-width:640px;margin:0 auto;width:100%;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);position:relative}
+.ticket .main{padding:20px 22px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ticket .main h3{font-family:var(--display);font-size:22px;font-weight:800}
+.ticket .main .ln{font-size:14px;color:var(--muted)}
+.ticket .main .ln b{color:var(--fg);font-weight:600}
+.ticket .stub{padding:20px;border-left:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:center}
+.ticket .stub canvas{width:104px;height:104px;image-rendering:pixelated;background:#fff;border-radius:6px;padding:6px}
+.ticket .stub small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ticket::before,.ticket::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:var(--surface);right:136px}
+.ticket::before{top:-10px} .ticket::after{bottom:-10px}
+.done-note{text-align:center;color:var(--muted);font-size:14px;max-width:52ch;margin:0 auto;line-height:1.5}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:10px;font-size:14px;max-width:min(520px,calc(100vw - 32px));transition:.25s;z-index:100;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:18px}
+  .side{position:static;gap:12px}
+  .side h3,.side-note{display:none}
+  .genres{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+  .toggles{flex-direction:row;flex-wrap:wrap;gap:8px 18px}
+}
+@media (max-width:720px){
+  .bar{position:static}
+  .cats{flex-wrap:nowrap;overflow-x:auto;width:100%;padding-bottom:2px}
+  .cell{min-height:64px;padding:4px}
+  .cell ul,.cell .more{display:none}
+  .dots{display:flex}
+  .month .wdh{padding:6px 4px;text-align:center}
+  .cell-d{width:24px;height:24px;font-size:12px}
+  .month-nav{margin-left:0;width:100%;justify-content:space-between}
+  .month-nav h2{min-width:0;flex:1}
+  .region select{max-width:40vw}
+  .brand small{display:none}
+}
+@media (max-width:640px){
+  dialog{max-width:100vw;max-height:100dvh;height:100dvh;margin:0;border-radius:0;border:0}
+  .m-body{padding:18px 16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .hero{grid-template-columns:minmax(0,1fr);gap:16px}
+  .hero > .poster{width:150px}
+  .venue{grid-template-columns:minmax(0,1fr)}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:18px 12px}
+  .day-h{flex-wrap:wrap}
+  .day-h .rule{display:none}
+  .ticket{grid-template-columns:minmax(0,1fr)}
+  .ticket .stub{border-left:0;border-top:2px dashed var(--line)}
+  .ticket::before,.ticket::after{display:none}
+  .sum-box{grid-template-columns:64px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="bulbs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>Premiero<small id="tagline"></small></div>
+    <nav class="nav" id="nav"></nav>
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search">
+    </label>
+    <div class="region">
+      <select id="country"></select>
+      <select id="city"></select>
+      <select id="lang"></select>
+    </div>
+    <span class="demo" id="demo"></span>
+  </div>
+</header>
+
+<div class="bar"><div class="wrap" id="bar"></div></div>
+
+<div class="wrap layout">
+  <aside class="side" id="side"></aside>
+  <main id="main" aria-live="polite"></main>
+</div>
+
+<dialog id="modal"></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===================== helpers ===================== */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function hash(str){ let h = 2166136261; for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed){ let a = typeof seed === 'string' ? hash(seed) : seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+const MS = 86400000;
+const sod = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const dkey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fromKey = k => { const [y, m, dd] = k.split('-').map(Number); return new Date(y, m - 1, dd); };
+const diffDays = (a, b) => Math.round((sod(a) - sod(b)) / MS);
+const TODAY = sod(new Date());
+const NOW_MIN = new Date().getHours() * 60 + new Date().getMinutes();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ===================== i18n ===================== */
+const LANGS = { uk:'Українська', en:'English', es:'Español', ru:'Русский' };
+const LOC = { uk:'uk-UA', en:'en-US', es:'es-MX', ru:'ru-RU' };
+let L = 'en';
+const tx = o => (o && (o[L] ?? o.en)) ?? '';
+function pl(n, f){ const c = new Intl.PluralRules(LOC[L]).select(n); return f[c] ?? f.other ?? f.many; }
+const fmtDate = d => new Intl.DateTimeFormat(LOC[L], { day:'numeric', month:'long' }).format(d);
+const fmtWd = (d, style = 'long') => new Intl.DateTimeFormat(LOC[L], { weekday: style }).format(d);
+const fmtMonShort = d => new Intl.DateTimeFormat(LOC[L], { month:'short' }).format(d).replace('.', '');
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const monthTitle = d => `${cap(new Intl.DateTimeFormat(LOC[L], { month:'long' }).format(d))} ${d.getFullYear()}`;
+const relLabel = d => new Intl.RelativeTimeFormat(LOC[L], { numeric:'auto' }).format(diffDays(d, TODAY), 'day');
+
+const I18N = {
+  uk: {
+    tagline:'календар кіно та серіалів', nav_cal:'Календар', nav_cin:'Кінотеатри', nav:'Розділи', search:'Фільм або серіал', search_l:'Пошук за назвою',
+    country:'Країна', city:'Місто', lang:'Мова', demo:'демо-дані', demo_t:'Фільми, кінотеатри й сеанси вигадані для прототипу',
+    all:'Усі', cinema:'У кіно', series:'Серіали', online:'Онлайн-прем’єри', kind:'Тип релізу',
+    ty_cinema:'У кіно', ty_series:'Серіал', ty_online:'Онлайн',
+    today:'Сьогодні', prev:'Попередній місяць', next:'Наступний місяць', view:'Вигляд', v_feed:'Стрічка по днях', v_month:'Місяць сіткою', v_list:'Список',
+    genres:'Жанри', show:'Показувати', only_t:'Лише з квитками', my_list:'Мій список', new_eps:'Нові серії', reset:'Скинути фільтри',
+    side_note: c => `Дати виходу показано для країни «${c}». Кінопрем’єри виходять у четвер, у США в п’ятницю.`,
+    cin_note:'Тут усі кінотеатри міста. Відкрийте будь-який, щоб побачити розклад і вибрати місця.',
+    cinemas_n: n => `${n} ${pl(n,{one:'кінотеатр',few:'кінотеатри',many:'кінотеатрів'})}`, week:'розклад на тиждень уперед',
+    s_cinema: n => `${pl(n,{one:'прем’єра',few:'прем’єри',many:'прем’єр'})} у кіно`, s_series: n => pl(n,{one:'серіал',few:'серіали',many:'серіалів'}), s_online:'онлайн',
+    releases_n: n => `${n} ${pl(n,{one:'реліз',few:'релізи',many:'релізів'})}`,
+    show_past: n => `Показати початок місяця · ще ${n} ${pl(n,{one:'реліз',few:'релізи',many:'релізів'})}`,
+    empty_t:'Цього місяця нічого не знайшлося', empty_s:'Спробуйте інший місяць або приберіть частину фільтрів.',
+    th_date:'Дата', th_title:'Назва', th_type:'Тип', th_genre:'Жанр', th_where:'Де дивитися',
+    where_cin: (n, c) => `${n} ${pl(n,{one:'кінотеатр',few:'кінотеатри',many:'кінотеатрів'})} · ${c}`, in_theaters:'у кінотеатрах',
+    tickets:'Квитки', presale:'Передпродаж', watch_btn:'Дивитися', want:'Хочу подивитися', unwant:'Прибрати зі списку «Хочу подивитися»', in_list:'У моєму списку',
+    added: x => `«${x}» у вашому списку. Нагадаємо про прем’єру.`, removed: x => `«${x}» прибрано зі списку`, open: x => `Відкрити «${x}»`,
+    season:'сезон', eps_range:(a,b) => `серії ${a}–${b}`, ep_one: a => `Серія ${a}`, eps_one:(a,b) => `Серії ${a}–${b}`, premiere:'прем’єра', full_season:'весь сезон', finale:'фінал', season_finale:'фінал сезону', out:'вийшла',
+    eps_n: n => `${n} ${pl(n,{one:'серія',few:'серії',many:'серій'})}`, min:'хв', dir_pre:'реж.', only_on: p => `лише на ${p}`,
+    director:'Режисер', cast:'У ролях', buy:'Купити квиток', buy_pre:'Передпродаж квитків', watch_on: p => `Дивитися на ${p}`, trailer:'Трейлер',
+    rel_dates:'Дати виходу', by_country:'за країнами', tba:'дата уточнюється', showtimes:'Сеанси',
+    no_sess: c => `На цю дату сеансів у місті ${c} немає. Оберіть інший день.`,
+    soon_note: d => `Прем’єра ${d}. Продаж квитків відкриється за три тижні до виходу. Натисніть «Хочу подивитися», і ми нагадаємо.`,
+    tba_note: c => `Дату виходу в країні «${c}» ще не оголошено.`, ended_note:'Фільм уже зійшов з екранів. Коли він з’явиться в онлайн-кінотеатрах, ми додамо посилання.',
+    online_note: (d, r, p) => `${d}, ${r}, на ${p}. Доступно за підпискою.`, ep_sched:'Графік виходу серій',
+    cinema_w:'Кінотеатр', halls_n: n => `${n} ${pl(n,{one:'зал',few:'зали',many:'залів'})}`, schedule:'Розклад', no_sess_s:'На цю дату сеансів немає.',
+    today_films: n => `Сьогодні <b>${n}</b> ${pl(n,{one:'фільм',few:'фільми',many:'фільмів'})}`, sched_btn:'Розклад', date_l:'Дата сеансу', today_s:'сьогодні', tomorrow_s:'завтра',
+    hall:'зал', from:'від', seats_t:'Вибір місць', screen:'ЕКРАН', free:'вільно', comfort:'комфорт', selected:'обрано', taken:'зайнято',
+    seat_hint:'Оберіть до 6 місць на схемі залу', cont:'Продовжити', row:'ряд', seat_w: n => n > 1 ? 'місця' : 'місце', seat_l:(r,s) => `Ряд ${r}, місце ${s}`, taken_s:', зайнято', max6:'За одне замовлення можна обрати до 6 місць',
+    how_buy:'Як купити квиток', f_film:'Фільм', f_cinema:'Кінотеатр', f_session:'Сеанс', f_seats:'Місця', f_total:'Разом',
+    pay_t:'Оплатити тут', pay_d:'Карткою, Apple Pay або Google Pay. Квиток прийде на пошту й збережеться в профілі. Місця тримаємо 15 хвилин.', pay_b:'Перейти до оплати',
+    partner_t:'У квиткового агрегатора', partner_d:'Відкриємо сайт партнера одразу на цьому сеансі з обраними місцями. Оплата й повернення на його боці.', partner_b:'Продовжити в партнера',
+    proto:'Прототип: оплата не проводиться. У робочій версії тут підключається платіжна форма або перехід за партнерським посиланням.',
+    ticket:'Квиток', demo_ticket: n => `Демо-квиток · замовлення ${n}`, paid:'Сплачено', done_note:'Так виглядатиме квиток після оплати. Його можна показати на вході з телефона. У прототипі гроші не списуються, а місця не бронюються.',
+    close:'Закрити', back:'Назад', other_sess:'Інший сеанс', checkout_c:'оформлення',
+    t_trailer:'Трейлер відкриється в плеєрі. У прототипі відео немає.', t_online: p => `У робочій версії тут посилання на ${p} з партнерською міткою.`, t_partner:'У робочій версії відкриється сайт партнера на цьому сеансі.',
+    venue: m => `ТРЦ ${m}`, qr:'QR-код квитка',
+  },
+  en: {
+    tagline:'movie & series release calendar', nav_cal:'Calendar', nav_cin:'Cinemas', nav:'Sections', search:'Movie or series', search_l:'Search by title',
+    country:'Country', city:'City', lang:'Language', demo:'demo data', demo_t:'Movies, cinemas and showtimes are made up for this prototype',
+    all:'All', cinema:'In theaters', series:'Series', online:'Streaming', kind:'Release type',
+    ty_cinema:'In theaters', ty_series:'Series', ty_online:'Streaming',
+    today:'Today', prev:'Previous month', next:'Next month', view:'View', v_feed:'Daily feed', v_month:'Month grid', v_list:'List',
+    genres:'Genres', show:'Show', only_t:'With tickets only', my_list:'My list', new_eps:'New episodes', reset:'Clear filters',
+    side_note: c => `Release dates are shown for ${c}. Theatrical releases open on Thursday, on Friday in the US.`,
+    cin_note:'Every cinema in the city. Open one to see showtimes and pick seats.',
+    cinemas_n: n => `${n} ${pl(n,{one:'cinema',other:'cinemas'})}`, week:'showtimes for the next 7 days',
+    s_cinema: n => `theatrical ${pl(n,{one:'release',other:'releases'})}`, s_series: n => 'series', s_online:'streaming',
+    releases_n: n => `${n} ${pl(n,{one:'release',other:'releases'})}`,
+    show_past: n => `Show earlier this month · ${n} more`,
+    empty_t:'Nothing found this month', empty_s:'Try another month or remove some filters.',
+    th_date:'Date', th_title:'Title', th_type:'Type', th_genre:'Genre', th_where:'Where to watch',
+    where_cin: (n, c) => `${n} ${pl(n,{one:'cinema',other:'cinemas'})} · ${c}`, in_theaters:'in theaters',
+    tickets:'Tickets', presale:'Presale', watch_btn:'Watch', want:'Want to watch', unwant:'Remove from “Want to watch”', in_list:'In my list',
+    added: x => `“${x}” added to your list. We’ll remind you on release day.`, removed: x => `“${x}” removed from your list`, open: x => `Open “${x}”`,
+    season:'season', eps_range:(a,b) => `episodes ${a}–${b}`, ep_one: a => `Episode ${a}`, eps_one:(a,b) => `Episodes ${a}–${b}`, premiere:'premiere', full_season:'full season', finale:'finale', season_finale:'season finale', out:'out',
+    eps_n: n => `${n} ${pl(n,{one:'episode',other:'episodes'})}`, min:'min', dir_pre:'dir.', only_on: p => `only on ${p}`,
+    director:'Director', cast:'Cast', buy:'Buy tickets', buy_pre:'Presale tickets', watch_on: p => `Watch on ${p}`, trailer:'Trailer',
+    rel_dates:'Release dates', by_country:'by country', tba:'TBA', showtimes:'Showtimes',
+    no_sess: c => `No showtimes in ${c} on this date. Pick another day.`,
+    soon_note: d => `Opens ${d}. Tickets go on sale three weeks before release. Tap “Want to watch” and we’ll remind you.`,
+    tba_note: c => `No release date announced for ${c} yet.`, ended_note:'This movie has left theaters. We’ll add a link once it’s on streaming.',
+    online_note: (d, r, p) => `${d} (${r}) on ${p}. Included with a subscription.`, ep_sched:'Episode schedule',
+    cinema_w:'Cinema', halls_n: n => `${n} ${pl(n,{one:'screen',other:'screens'})}`, schedule:'Showtimes', no_sess_s:'No showtimes on this date.',
+    today_films: n => `Today: <b>${n}</b> ${pl(n,{one:'movie',other:'movies'})}`, sched_btn:'Showtimes', date_l:'Showtime date', today_s:'today', tomorrow_s:'tomorrow',
+    hall:'screen', from:'from', seats_t:'Choose seats', screen:'SCREEN', free:'available', comfort:'premium', selected:'selected', taken:'taken',
+    seat_hint:'Pick up to 6 seats on the map', cont:'Continue', row:'row', seat_w: n => n > 1 ? 'seats' : 'seat', seat_l:(r,s) => `Row ${r}, seat ${s}`, taken_s:', taken', max6:'You can pick up to 6 seats per order',
+    how_buy:'How to buy', f_film:'Movie', f_cinema:'Cinema', f_session:'Showtime', f_seats:'Seats', f_total:'Total',
+    pay_t:'Pay here', pay_d:'Card, Apple Pay or Google Pay. Tickets arrive by email and stay in your profile. Seats are held for 15 minutes.', pay_b:'Go to payment',
+    partner_t:'Through a ticketing partner', partner_d:'We’ll open the partner’s site on this showtime with your seats. Payment and refunds happen there.', partner_b:'Continue with partner',
+    proto:'Prototype: no payment is taken. The live version will plug in a payment form or a partner link here.',
+    ticket:'Ticket', demo_ticket: n => `Demo ticket · order ${n}`, paid:'Paid', done_note:'This is how your ticket will look after payment. Show it on your phone at the door. Nothing is charged or reserved in the prototype.',
+    close:'Close', back:'Back', other_sess:'Another showtime', checkout_c:'checkout',
+    t_trailer:'The trailer opens in a player. There’s no video in the prototype.', t_online: p => `In the live version this links to ${p} with an affiliate tag.`, t_partner:'In the live version the partner site opens on this showtime.',
+    venue: m => `${m} Mall`, qr:'Ticket QR code',
+  },
+  es: {
+    tagline:'calendario de estrenos de cine y series', nav_cal:'Calendario', nav_cin:'Cines', nav:'Secciones', search:'Película o serie', search_l:'Buscar por título',
+    country:'País', city:'Ciudad', lang:'Idioma', demo:'datos demo', demo_t:'Películas, cines y funciones inventados para el prototipo',
+    all:'Todo', cinema:'En cines', series:'Series', online:'Streaming', kind:'Tipo de estreno',
+    ty_cinema:'En cines', ty_series:'Serie', ty_online:'Streaming',
+    today:'Hoy', prev:'Mes anterior', next:'Mes siguiente', view:'Vista', v_feed:'Por días', v_month:'Mes', v_list:'Lista',
+    genres:'Géneros', show:'Mostrar', only_t:'Solo con boletos', my_list:'Mi lista', new_eps:'Nuevos episodios', reset:'Borrar filtros',
+    side_note: c => `Fechas de estreno para ${c}. Los estrenos en cines salen en jueves; en EE. UU., en viernes.`,
+    cin_note:'Todos los cines de la ciudad. Abre uno para ver la cartelera y elegir asientos.',
+    cinemas_n: n => `${n} ${pl(n,{one:'cine',other:'cines'})}`, week:'cartelera de los próximos 7 días',
+    s_cinema: n => `${pl(n,{one:'estreno',other:'estrenos'})} en cines`, s_series: n => pl(n,{one:'serie',other:'series'}), s_online:'en streaming',
+    releases_n: n => `${n} ${pl(n,{one:'estreno',other:'estrenos'})}`,
+    show_past: n => `Ver inicio del mes · ${n} más`,
+    empty_t:'No hay nada este mes', empty_s:'Prueba otro mes o quita algunos filtros.',
+    th_date:'Fecha', th_title:'Título', th_type:'Tipo', th_genre:'Género', th_where:'Dónde ver',
+    where_cin: (n, c) => `${n} ${pl(n,{one:'cine',other:'cines'})} · ${c}`, in_theaters:'en cines',
+    tickets:'Boletos', presale:'Preventa', watch_btn:'Ver', want:'Quiero verla', unwant:'Quitar de “Quiero verla”', in_list:'En mi lista',
+    added: x => `«${x}» está en tu lista. Te avisaremos el día del estreno.`, removed: x => `«${x}» se quitó de tu lista`, open: x => `Abrir «${x}»`,
+    season:'temporada', eps_range:(a,b) => `episodios ${a}–${b}`, ep_one: a => `Episodio ${a}`, eps_one:(a,b) => `Episodios ${a}–${b}`, premiere:'estreno', full_season:'temporada completa', finale:'final', season_finale:'final de temporada', out:'disponible',
+    eps_n: n => `${n} ${pl(n,{one:'episodio',other:'episodios'})}`, min:'min', dir_pre:'dir.', only_on: p => `solo en ${p}`,
+    director:'Dirección', cast:'Reparto', buy:'Comprar boletos', buy_pre:'Boletos en preventa', watch_on: p => `Ver en ${p}`, trailer:'Tráiler',
+    rel_dates:'Fechas de estreno', by_country:'por país', tba:'por confirmar', showtimes:'Funciones',
+    no_sess: c => `No hay funciones en ${c} para esta fecha. Elige otro día.`,
+    soon_note: d => `Estreno: ${d}. La venta de boletos abre tres semanas antes. Toca «Quiero verla» y te avisamos.`,
+    tba_note: c => `Aún no hay fecha de estreno para ${c}.`, ended_note:'La película ya salió de cartelera. Agregaremos el enlace cuando llegue a streaming.',
+    online_note: (d, r, p) => `${d} (${r}) en ${p}. Incluida en la suscripción.`, ep_sched:'Calendario de episodios',
+    cinema_w:'Cine', halls_n: n => `${n} ${pl(n,{one:'sala',other:'salas'})}`, schedule:'Cartelera', no_sess_s:'No hay funciones para esta fecha.',
+    today_films: n => `Hoy: <b>${n}</b> ${pl(n,{one:'película',other:'películas'})}`, sched_btn:'Horarios', date_l:'Fecha de la función', today_s:'hoy', tomorrow_s:'mañana',
+    hall:'sala', from:'desde', seats_t:'Elige tus asientos', screen:'PANTALLA', free:'disponible', comfort:'premium', selected:'seleccionado', taken:'ocupado',
+    seat_hint:'Elige hasta 6 asientos en el mapa', cont:'Continuar', row:'fila', seat_w: n => n > 1 ? 'asientos' : 'asiento', seat_l:(r,s) => `Fila ${r}, asiento ${s}`, taken_s:', ocupado', max6:'Puedes elegir hasta 6 asientos por compra',
+    how_buy:'Cómo comprar', f_film:'Película', f_cinema:'Cine', f_session:'Función', f_seats:'Asientos', f_total:'Total',
+    pay_t:'Pagar aquí', pay_d:'Tarjeta, Apple Pay o Google Pay. Tus boletos llegan por correo y quedan en tu perfil. Apartamos los asientos 15 minutos.', pay_b:'Ir a pagar',
+    partner_t:'Con un socio de boletos', partner_d:'Abriremos el sitio del socio en esta función con tus asientos. El pago y los reembolsos se hacen allí.', partner_b:'Continuar con el socio',
+    proto:'Prototipo: no se cobra nada. En la versión real aquí va el formulario de pago o el enlace del socio.',
+    ticket:'Boleto', demo_ticket: n => `Boleto demo · orden ${n}`, paid:'Pagado', done_note:'Así se verá tu boleto después de pagar. Muéstralo en tu teléfono en la entrada. En el prototipo no se cobra ni se aparta nada.',
+    close:'Cerrar', back:'Atrás', other_sess:'Otra función', checkout_c:'compra',
+    t_trailer:'El tráiler se abre en un reproductor. El prototipo no tiene video.', t_online: p => `En la versión real aquí hay un enlace a ${p} con etiqueta de afiliado.`, t_partner:'En la versión real se abre el sitio del socio en esta función.',
+    venue: m => `Plaza ${m}`, qr:'Código QR del boleto',
+  },
+  ru: {
+    tagline:'календарь кино и сериалов', nav_cal:'Календарь', nav_cin:'Кинотеатры', nav:'Разделы', search:'Фильм или сериал', search_l:'Поиск по названию',
+    country:'Страна', city:'Город', lang:'Язык', demo:'демо-данные', demo_t:'Фильмы, кинотеатры и сеансы придуманы для прототипа',
+    all:'Все', cinema:'В кино', series:'Сериалы', online:'Онлайн-премьеры', kind:'Тип релиза',
+    ty_cinema:'В кино', ty_series:'Сериал', ty_online:'Онлайн',
+    today:'Сегодня', prev:'Предыдущий месяц', next:'Следующий месяц', view:'Вид', v_feed:'Лента по дням', v_month:'Месяц сеткой', v_list:'Список',
+    genres:'Жанры', show:'Показывать', only_t:'Только с билетами', my_list:'Мой список', new_eps:'Новые серии', reset:'Сбросить фильтры',
+    side_note: c => `Даты выхода показаны для страны «${c}». Кинопремьеры выходят в четверг, в США в пятницу.`,
+    cin_note:'Здесь все кинотеатры города. Откройте любой, чтобы увидеть расписание и выбрать места.',
+    cinemas_n: n => `${n} ${pl(n,{one:'кинотеатр',few:'кинотеатра',many:'кинотеатров'})}`, week:'расписание на неделю вперёд',
+    s_cinema: n => `${pl(n,{one:'премьера',few:'премьеры',many:'премьер'})} в кино`, s_series: n => pl(n,{one:'сериал',few:'сериала',many:'сериалов'}), s_online:'онлайн',
+    releases_n: n => `${n} ${pl(n,{one:'релиз',few:'релиза',many:'релизов'})}`,
+    show_past: n => `Показать начало месяца · ещё ${n} ${pl(n,{one:'релиз',few:'релиза',many:'релизов'})}`,
+    empty_t:'В этом месяце ничего не нашлось', empty_s:'Попробуйте другой месяц или уберите часть фильтров.',
+    th_date:'Дата', th_title:'Название', th_type:'Тип', th_genre:'Жанр', th_where:'Где смотреть',
+    where_cin: (n, c) => `${n} ${pl(n,{one:'кинотеатр',few:'кинотеатра',many:'кинотеатров'})} · ${c}`, in_theaters:'в кинотеатрах',
+    tickets:'Билеты', presale:'Предпродажа', watch_btn:'Смотреть', want:'Хочу посмотреть', unwant:'Убрать из списка «Хочу посмотреть»', in_list:'В моём списке',
+    added: x => `«${x}» в вашем списке. Напомним о премьере.`, removed: x => `«${x}» убран из списка`, open: x => `Открыть «${x}»`,
+    season:'сезон', eps_range:(a,b) => `серии ${a}–${b}`, ep_one: a => `Серия ${a}`, eps_one:(a,b) => `Серии ${a}–${b}`, premiere:'премьера', full_season:'весь сезон', finale:'финал', season_finale:'финал сезона', out:'вышла',
+    eps_n: n => `${n} ${pl(n,{one:'серия',few:'серии',many:'серий'})}`, min:'мин', dir_pre:'реж.', only_on: p => `только на ${p}`,
+    director:'Режиссёр', cast:'В ролях', buy:'Купить билет', buy_pre:'Предпродажа билетов', watch_on: p => `Смотреть на ${p}`, trailer:'Трейлер',
+    rel_dates:'Даты выхода', by_country:'по странам', tba:'дата уточняется', showtimes:'Сеансы',
+    no_sess: c => `На эту дату сеансов в городе ${c} нет. Выберите другой день.`,
+    soon_note: d => `Премьера ${d}. Продажа билетов откроется за три недели до выхода. Нажмите «Хочу посмотреть», и мы напомним.`,
+    tba_note: c => `Дата выхода в стране «${c}» пока не объявлена.`, ended_note:'Фильм уже сошёл с экранов. Когда он появится в онлайн-кинотеатрах, мы добавим ссылку.',
+    online_note: (d, r, p) => `${d}, ${r}, на ${p}. Доступно по подписке.`, ep_sched:'График выхода серий',
+    cinema_w:'Кинотеатр', halls_n: n => `${n} ${pl(n,{one:'зал',few:'зала',many:'залов'})}`, schedule:'Расписание', no_sess_s:'На эту дату сеансов нет.',
+    today_films: n => `Сегодня <b>${n}</b> ${pl(n,{one:'фильм',few:'фильма',many:'фильмов'})}`, sched_btn:'Расписание', date_l:'Дата сеанса', today_s:'сегодня', tomorrow_s:'завтра',
+    hall:'зал', from:'от', seats_t:'Выбор мест', screen:'ЭКРАН', free:'свободно', comfort:'комфорт', selected:'выбрано', taken:'занято',
+    seat_hint:'Выберите до 6 мест на схеме зала', cont:'Продолжить', row:'ряд', seat_w: n => n > 1 ? 'места' : 'место', seat_l:(r,s) => `Ряд ${r}, место ${s}`, taken_s:', занято', max6:'За один заказ можно выбрать до 6 мест',
+    how_buy:'Как купить билет', f_film:'Фильм', f_cinema:'Кинотеатр', f_session:'Сеанс', f_seats:'Места', f_total:'Итого',
+    pay_t:'Оплатить здесь', pay_d:'Картой, Apple Pay или Google Pay. Билет придёт на почту и сохранится в профиле. Места держим 15 минут.', pay_b:'Перейти к оплате',
+    partner_t:'У билетного агрегатора', partner_d:'Откроем сайт партнёра сразу на этом сеансе с выбранными местами. Оплата и возврат на его стороне.', partner_b:'Продолжить у партнёра',
+    proto:'Прототип: оплата не проводится. В рабочей версии здесь подключается платёжная форма или переход по партнёрской ссылке.',
+    ticket:'Билет', demo_ticket: n => `Демо-билет · заказ ${n}`, paid:'Оплачено', done_note:'Так будет выглядеть билет после оплаты. Его можно показать на входе с телефона. В прототипе деньги не списываются и места не бронируются.',
+    close:'Закрыть', back:'Назад', other_sess:'Другой сеанс', checkout_c:'оформление',
+    t_trailer:'Трейлер откроется в плеере. В прототипе видео нет.', t_online: p => `В рабочей версии здесь ссылка на ${p} с партнёрской меткой.`, t_partner:'В рабочей версии откроется сайт партнёра на этом сеансе.',
+    venue: m => `ТРЦ ${m}`, qr:'QR-код билета',
+  },
+};
+const t = (k, ...a) => { const v = I18N[L][k] ?? I18N.en[k] ?? k; return typeof v === 'function' ? v(...a) : v; };
+
+/* ===================== reference data ===================== */
+const city = (uk, en, es, ru) => ({ id: en, uk, en, es, ru });
+const COUNTRIES = {
+  ua: { name:{uk:'Україна',en:'Ukraine',es:'Ucrania',ru:'Украина'}, cur:'UAH', dec:0, base:200, round:10, lang:'uk',
+        cities:[city('Київ','Kyiv','Kiev','Киев'), city('Львів','Lviv','Leópolis','Львов'), city('Одеса','Odesa','Odesa','Одесса'), city('Харків','Kharkiv','Járkov','Харьков'), city('Дніпро','Dnipro','Dnipró','Днепр')] },
+  us: { name:{uk:'США',en:'United States',es:'Estados Unidos',ru:'США'}, cur:'USD', dec:2, base:14, round:.5, lang:'en',
+        cities:[city('Нью-Йорк','New York','Nueva York','Нью-Йорк'), city('Лос-Анджелес','Los Angeles','Los Ángeles','Лос-Анджелес'), city('Чикаго','Chicago','Chicago','Чикаго'), city('Г’юстон','Houston','Houston','Хьюстон'), city('Маямі','Miami','Miami','Майами')] },
+  mx: { name:{uk:'Мексика',en:'Mexico',es:'México',ru:'Мексика'}, cur:'MXN', dec:0, base:90, round:5, lang:'es',
+        cities:[city('Мехіко','Mexico City','Ciudad de México','Мехико'), city('Гвадалахара','Guadalajara','Guadalajara','Гвадалахара'), city('Монтеррей','Monterrey','Monterrey','Монтеррей'), city('Канкун','Cancún','Cancún','Канкун')] },
+  kz: { name:{uk:'Казахстан',en:'Kazakhstan',es:'Kazajistán',ru:'Казахстан'}, cur:'KZT', dec:0, base:2300, round:100, lang:'ru',
+        cities:[city('Алмати','Almaty','Almatý','Алматы'), city('Астана','Astana','Astaná','Астана'), city('Шимкент','Shymkent','Shymkent','Шымкент')] },
+  uz: { name:{uk:'Узбекистан',en:'Uzbekistan',es:'Uzbekistán',ru:'Узбекистан'}, cur:'UZS', dec:0, base:52000, round:1000, lang:'ru',
+        cities:[city('Ташкент','Tashkent','Taskent','Ташкент'), city('Самарканд','Samarkand','Samarcanda','Самарканд')] },
+  am: { name:{uk:'Вірменія',en:'Armenia',es:'Armenia',ru:'Армения'}, cur:'AMD', dec:0, base:2800, round:100, lang:'ru', cities:[city('Єреван','Yerevan','Ereván','Ереван')] },
+  kg: { name:{uk:'Киргизстан',en:'Kyrgyzstan',es:'Kirguistán',ru:'Кыргызстан'}, cur:'KGS', dec:0, base:360, round:10, lang:'ru', cities:[city('Бішкек','Bishkek','Biskek','Бишкек')] },
+  by: { name:{uk:'Білорусь',en:'Belarus',es:'Bielorrusia',ru:'Беларусь'}, cur:'BYN', dec:0, base:14, round:1, lang:'ru', cities:[city('Мінськ','Minsk','Minsk','Минск'), city('Гомель','Gomel','Gómel','Гомель')] },
+};
+const CITY_SIZE = { 'Kyiv':7, 'New York':7, 'Los Angeles':6, 'Mexico City':7, 'Almaty':5 };
+const RATING = { us:{'0+':'G','6+':'PG','12+':'PG-13','16+':'R','18+':'R'}, mx:{'0+':'AA','6+':'A','12+':'B','16+':'B15','18+':'C'} };
+const GENRE = {
+  drama:{uk:'драма',en:'drama',es:'drama',ru:'драма'}, adventure:{uk:'пригоди',en:'adventure',es:'aventura',ru:'приключения'},
+  comedy:{uk:'комедія',en:'comedy',es:'comedia',ru:'комедия'}, action:{uk:'бойовик',en:'action',es:'acción',ru:'боевик'},
+  thriller:{uk:'трилер',en:'thriller',es:'suspenso',ru:'триллер'}, animation:{uk:'анімація',en:'animation',es:'animación',ru:'мультфильм'},
+  family:{uk:'сімейний',en:'family',es:'familiar',ru:'семейный'}, scifi:{uk:'фантастика',en:'sci-fi',es:'ciencia ficción',ru:'фантастика'},
+  romance:{uk:'мелодрама',en:'romance',es:'romance',ru:'мелодрама'}, sports:{uk:'спорт',en:'sports',es:'deportes',ru:'спорт'},
+  mystery:{uk:'детектив',en:'mystery',es:'misterio',ru:'детектив'}, fantasy:{uk:'фентезі',en:'fantasy',es:'fantasía',ru:'фэнтези'},
+  horror:{uk:'жахи',en:'horror',es:'terror',ru:'ужасы'}, musical:{uk:'мюзикл',en:'musical',es:'musical',ru:'мюзикл'},
+  crime:{uk:'кримінал',en:'crime',es:'crimen',ru:'криминал'}, biography:{uk:'біографія',en:'biography',es:'biografía',ru:'биография'},
+};
+
+// poster palettes: [bg1, bg2, shape, ink]
+const PAL = {
+  drama:['#22324F','#0C1220','#C9D6EA','#EEF2F8'], scifi:['#1E1650','#08374A','#4EE0D0','#E8FBFF'], horror:['#3E0B10','#0B0606','#B3121E','#F2DCDC'],
+  comedy:['#FFD04A','#FF7A30','#FFF3C4','#2A1404'], family:['#59C3FF','#3B4FE0','#FFE066','#FFFFFF'], thriller:['#2E322C','#0E100E','#C8B27A','#F1EAD6'],
+  romance:['#F3A6B8','#9E3D67','#FFE3EA','#2A0B17'], action:['#2A2E38','#0B0C10','#F05A28','#F5F5F5'], adventure:['#2F5D50','#12251F','#E8C26A','#F7F1DF'],
+  fantasy:['#43206A','#12081F','#F0C26A','#F6ECFF'], crime:['#1E1E1E','#3D2E1E','#D9A441','#F2EFE8'], winter:['#D6EAF7','#6A90C0','#FFFFFF','#10243B'],
+};
+
+const T4 = (en, es, uk, ru) => ({ en, es, uk, ru });
+const CINEMA = [
+  {id:'chess', w:-3, g:['biography','drama'], age:'12+', dur:134, pal:'drama',
+   t:T4('The Chess Player','El ajedrecista','Шахіст','Шахматист'),
+   d:T4('A self-taught player from a small mining town reaches the world championship final and loses a game people still argue about.','Un jugador autodidacta de un pueblo minero llega a la final del campeonato mundial y pierde una partida de la que todavía se discute.','Шахіст-самоук із маленького шахтарського містечка доходить до фіналу чемпіонату світу й програє партію, про яку сперечаються досі.','Шахматист-самоучка из шахтёрского городка доходит до финала чемпионата мира и проигрывает партию, о которой спорят до сих пор.')},
+  {id:'ghost', w:-3, g:['horror'], age:'18+', dur:97, pal:'horror',
+   t:T4('Ghost Line','La línea fantasma','Лінія-привид','Линия-призрак'),
+   d:T4('A night maintenance crew finds a subway station that isn’t on any map.','Un equipo de mantenimiento nocturno encuentra una estación de metro que no aparece en ningún mapa.','Нічна бригада обхідників знаходить станцію метро, якої немає на жодній схемі.','Ночная бригада обходчиков находит станцию метро, которой нет ни на одной схеме.')},
+  {id:'wind', w:-2, g:['adventure','drama'], age:'12+', dur:128, pal:'adventure',
+   t:T4('North Wind','Viento del norte','Північний вітер','Северный ветер'),
+   d:T4('A father and his grown daughter sail along a wild northern coast to fulfill her mother’s last wish.','Un padre y su hija adulta navegan por una costa salvaje del norte para cumplir el último deseo de la madre.','Батько й доросла донька йдуть яхтою вздовж дикого північного узбережжя, щоб виконати останнє прохання матері.','Отец и взрослая дочь идут на яхте вдоль дикого северного побережья, чтобы исполнить последнюю просьбу матери.')},
+  {id:'grandma', w:-2, g:['comedy'], age:'6+', dur:102, pal:'comedy',
+   t:T4('Grandma’s House','La casa de la abuela','Бабусина хата','Бабушкин дом'),
+   d:T4('Five grandchildren arrive to split up a country house and learn that Grandma has no plans to sell.','Cinco nietos llegan a repartirse la casa de campo y descubren que la abuela no piensa venderla.','П’ятеро онуків приїжджають ділити хату в селі й дізнаються, що бабуся продавати її не збирається.','Пятеро внуков приезжают делить дом в деревне и узнают, что бабушка продавать его не собирается.')},
+  {id:'access', w:-1, g:['action','thriller'], age:'16+', dur:116, pal:'action',
+   t:T4('Access Code','Código de acceso','Код доступу','Код доступа'),
+   d:T4('A bank engineer has one night to stop a hack he’s being framed for.','Un ingeniero bancario tiene una noche para detener un hackeo del que lo culpan a él.','Інженер банку має одну ніч, щоб зупинити злам, у якому звинувачують його самого.','Инженер банка за одну ночь должен остановить взлом, в котором обвиняют его самого.')},
+  {id:'cat', w:-1, g:['animation','family'], age:'0+', dur:84, pal:'family',
+   t:T4('The Cat and the Star Lantern','El gato y la linterna de estrellas','Кіт і зоряний ліхтар','Кот и звёздный фонарь'),
+   d:T4('A house cat sets off across the rooftops after a fallen star to bring the light back to his city.','Un gato casero recorre los tejados tras una estrella caída para devolverle la luz a su ciudad.','Домашній кіт вирушає дахами за зіркою, що впала, аби повернути місту світло.','Домашний кот отправляется по крышам за упавшей звездой, чтобы вернуть свет в город.')},
+  {id:'mars', w:0, g:['scifi'], age:'12+', dur:141, pal:'scifi',
+   t:T4('Last Flight to Mars','Último vuelo a Marte','Останній рейс на Марс','Последний рейс на Марс'),
+   d:T4('The crew of the last passenger ship learns the Mars colony has gone silent.','La tripulación de la última nave de pasajeros descubre que la colonia de Marte dejó de responder.','Екіпаж останнього пасажирського корабля дізнається, що колонія на Марсі перестала виходити на зв’язок.','Экипаж последнего пассажирского корабля узнаёт, что колония на Марсе перестала выходить на связь.')},
+  {id:'letters', w:0, g:['drama','romance'], age:'16+', dur:111, pal:'romance',
+   t:T4('Unclaimed Letters','Cartas sin dueño','Чужі листи','Чужие письма'),
+   d:T4('A postal worker starts answering letters nobody picks up, and one day she gets a reply.','Una cartera empieza a responder cartas que nadie recoge y un día recibe una respuesta.','Листоноша починає відповідати на листи, які ніхто не забирає, і одного дня отримує відповідь.','Почтальонша начинает отвечать на письма, которые никто не забирает, и однажды получает ответ.')},
+  {id:'harbor', w:1, g:['thriller'], age:'18+', dur:108, pal:'thriller',
+   t:T4('Quiet Harbor','Puerto tranquilo','Тиха гавань','Тихая гавань'),
+   d:T4('A family rents a lake house and realizes the neighbors know far too much about them.','Una familia renta una casa junto al lago y se da cuenta de que los vecinos saben demasiado de ellos.','Родина винаймає будинок біля озера й розуміє, що сусіди знають про них забагато.','Семья снимает дом у озера и понимает, что соседи знают о них слишком много.')},
+  {id:'treasure', w:1, g:['family','adventure'], age:'6+', dur:95, pal:'family',
+   t:T4('Treasure Hunters','Cazadores de tesoros','Мисливці за скарбами','Охотники за кладом'),
+   d:T4('Three kids find a map inside an old history textbook and spend the holidays chasing it.','Tres niños encuentran un mapa en un viejo libro de historia y pasan las vacaciones siguiéndolo.','Троє школярів знаходять мапу в старому підручнику історії й усі канікули йдуть за нею.','Трое школьников находят карту в старом учебнике истории и все каникулы идут по ней.')},
+  {id:'race', w:1, g:['sports','drama'], age:'12+', dur:124, pal:'action',
+   t:T4('The Race','La carrera','Перегони','Гонка'),
+   d:T4('After an injury, a cross-country skier trains for a marathon where no one expects her.','Tras una lesión, una esquiadora de fondo se prepara para un maratón donde nadie la espera.','Після травми лижниця готується до марафону, на якому її ніхто не чекає.','Лыжница после травмы готовится к марафону, в котором её никто не ждёт.')},
+  {id:'city', w:2, g:['scifi','mystery'], age:'16+', dur:132, pal:'scifi',
+   t:T4('The City That Isn’t There','La ciudad que no existe','Місто, якого немає','Город, которого нет'),
+   d:T4('A detective searches for the missing residents of a closed city that officially doesn’t exist.','Un detective busca a los habitantes desaparecidos de una ciudad cerrada que oficialmente no existe.','Слідчий шукає зниклих мешканців закритого міста, якого офіційно не існує.','Следователь ищет пропавших жителей закрытого города, которого официально не существует.')},
+  {id:'spring', w:2, g:['romance'], age:'12+', dur:106, pal:'romance',
+   t:T4('100 Days Till Spring','Cien días para la primavera','Сто днів до весни','Сто дней до весны'),
+   d:T4('Two people make a bet: if they don’t fight once before spring, they’ll get married.','Dos personas hacen una apuesta: si no pelean ni una vez antes de la primavera, se casarán.','Двоє укладають парі: якщо до весни жодного разу не посваряться, то одружаться.','Двое заключают пари: если до весны ни разу не поссорятся, то поженятся.')},
+  {id:'wild', w:3, g:['thriller','adventure'], age:'16+', dur:119, pal:'thriller',
+   t:T4('White Wilderness','Bosque blanco','Біла тайга','Белая тайга'),
+   d:T4('A helicopter carrying geologists lands deep in the forest, and contact with base goes dead.','Un helicóptero con geólogos aterriza en lo profundo del bosque y se pierde el contacto con la base.','Гелікоптер із геологами сідає в глибині лісу, і зв’язок із базою зникає.','Вертолёт с геологами садится в глухом лесу, и связь с базой пропадает.')},
+  {id:'dog', w:3, g:['animation','family'], age:'0+', dur:88, pal:'family',
+   t:T4('Space Dog','Perro espacial','Зоряний пес','Звёздный пёс'),
+   d:T4('A stray accidentally ends up on an orbital station and becomes its top specialist.','Un perro callejero termina por accidente en una estación orbital y se vuelve su mejor especialista.','Безпритульний пес випадково потрапляє на орбітальну станцію і стає її головним фахівцем.','Дворняга случайно попадает на орбитальную станцию и становится её главным специалистом.')},
+  {id:'firebird', w:4, g:['fantasy','family'], age:'6+', dur:118, pal:'fantasy',
+   t:T4('Firebird','El pájaro de fuego','Жар-птиця','Жар-птица'),
+   d:T4('A falconer’s youngest son sets out after a bird that burns the harvest every night.','El hijo menor de un halconero sale tras un ave que cada noche quema la cosecha.','Наймолодший син сокольничого вирушає за птахом, що щоночі спалює врожай.','Младший сын сокольничего отправляется за птицей, которая по ночам сжигает урожай.')},
+  {id:'floor', w:4, g:['horror'], age:'18+', dur:94, pal:'horror',
+   t:T4('The 13th Floor','El piso 13','Тринадцятий поверх','Тринадцатый этаж'),
+   d:T4('In a new high-rise, the elevator sometimes stops at a floor that isn’t in the plans.','En un edificio nuevo, el elevador a veces se detiene en un piso que no está en los planos.','У новобудові ліфт іноді зупиняється на поверсі, якого немає в проєкті.','В новостройке лифт иногда останавливается на этаже, которого нет в проекте.')},
+  {id:'ice', w:5, g:['drama','adventure'], age:'12+', dur:137, pal:'adventure',
+   t:T4('Icebreaker Hope','Rompehielos Esperanza','Криголам «Надія»','Ледокол «Надежда»'),
+   d:T4('An icebreaker is trapped in the ice during the polar night, two weeks from any help.','Un rompehielos queda atrapado en el hielo durante la noche polar, a dos semanas de cualquier ayuda.','Криголам затиснутий кригою посеред полярної ночі, а до найближчої допомоги два тижні.','Ледокол зажат во льдах в разгар полярной ночи, а до ближайшей помощи две недели.')},
+  {id:'landing', w:5, g:['action'], age:'16+', dur:109, pal:'action',
+   t:T4('No Landing','Aterrizaje prohibido','Посадку заборонено','Посадка запрещена'),
+   d:T4('A hijacked plane circles the city, and no airport will let it land.','Un avión secuestrado sobrevuela la ciudad y ningún aeropuerto le permite aterrizar.','Захоплений літак кружляє над містом, і жоден аеропорт не дає посадки.','Захваченный самолёт кружит над городом, и ни один аэропорт не даёт посадку.')},
+  {id:'polar', w:6, g:['horror','thriller'], age:'18+', dur:101, pal:'horror',
+   t:T4('Polar Night','Noche polar','Полярна ніч','Полярная ночь'),
+   d:T4('An Arctic weather station. Two crew members. A third one knocks on the door.','Una estación meteorológica en el Ártico. Dos tripulantes. Un tercero toca la puerta.','Метеостанція в Арктиці. Двоє зимівників. Третій стукає у двері.','Метеостанция в Арктике. Двое зимовщиков. Третий стучит в дверь.')},
+  {id:'genius', w:6, g:['comedy','family'], age:'6+', dur:93, pal:'comedy',
+   t:T4('Little Genius','Pequeño genio','Маленький геній','Маленький гений'),
+   d:T4('An eight-year-old inventor accidentally sells his robot vacuum to a giant corporation.','Un inventor de ocho años vende por accidente su robot aspiradora a una gran corporación.','Восьмирічний винахідник випадково продає свого робота-пилососа великій корпорації.','Восьмилетний изобретатель случайно продаёт своего робота-пылесоса крупной корпорации.')},
+  {id:'mixup', w:7, g:['comedy'], age:'12+', dur:105, pal:'comedy',
+   t:T4('Holiday Mix-Up','Lío navideño','Святковий переполох','Праздничный переполох'),
+   d:T4('Three families accidentally book the same house for the holidays.','Tres familias reservan por error la misma casa para las fiestas.','Три родини помилково винайняли на свята той самий будинок.','Три семьи по ошибке сняли на праздники один и тот же дом.')},
+  {id:'santa', w:7, g:['comedy','family'], age:'6+', dur:98, pal:'winter',
+   t:T4('Santa Takes a Vacation','Santa se va de vacaciones','Святий Миколай у відпустці','Санта в отпуске'),
+   d:T4('For the first time in three hundred years, Santa takes time off, and his helpers have to deliver the gifts.','Por primera vez en trescientos años, Santa se toma vacaciones y sus ayudantes deben repartir los regalos.','Уперше за триста років Святий Миколай бере відпустку, і подарунки доводиться розвозити помічникам.','Впервые за триста лет Санта берёт отпуск, и подарки приходится развозить помощникам.')},
+  {id:'snowball', w:8, g:['musical','family'], age:'6+', dur:112, pal:'winter',
+   t:T4('The Snow Ball','El baile de nieve','Сніговий бал','Снежный бал'),
+   d:T4('A musical fairy tale about a girl who teaches an enchanted city to sing.','Un cuento musical sobre una niña que enseña a cantar a una ciudad encantada.','Музична казка про дівчинку, яка вчить співати зачароване місто.','Музыкальная сказка о девочке, которая учит петь заколдованный город.')},
+];
+const ONLINE = [
+  {id:'water', dd:-14, g:['drama'], age:'12+', dur:115, pal:'drama', plat:'Apple TV+',
+   t:T4('Memory of Water','La memoria del agua','Пам’ять води','Память воды'),
+   d:T4('A hydrologist returns to her flooded childhood village as the reservoir is drained.','Una hidróloga regresa al pueblo inundado de su infancia cuando vacían la presa.','Гідрологиня повертається до затопленого села свого дитинства, коли водосховище починають спускати.','Гидролог возвращается в затопленную деревню детства, когда водохранилище начинают спускать.')},
+  {id:'manuscript', dd:-5, g:['thriller'], age:'16+', dur:103, pal:'thriller', plat:'Netflix',
+   t:T4('The Lake House Manuscript','El manuscrito del lago','Рукопис з озера','Рукопись у озера'),
+   d:T4('A novelist rents a house for the winter and finds, in the basement, the manuscript of a book she hasn’t written yet.','Una novelista renta una casa para el invierno y encuentra en el sótano el manuscrito de una novela que aún no ha escrito.','Письменниця винаймає будинок на зиму й знаходить у підвалі рукопис роману, якого ще не написала.','Писательница снимает дом на зиму и находит в подвале рукопись романа, который ещё не написала.')},
+  {id:'fence', dd:6, g:['comedy'], age:'12+', dur:96, pal:'comedy', plat:'Prime Video',
+   t:T4('The Fence','La cerca','Паркан','Забор'),
+   d:T4('Two retirees have fought over a fence for twenty years, until their grandkids fall for each other.','Dos jubilados llevan veinte años peleando por una cerca, hasta que sus nietos se enamoran.','Двоє пенсіонерів двадцять років сваряться через паркан, доки їхні онуки не закохуються одне в одного.','Два пенсионера двадцать лет спорят из-за забора, пока их внуки не влюбляются друг в друга.')},
+  {id:'lighthouse', dd:13, g:['mystery'], age:'16+', dur:110, pal:'crime', plat:'Max',
+   t:T4('Lighthouse Shadow','La sombra del faro','Тінь маяка','Тень маяка'),
+   d:T4('A lighthouse keeper vanishes from a remote island, and a detective is stuck there through a week-long storm.','Un farero desaparece de una isla remota y una detective queda atrapada ahí durante una semana de tormenta.','З віддаленого острова зникає доглядач маяка, і слідча застрягає там на тиждень шторму.','С отдалённого острова исчезает смотритель маяка, и следователь застревает там на неделю шторма.')},
+  {id:'express', dd:27, g:['family'], age:'6+', dur:99, pal:'winter', plat:'Disney+',
+   t:T4('Winter Express','Expreso de invierno','Зимовий експрес','Зимний экспресс'),
+   d:T4('A cross-country train gets snowed in, and the passengers ring in the New Year together.','Un tren que cruza el país queda atrapado en la nieve y los pasajeros reciben el Año Nuevo juntos.','Потяг через усю країну застрягає в снігах, і пасажири зустрічають Новий рік разом.','Поезд через всю страну застревает в снегах, и пассажиры встречают Новый год вместе.')},
+  {id:'morning', dd:41, g:['comedy'], age:'16+', dur:94, pal:'comedy', plat:'MEGOGO',
+   t:T4('The Morning After','La mañana siguiente','Ранок після свята','Утро после праздника'),
+   d:T4('Four friends wake up on January 1 in a stranger’s apartment in another country.','Cuatro amigos despiertan el 1 de enero en el departamento de un desconocido en otro país.','Четверо друзів прокидаються першого січня в чужій квартирі в іншій країні.','Четверо друзей просыпаются первого января в чужой квартире в другой стране.')},
+];
+const SERIES = [
+  {id:'shift', dd:-23, g:['drama'], age:'16+', plat:'Max', season:2, eps:12, first:2, pal:'drama',
+   t:T4('Night Shift','Turno de noche','Нічна зміна','Ночная смена'),
+   d:T4('Life in a city hospital’s ER, where every night feels like the last.','La vida en urgencias de un hospital urbano, donde cada noche parece la última.','Будні приймального відділення міської лікарні, де кожна ніч схожа на останню.','Будни приёмного отделения городской больницы, где каждая ночь похожа на последнюю.')},
+  {id:'district', dd:-9, g:['crime','drama'], age:'18+', plat:'Netflix', season:1, eps:8, first:2, pal:'crime',
+   t:T4('The District','El distrito','Район','Район'),
+   d:T4('A beat cop on the edge of town realizes half his district works for one man.','Un policía de barrio en las afueras descubre que medio distrito trabaja para un solo hombre.','Дільничний на околиці міста розуміє, що половина його району працює на одну людину.','Участковый на окраине города понимает, что половина его района работает на одного человека.')},
+  {id:'resort', dd:-2, g:['comedy','romance'], age:'16+', plat:'Prime Video', season:1, eps:10, first:2, pal:'romance',
+   t:T4('Resort Romance','Romance en el resort','Курортний роман','Курортный роман'),
+   d:T4('A seaside hotel at the end of the season, and a staff whose love lives beat the guests’.','Un hotel de playa al final de la temporada y un personal con vidas amorosas más intensas que las de los huéspedes.','Готель біля моря наприкінці сезону й персонал, чиє особисте життя цікавіше, ніж у гостей.','Отель у моря в конце сезона и персонал, чья личная жизнь интереснее, чем у гостей.')},
+  {id:'lab', dd:3, g:['scifi','thriller'], age:'16+', plat:'Apple TV+', season:2, eps:6, first:1, pal:'scifi',
+   t:T4('The Lab','El laboratorio','Лабораторія','Лаборатория'),
+   d:T4('A sealed research institute reopens, and the first person back at work is the one who died in season one.','Un instituto de investigación cerrado reabre y el primero en volver al trabajo es quien murió en la primera temporada.','Закритий науковий інститут знову відчиняє двері, і першим на роботу виходить той, хто загинув у першому сезоні.','Закрытый институт снова открывает двери, и первым на работу выходит тот, кто погиб в первом сезоне.')},
+  {id:'oldtown', dd:10, g:['mystery'], age:'12+', plat:'MEGOGO', season:3, eps:8, first:1, pal:'drama',
+   t:T4('Old Town Secrets','Secretos del casco viejo','Таємниці старого міста','Тайны старого города'),
+   d:T4('An archivist and a former detective crack cases the city would rather forget.','Una archivista y un exdetective resuelven casos que la ciudad preferiría olvidar.','Архівістка й колишній оперативник розкривають справи, які місто воліло б забути.','Архивистка и бывший оперативник раскрывают дела, которые город предпочёл бы забыть.')},
+  {id:'camp', dd:20, g:['drama','adventure'], age:'16+', plat:'Disney+', season:1, eps:8, first:8, pal:'adventure',
+   t:T4('Survival Camp','Campamento de supervivencia','Табір виживання','Лагерь выживания'),
+   d:T4('A high school class spends a month at a mountain camp with no phones.','Un grupo de prepa pasa un mes en un campamento de montaña sin teléfonos.','Клас старшокласників на місяць відправляють у гірський табір без телефонів.','Класс старшеклассников на месяц отправляют в горный лагерь без телефонов.')},
+];
+
+const M_FIRST = ['Daniel','Mateo','Taras','Arman','Lucas','Andriy','Diego','Timur','Ethan','Bohdan'];
+const F_FIRST = ['Olena','Sofia','Valeria','Aigerim','Emma','Iryna','Camila','Ani','Grace','Daryna'];
+const LAST = ['Kovalenko','Ortiz','Mitchell','Bondarenko','Herrera','Sarsenbay','Reyes','Hayes','Tkachenko','Navarro','Petrosyan','Morales','Brooks','Shevchuk','Castillo','Grigoryan'];
+const pick = (arr, r) => arr[Math.floor(r() * arr.length)];
+const person = r => `${pick(r() < .5 ? M_FIRST : F_FIRST, r)} ${pick(LAST, r)}`;
+const initials = name => { const [f, l] = name.split(' '); return `${f[0]}. ${l}`; };
+
+/* ===================== build items ===================== */
+const dow = TODAY.getDay();
+const THU = addDays(TODAY, -((dow - 4 + 7) % 7));   // ближайший прошедший четверг: день кинопремьер
+const ITEMS = [];
+function baseItem(src, type){
+  const r = rng(src.id);
+  const it = { ...src, type, v: hash(src.id + 'v') % 5, pop: 30 + Math.floor(r() * 960) };
+  it.dir = person(r);
+  it.cast = [person(r), person(r), person(r)];
+  return it;
+}
+CINEMA.forEach(s => {
+  const it = baseItem(s, 'cinema');
+  const base = addDays(THU, s.w * 7);
+  it.dates = {};
+  for (const c of Object.keys(COUNTRIES)){
+    const r = rng(s.id + c);
+    let off = 0, na = false;
+    if (c === 'us') off = 1 + (r() < .3 ? -7 : 0);           // в США премьеры по пятницам, часть фильмов выходит раньше
+    else if (c === 'mx') off = r() < .3 ? -7 : 0;
+    else if (c === 'kz') off = r() < .2 ? 7 : 0;
+    else if (c === 'by') off = r() < .35 ? 7 : 0;
+    else if (c === 'uz') { na = r() < .15; off = r() < .5 ? 7 : 14; }
+    else if (c === 'am' || c === 'kg') { na = r() < .15; off = r() < .5 ? 0 : 7; }
+    it.dates[c] = na ? null : addDays(base, off);
+  }
+  ITEMS.push(it);
+});
+ONLINE.forEach(s => { const it = baseItem(s, 'online'); it.date = addDays(TODAY, s.dd); ITEMS.push(it); });
+SERIES.forEach(s => {
+  const it = baseItem(s, 'series');
+  it.date = addDays(TODAY, s.dd);
+  it.drops = [];                       // выходы серий: [{date, eps:[...]}]
+  for (let e = 1; e <= s.eps; e++){
+    const idx = e <= s.first ? 0 : e - s.first;
+    if (!it.drops[idx]) it.drops[idx] = { date: addDays(it.date, idx * 7), eps: [] };
+    it.drops[idx].eps.push(e);
+  }
+  ITEMS.push(it);
+});
+const BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const GENRES = (() => { const c = {}; ITEMS.forEach(i => i.g.forEach(g => c[g] = (c[g] || 0) + 1)); return Object.keys(c).sort((a, b) => c[b] - c[a]); })();
+const TYPE_ORDER = { cinema:0, online:1, series:2 };
+const title = it => tx(it.t);
+const genreList = it => it.g.map(g => tx(GENRE[g])).join(', ');
+const rating = it => (RATING[state.country] || {})[it.age] || it.age;
+function byline(it){
+  if (it.type === 'cinema') return `${t('dir_pre')} ${initials(it.dir)}`;
+  if (it.type === 'online') return t('only_on', it.plat);
+  return `${it.plat} · ${t('season')} ${it.season}`;
+}
+
+/* ===================== cinemas & sessions ===================== */
+const CIN_NAMES = ['Lumen','Orbit','Vista','Nova Screen','Prism','Reel House','Spotlight','Frame','Silver Hall','Zenith','Marquee','Arcade'];
+const MALLS = ['Atrium','Galaxy','Riviera','Central','Parkside','Grand','Quarter','Harbor','Horizon','Meridian'];
+const EXTRA_FMT = ['3D','IMAX','Dolby Atmos','4DX','VIP'];
+const FMT_MULT = { '2D':1, '3D':1.2, 'IMAX':1.6, 'Dolby Atmos':1.3, '4DX':1.9, 'VIP':2.4 };
+const SLOTS = ['09:40','10:30','11:15','12:20','13:10','14:00','15:30','16:20','17:45','18:30','19:20','20:10','21:00','21:50','22:40','23:30'];
+const cinCache = {};
+function cinemasFor(cityId){
+  if (cinCache[cityId]) return cinCache[cityId];
+  const r = rng('city:' + cityId);
+  const n = CITY_SIZE[cityId] || 4;
+  const names = [...CIN_NAMES].sort(() => r() - .5).slice(0, n);
+  const malls = [...MALLS].sort(() => r() - .5);
+  return cinCache[cityId] = names.map((name, i) => ({
+    id: hash(cityId + name).toString(36), name, city: cityId,
+    mall: malls[i % malls.length],
+    halls: 4 + Math.floor(r() * 9),
+    formats: ['2D', ...EXTRA_FMT.filter(() => r() < .42)],
+  }));
+}
+const venue = cin => t('venue', cin.mall);
+function ticketState(it, c){
+  if (it.type !== 'cinema') return 'none';
+  const d = it.dates[c]; if (!d) return 'tba';
+  const n = diffDays(d, TODAY);
+  if (n > 21) return 'soon'; if (n > 0) return 'presale'; if (n >= -34) return 'on'; return 'ended';
+}
+const hasTickets = (it, c) => ['on','presale'].includes(ticketState(it, c));
+const SESS = new Map();
+function money(v, c){ const C = COUNTRIES[c]; return new Intl.NumberFormat(LOC[L], { style:'currency', currency:C.cur, minimumFractionDigits:C.dec, maximumFractionDigits:C.dec }).format(v); }
+function sessionsFor(it, cin, date, c){
+  if (!hasTickets(it, c)) return [];
+  const rel = it.dates[c];
+  if (date < rel || diffDays(date, rel) > 34) return [];
+  const r = rng(it.id + cin.id + dkey(date));
+  const pop = it.pop / 1000;
+  if (r() > .4 + pop * .55) return [];
+  const slots = SLOTS.filter(s => !(it.age === '0+' && s > '21') && !(it.age === '18+' && s < '12'));
+  const count = Math.min(slots.length, 1 + Math.floor(r() * (2 + pop * 4)));
+  const chosen = [...slots].sort(() => r() - .5).slice(0, count).sort();
+  const C = COUNTRIES[c];
+  return chosen.map(time => {
+    const fmt = r() < .55 ? '2D' : pick(cin.formats, r);
+    let p = C.base;
+    const h = parseInt(time, 10);
+    if (h < 12) p *= .7; else if (h >= 18 && h < 22) p *= 1.25;
+    if ([0, 5, 6].includes(date.getDay())) p *= 1.12;
+    p *= FMT_MULT[fmt] * (.92 + r() * .16);
+    const s = {
+      id: `${it.id}|${cin.id}|${dkey(date)}|${time}`, it, cin, date, time, fmt, c,
+      price: Math.max(C.round, Math.round(p / C.round) * C.round),
+      hall: 1 + Math.floor(r() * cin.halls),
+    };
+    SESS.set(s.id, s);
+    return s;
+  });
+}
+const isPastSession = s => diffDays(s.date, TODAY) === 0 && (parseInt(s.time, 10) * 60 + parseInt(s.time.slice(3), 10)) < NOW_MIN;
+
+/* ===================== state ===================== */
+const saved = store.get('premiero.region', null);
+const state = {
+  page: 'calendar',
+  country: saved && COUNTRIES[saved.country] ? saved.country : 'ua',
+  city: saved && saved.city ? saved.city : 'Kyiv',
+  cat: 'all', genres: new Set(), onlyTickets: false, onlyWatch: false, showEpisodes: true,
+  view: store.get('premiero.view', 'feed'),
+  month: new Date(TODAY.getFullYear(), TODAY.getMonth(), 1),
+  q: '', showPast: false,
+};
+if (!COUNTRIES[state.country].cities.some(c => c.id === state.city)) state.city = COUNTRIES[state.country].cities[0].id;
+L = store.get('premiero.lang', null) || COUNTRIES[state.country].lang;
+if (!LANGS[L]) L = 'en';
+const watch = new Set(store.get('premiero.watch', []));
+const cityName = id => { for (const c of Object.values(COUNTRIES)) { const x = c.cities.find(y => y.id === id); if (x) return tx(x); } return id; };
+const countryName = c => tx(COUNTRIES[c].name);
+
+/* ===================== events ===================== */
+function allEvents(){
+  const ev = [];
+  for (const it of ITEMS){
+    if (it.type === 'cinema'){ const d = it.dates[state.country]; if (d) ev.push({ it, date: d, kind: 'release' }); }
+    else if (it.type === 'online') ev.push({ it, date: it.date, kind: 'release' });
+    else it.drops.forEach((dr, i) => ev.push({ it, date: dr.date, kind: i === 0 ? 'premiere' : 'episode', eps: dr.eps, final: dr.eps.includes(it.eps) }));
+  }
+  return ev;
+}
+function passes(ev){
+  const it = ev.it;
+  if (state.cat !== 'all' && it.type !== state.cat) return false;
+  if (state.genres.size && !it.g.some(g => state.genres.has(g))) return false;
+  if (state.onlyWatch && !watch.has(it.id)) return false;
+  if (state.onlyTickets && !hasTickets(it, state.country)) return false;
+  if (!state.showEpisodes && ev.kind === 'episode') return false;
+  if (state.q && !Object.values(it.t).some(v => v.toLowerCase().includes(state.q))) return false;
+  return true;
+}
+function monthEvents(){
+  const m = state.month;
+  return allEvents().filter(e => e.date.getFullYear() === m.getFullYear() && e.date.getMonth() === m.getMonth() && passes(e))
+    .sort((a, b) => a.date - b.date || TYPE_ORDER[a.it.type] - TYPE_ORDER[b.it.type] || b.it.pop - a.it.pop);
+}
+function epLabel(ev){
+  if (!ev.eps) return '';
+  const a = ev.eps[0], b = ev.eps[ev.eps.length - 1];
+  const base = a === b ? `${ev.it.season}×${String(a).padStart(2,'0')}` : t('eps_range', a, b);
+  if (ev.kind === 'premiere') return ev.eps.length === ev.it.eps ? t('full_season') : `${t('premiere')}, ${base}`;
+  return ev.final ? `${base}, ${t('finale')}` : base;
+}
+
+/* ===================== render pieces ===================== */
+const ICON = {
+  bell: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  feed: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="5" height="7" rx="1"/><rect x="10" y="4" width="5" height="7" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/><path d="M3 16h18M3 20h12"/></svg>',
+  month: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>',
+  list: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  prev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
+  next: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
+  close: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>',
+};
+function poster(it, cls = ''){
+  const p = PAL[it.pal];
+  const name = title(it);
+  const len = name.length;
+  const word = Math.max(...name.split(/[\s,]+/).map(w => w.length));
+  const sz = word >= 13 ? 'xs' : (word >= 10 || len > 19) ? 'sm' : (word > 7 || len > 11) ? 'md' : 'lg';
+  return `<div class="poster v${it.v} ${cls}" style="--p1:${p[0]};--p2:${p[1]};--p3:${p[2]};--pi:${p[3]}" aria-hidden="true"><span class="p-top">${esc(byline(it))}</span><span class="p-age">${esc(rating(it))}</span><span class="p-t p-${sz}">${esc(name)}</span></div>`;
+}
+const watchCount = it => it.pop + (watch.has(it.id) ? 1 : 0);
+function watchBtn(it){
+  const on = watch.has(it.id);
+  return `<button class="watch" data-watch="${it.id}" aria-pressed="${on}" aria-label="${esc(on ? t('unwant') : t('want'))}" title="${esc(t('want'))}">${ICON.bell}<span>${watchCount(it)}</span></button>`;
+}
+function actionBtn(it){
+  const st = ticketState(it, state.country);
+  if (st === 'on') return `<button class="buy" data-open="${it.id}" data-tab="tickets">${t('tickets')}</button>`;
+  if (st === 'presale') return `<button class="buy" data-open="${it.id}" data-tab="tickets">${t('presale')}</button>`;
+  if (it.type !== 'cinema') return `<button class="buy ghost" data-open="${it.id}">${t('watch_btn')}</button>`;
+  return '';
+}
+const typeTag = it => `<span class="tag t-${it.type}">${t('ty_' + it.type)}</span>`;
+function metaLine(ev){
+  const it = ev.it;
+  if (it.type === 'series') return `${typeTag(it)}<span>${esc(it.plat)} · ${esc(epLabel(ev))}</span>`;
+  if (it.type === 'online') return `${typeTag(it)}<span>${esc(it.plat)} · ${esc(rating(it))}</span>`;
+  return `${typeTag(it)}<span>${esc(rating(it))} · ${esc(tx(GENRE[it.g[0]]))}</span>`;
+}
+function card(ev){
+  const it = ev.it;
+  return `<article class="card">
+    <button class="poster-btn" data-open="${it.id}" aria-label="${esc(t('open', title(it)))}">${poster(it)}</button>
+    <h3 class="card-t"><button data-open="${it.id}">${esc(title(it))}</button></h3>
+    <p class="card-m">${metaLine(ev)}</p>
+    <div class="card-a">${watchBtn(it)}${actionBtn(it)}</div>
+  </article>`;
+}
+
+/* ===================== header, bar & side ===================== */
+function renderHeader(){
+  document.documentElement.lang = L;
+  $('#tagline').textContent = t('tagline');
+  $('#nav').setAttribute('aria-label', t('nav'));
+  $('#nav').innerHTML = `<button data-page="calendar" aria-current="${state.page === 'calendar' ? 'page' : 'false'}">${t('nav_cal')}</button><button data-page="cinemas" aria-current="${state.page === 'cinemas' ? 'page' : 'false'}">${t('nav_cin')}</button>`;
+  $('#q').placeholder = t('search'); $('#q').setAttribute('aria-label', t('search_l'));
+  $('#demo').textContent = t('demo'); $('#demo').title = t('demo_t');
+  const cs = $('#country'), ci = $('#city'), lg = $('#lang');
+  cs.setAttribute('aria-label', t('country')); ci.setAttribute('aria-label', t('city')); lg.setAttribute('aria-label', t('lang'));
+  cs.innerHTML = Object.keys(COUNTRIES).map(k => `<option value="${k}" ${k === state.country ? 'selected' : ''}>${esc(countryName(k))}</option>`).join('');
+  ci.innerHTML = COUNTRIES[state.country].cities.map(c => `<option value="${esc(c.id)}" ${c.id === state.city ? 'selected' : ''}>${esc(tx(c))}</option>`).join('');
+  lg.innerHTML = Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${k === L ? 'selected' : ''}>${v}</option>`).join('');
+}
+function renderBar(){
+  const cats = [['all',null],['cinema','var(--t-cinema)'],['series','var(--t-series)'],['online','var(--t-online)']];
+  if (state.page !== 'calendar'){
+    const n = cinemasFor(state.city).length;
+    $('#bar').innerHTML = `<div class="cats"><span class="chip" aria-pressed="true">${esc(cityName(state.city))}</span></div><p class="bar-note">${t('cinemas_n', n)} · ${t('week')}</p>`;
+    return;
+  }
+  $('#bar').innerHTML = `
+    <div class="cats" role="group" aria-label="${esc(t('kind'))}">
+      ${cats.map(([k, c]) => `<button class="chip" data-cat="${k}" aria-pressed="${state.cat === k}">${c ? `<span class="sw" style="background:${c}"></span>` : ''}${t(k)}</button>`).join('')}
+    </div>
+    <div class="month-nav">
+      <button class="icon-btn" data-month="-1" aria-label="${esc(t('prev'))}">${ICON.prev}</button>
+      <h2>${monthTitle(state.month)}</h2>
+      <button class="icon-btn" data-month="1" aria-label="${esc(t('next'))}">${ICON.next}</button>
+      <button class="today-btn" data-month="0">${t('today')}</button>
+    </div>
+    <div class="views" role="group" aria-label="${esc(t('view'))}">
+      ${[['feed','v_feed'],['month','v_month'],['list','v_list']].map(([v, k]) => `<button data-view="${v}" aria-pressed="${state.view === v}" aria-label="${esc(t(k))}" title="${esc(t(k))}">${ICON[v]}</button>`).join('')}
+    </div>`;
+}
+function renderSide(){
+  const side = $('#side');
+  if (state.page !== 'calendar'){ side.innerHTML = `<p class="side-note">${t('cin_note')}</p>`; return; }
+  const dirty = state.genres.size || state.onlyTickets || state.onlyWatch || !state.showEpisodes || state.q;
+  side.innerHTML = `
+    <div>
+      <h3>${t('genres')}</h3>
+      <div class="genres">${GENRES.map(g => `<button class="chip" data-genre="${g}" aria-pressed="${state.genres.has(g)}">${esc(tx(GENRE[g]))}</button>`).join('')}</div>
+    </div>
+    <div>
+      <h3>${t('show')}</h3>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="f-tickets" ${state.onlyTickets ? 'checked' : ''}> ${t('only_t')}</label>
+        <label class="toggle"><input type="checkbox" id="f-watch" ${state.onlyWatch ? 'checked' : ''}> ${t('my_list')} (${watch.size})</label>
+        <label class="toggle"><input type="checkbox" id="f-eps" ${state.showEpisodes ? 'checked' : ''}> ${t('new_eps')}</label>
+      </div>
+    </div>
+    ${dirty ? `<button class="reset" data-act="reset">${t('reset')}</button>` : ''}
+    <p class="side-note">${esc(t('side_note', countryName(state.country)))}</p>`;
+}
+
+/* ===================== main views ===================== */
+function summaryLine(evs){
+  const c = { cinema: 0, series: 0, online: 0 };
+  const seen = new Set();
+  evs.forEach(e => { if (!seen.has(e.it.id)){ seen.add(e.it.id); c[e.it.type]++; } });
+  const part = (k, n) => n ? `<span class="k"><span class="sw" style="background:var(--t-${k})"></span><b>${n}</b> ${t('s_' + k, n)}</span>` : '';
+  return `<div class="summary">${part('cinema', c.cinema)}${part('series', c.series)}${part('online', c.online)}</div>`;
+}
+const emptyState = () => `<div class="empty"><b>${t('empty_t')}</b><span>${t('empty_s')}</span><button class="btn" data-act="reset">${t('reset')}</button></div>`;
+const isCurMonth = () => state.month.getFullYear() === TODAY.getFullYear() && state.month.getMonth() === TODAY.getMonth();
+function renderFeed(all){
+  if (!all.length) return emptyState();
+  // в текущем месяце лента начинается с позавчера, ранние дни свёрнуты
+  const cut = addDays(TODAY, -2);
+  const evs = isCurMonth() && !state.showPast ? all.filter(e => e.date >= cut) : all;
+  const hidden = all.length - evs.length;
+  const days = new Map();
+  evs.forEach(e => { const k = dkey(e.date); if (!days.has(k)) days.set(k, []); days.get(k).push(e); });
+  let html = summaryLine(all);
+  if (hidden) html += `<button class="btn show-past" data-act="show-past">${t('show_past', hidden)}</button>`;
+  for (const [k, list] of days){
+    const d = fromKey(k), n = diffDays(d, TODAY);
+    html += `<section class="day ${n === 0 ? 'is-today' : ''} ${n < 0 ? 'is-past' : ''}" id="d-${k}" data-day-sec="${k}">
+      <header class="day-h"><h2>${fmtDate(d)}<span class="wd">${fmtWd(d)}</span></h2><span class="rel">${relLabel(d)}</span><span class="rule"></span><span class="cnt">${t('releases_n', list.length)}</span></header>
+      <div class="grid">${list.map(card).join('')}</div>
+    </section>`;
+  }
+  return html;
+}
+function renderMonthGrid(evs){
+  const first = state.month;
+  const lead = (first.getDay() + 6) % 7;
+  const dim = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const weeks = Math.ceil((lead + dim) / 7);
+  const start = addDays(first, -lead);
+  const byDay = {};
+  evs.forEach(e => (byDay[dkey(e.date)] ||= []).push(e));
+  let html = summaryLine(evs) + '<div class="month">';
+  for (let i = 0; i < 7; i++) html += `<div class="wdh">${fmtWd(addDays(start, i), 'short')}</div>`;
+  for (let i = 0; i < weeks * 7; i++){
+    const d = addDays(start, i), k = dkey(d), list = byDay[k] || [];
+    const out = d.getMonth() !== first.getMonth();
+    html += `<div class="cell ${out ? 'out' : ''} ${diffDays(d, TODAY) === 0 ? 'today' : ''}">
+      <button class="cell-d" data-day="${k}" aria-label="${fmtDate(d)}, ${t('releases_n', list.length)}">${d.getDate()}</button>
+      ${list.length ? `<ul>${list.slice(0, 3).map(e => `<li><button class="m-ev t-${e.it.type}" data-open="${e.it.id}" title="${esc(title(e.it))}">${poster(e.it, 'mini')}<span class="m-t">${esc(title(e.it))}</span></button></li>`).join('')}</ul>
+      ${list.length > 3 ? `<button class="more" data-day="${k}">+${list.length - 3}</button>` : ''}
+      <span class="dots" aria-hidden="true">${list.slice(0, 6).map(e => `<i class="t-${e.it.type}"></i>`).join('')}</span>` : ''}
+    </div>`;
+  }
+  return html + '</div>';
+}
+function renderList(evs){
+  if (!evs.length) return emptyState();
+  return summaryLine(evs) + `<div class="table-wrap"><table>
+    <thead><tr><th>${t('th_date')}</th><th>${t('th_title')}</th><th>${t('th_type')}</th><th>${t('th_genre')}</th><th>${t('th_where')}</th><th></th></tr></thead>
+    <tbody>${evs.map(e => {
+      const it = e.it;
+      const where = it.type === 'cinema' ? (hasTickets(it, state.country) ? t('where_cin', cinemasFor(state.city).length, cityName(state.city)) : t('in_theaters')) : it.plat + (e.eps ? ` · ${epLabel(e)}` : '');
+      return `<tr>
+        <td class="date">${fmtDate(e.date)}<small>${fmtWd(e.date, 'short')} · ${relLabel(e.date)}</small></td>
+        <td><button class="l-title" data-open="${it.id}">${poster(it, 'mini')}${esc(title(it))}</button></td>
+        <td>${typeTag(it)}</td>
+        <td class="muted">${esc(genreList(it))}</td>
+        <td class="muted">${esc(where)}</td>
+        <td>${actionBtn(it)}</td>
+      </tr>`; }).join('')}</tbody></table></div>`;
+}
+function renderCinemasPage(){
+  const playing = ITEMS.filter(it => it.type === 'cinema' && hasTickets(it, state.country));
+  return `<div class="cin-grid">${cinemasFor(state.city).map(cin => {
+    const films = playing.filter(it => sessionsFor(it, cin, TODAY, state.country).length);
+    return `<article class="cin">
+      <h3>${esc(cin.name)}</h3>
+      <p class="addr">${esc(venue(cin))} · ${esc(cityName(cin.city))} · ${t('halls_n', cin.halls)}</p>
+      <div class="fmts">${cin.formats.map(f => `<span class="fmt ${f !== '2D' ? 'hi' : ''}">${f}</span>`).join('')}</div>
+      <div class="thumbs">${films.slice(0, 7).map(it => poster(it, 'mini')).join('')}</div>
+      <div class="row"><span class="stat">${t('today_films', films.length)}</span><button class="buy" data-cinema="${cin.id}">${t('sched_btn')}</button></div>
+    </article>`; }).join('')}</div>`;
+}
+function render(scrollToday){
+  renderHeader(); renderBar(); renderSide();
+  const main = $('#main');
+  if (state.page === 'cinemas'){ main.innerHTML = renderCinemasPage(); return; }
+  const evs = monthEvents();
+  main.innerHTML = state.view === 'month' ? renderMonthGrid(evs) : state.view === 'list' ? renderList(evs) : renderFeed(evs);
+  if (scrollToday && state.view === 'feed') scrollToDay(dkey(TODAY), true);
+}
+function scrollToDay(k, orNext){
+  const secs = [...document.querySelectorAll('[data-day-sec]')];
+  const el = secs.find(s => s.dataset.daySec === k) || (orNext ? secs.find(s => s.dataset.daySec >= k) : null);
+  if (el) requestAnimationFrame(() => el.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }));
+}
+
+/* ===================== modal ===================== */
+const modal = $('#modal');
+const M = { ctx: null, date: null, session: null, seats: new Set(), step: 'info' };
+function openModal(ctx, opts = {}){
+  M.ctx = ctx; M.step = 'info'; M.session = null; M.seats = new Set();
+  M.date = opts.date || null;
+  renderModal();
+  if (!modal.open){ modal.showModal(); document.body.style.overflow = 'hidden'; }
+  modal.scrollTop = 0;
+  if (opts.tickets){ const el = $('#tickets', modal); if (el) requestAnimationFrame(() => el.scrollIntoView({ block: 'start' })); }
+}
+modal.addEventListener('close', () => { document.body.style.overflow = ''; });
+modal.addEventListener('click', e => { if (e.target === modal) modal.close(); });
+function head(crumb, back){
+  return `<div class="m-head">${back ? `<button class="icon-btn" data-back="${back}" aria-label="${esc(t('back'))}">${ICON.prev}</button>` : ''}<span class="crumb">${crumb}</span><button class="icon-btn" data-close aria-label="${esc(t('close'))}">${ICON.close}</button></div>`;
+}
+function dateStrip(from, days, sel){
+  let h = `<div class="datestrip" role="group" aria-label="${esc(t('date_l'))}">`;
+  for (let i = 0; i < days; i++){
+    const d = addDays(from, i), k = dkey(d), n = diffDays(d, TODAY);
+    const lbl = n === 0 ? t('today_s') : n === 1 ? t('tomorrow_s') : fmtWd(d, 'short');
+    h += `<button class="ds" data-date="${k}" aria-pressed="${k === sel}"><span>${lbl}</span><b>${d.getDate()}</b><span>${fmtMonShort(d)}</span></button>`;
+  }
+  return h + '</div>';
+}
+function sessBtn(s){
+  return `<button class="ses ${isPastSession(s) ? 'past' : ''}" data-session="${esc(s.id)}" aria-label="${s.time}, ${s.fmt}, ${t('hall')} ${s.hall}, ${t('from')} ${money(s.price, s.c)}"><span class="tm">${s.time}</span><span class="fx">${s.fmt} · ${t('hall')} ${s.hall}</span><span class="pr">${t('from')} ${money(s.price, s.c)}</span></button>`;
+}
+function renderFilm(it){
+  const c = state.country;
+  const st = ticketState(it, c);
+  const on = watch.has(it.id);
+  const metaBits = [it.type === 'series' ? `${t('season')} ${it.season}, ${t('eps_n', it.eps)}` : `${it.dur} ${t('min')}`, rating(it), genreList(it)];
+  let h = head(`${t('ty_' + it.type)} · ${esc(title(it))}`) + `<div class="m-body">
+    <div class="hero">
+      ${poster(it)}
+      <div>
+        <span class="tag t-${it.type}">${t('ty_' + it.type)}${it.plat ? ' · ' + esc(it.plat) : ''}</span>
+        <h2 id="m-title">${esc(title(it))}</h2>
+        <div class="meta">${metaBits.map(b => `<span>${esc(b)}</span>`).join('')}</div>
+        <p class="desc">${esc(tx(it.d))}</p>
+        <div class="credits"><span>${t('director')}: <b>${esc(it.dir)}</b></span><span>${t('cast')}: <b>${esc(it.cast.join(', '))}</b></span></div>
+        <div class="hero-a">
+          ${st === 'on' || st === 'presale' ? `<button class="btn primary" data-act="to-tickets">${st === 'on' ? t('buy') : t('buy_pre')}</button>` : ''}
+          ${it.type !== 'cinema' ? `<button class="btn primary" data-act="watch-online" data-plat="${esc(it.plat)}">${ICON.play} ${esc(t('watch_on', it.plat))}</button>` : ''}
+          <button class="btn" data-act="trailer">${ICON.play} ${t('trailer')}</button>
+          <button class="btn" data-watch="${it.id}" aria-pressed="${on}">${ICON.bell} <span>${on ? t('in_list') : t('want')}</span></button>
+        </div>
+      </div>
+    </div>`;
+
+  if (it.type === 'cinema'){
+    h += `<section class="sec"><h3>${t('rel_dates')} <small>${t('by_country')}</small></h3><div class="rel-table">${Object.keys(COUNTRIES).map(k => {
+      const d = it.dates[k];
+      return `<div class="rel-c ${k === c ? 'cur' : ''}">${esc(countryName(k))}<b>${d ? fmtDate(d) : `<span class="na">${t('tba')}</span>`}</b></div>`; }).join('')}</div></section>`;
+    h += `<section class="sec" id="tickets"><h3>${t('showtimes')} <small>${esc(cityName(state.city))}</small></h3>`;
+    if (st === 'on' || st === 'presale'){
+      const rel = it.dates[c];
+      const from = rel > TODAY ? rel : TODAY;
+      const sel = M.date && fromKey(M.date) >= from ? M.date : dkey(from);
+      M.date = sel;
+      const day = fromKey(sel);
+      h += dateStrip(from, 7, sel);
+      const rows = cinemasFor(state.city).map(cin => ({ cin, ss: sessionsFor(it, cin, day, c) })).filter(r => r.ss.length);
+      h += rows.length ? `<div class="venues">${rows.map(({ cin, ss }) => `<div class="venue"><div><h4><button data-cinema="${cin.id}">${esc(cin.name)}</button></h4><p class="addr">${esc(venue(cin))}</p></div><div class="sess">${ss.map(sessBtn).join('')}</div></div>`).join('')}</div>`
+        : `<p class="note">${esc(t('no_sess', cityName(state.city)))}</p>`;
+    } else if (st === 'soon') h += `<p class="note">${esc(t('soon_note', fmtDate(it.dates[c])))}</p>`;
+    else if (st === 'tba') h += `<p class="note">${esc(t('tba_note', countryName(c)))}</p>`;
+    else h += `<p class="note">${t('ended_note')}</p>`;
+    h += '</section>';
+  }
+  if (it.type === 'online'){
+    h += `<section class="sec"><h3>${cap(t('premiere'))}</h3><p class="note">${esc(t('online_note', fmtDate(it.date), relLabel(it.date), it.plat))}</p></section>`;
+  }
+  if (it.type === 'series'){
+    h += `<section class="sec"><h3>${t('ep_sched')} <small>${esc(it.plat)} · ${t('season')} ${it.season}</small></h3><div class="eps">${it.drops.map(dr => {
+      const out = dr.date <= TODAY;
+      const a = dr.eps[0], b = dr.eps[dr.eps.length - 1];
+      return `<div class="ep ${out ? 'out' : ''}"><span class="n">${a === b ? `${it.season}×${String(a).padStart(2,'0')}` : `${a}–${b}`}</span><span>${a === b ? t('ep_one', a) : t('eps_one', a, b)}${dr.eps.includes(it.eps) ? ' · ' + t('season_finale') : ''}</span><span class="d">${out ? t('out') + ' · ' : ''}${fmtDate(dr.date)}</span></div>`; }).join('')}</div></section>`;
+  }
+  return h + '</div>';
+}
+function renderCinema(cin){
+  const c = state.country;
+  const sel = M.date || dkey(TODAY); M.date = sel;
+  const day = fromKey(sel);
+  const rows = ITEMS.filter(it => it.type === 'cinema').map(it => ({ it, ss: sessionsFor(it, cin, day, c) })).filter(r => r.ss.length)
+    .sort((a, b) => b.it.pop - a.it.pop);
+  return head(`${t('cinema_w')} · ${esc(cin.name)}`) + `<div class="m-body">
+    <div>
+      <h2 id="m-title" class="m-title">${esc(cin.name)}</h2>
+      <p class="m-sub" style="margin-bottom:12px">${esc(venue(cin))}, ${esc(cityName(cin.city))} · ${t('halls_n', cin.halls)}</p>
+      <div class="fmts">${cin.formats.map(f => `<span class="fmt ${f !== '2D' ? 'hi' : ''}">${f}</span>`).join('')}</div>
+    </div>
+    <section class="sec"><h3>${t('schedule')}</h3>${dateStrip(TODAY, 7, sel)}
+      ${rows.length ? `<div class="venues">${rows.map(({ it, ss }) => `<div class="film-row"><button data-open="${it.id}" aria-label="${esc(t('open', title(it)))}">${poster(it)}</button><div><h4><button data-open="${it.id}">${esc(title(it))}</button><small>${esc(rating(it))} · ${it.dur} ${t('min')}</small></h4><div class="sess">${ss.map(sessBtn).join('')}</div></div></div>`).join('')}</div>`
+        : `<p class="note">${t('no_sess_s')}</p>`}
+    </section>
+  </div>`;
+}
+function hallLayout(s){
+  const r = rng(s.id + ':hall');
+  const rows = 8 + Math.floor(r() * 5);
+  const per = 12 + 2 * Math.floor(r() * 4);
+  const busy = .25 + s.it.pop / 2600 + (parseInt(s.time, 10) >= 18 ? .12 : 0);
+  const taken = new Set();
+  for (let y = 1; y <= rows; y++) for (let x = 1; x <= per; x++) if (r() < busy) taken.add(`${y}-${x}`);
+  return { rows, per, taken };
+}
+const seatPrice = (s, row, rows) => row === rows ? Math.round(s.price * 1.4 / COUNTRIES[s.c].round) * COUNTRIES[s.c].round : s.price;
+function seatsTotal(){ const s = M.session, H = hallLayout(s); let sum = 0; M.seats.forEach(k => { sum += seatPrice(s, +k.split('-')[0], H.rows); }); return sum; }
+function seatsText(){
+  const by = {};
+  [...M.seats].map(k => k.split('-').map(Number)).sort((a, b) => a[0] - b[0] || a[1] - b[1]).forEach(([y, x]) => (by[y] ||= []).push(x));
+  return Object.entries(by).map(([y, xs]) => `${t('row')} ${y}, ${t('seat_w', xs.length)} ${xs.join(', ')}`).join('; ');
+}
+const sessLine = s => `${fmtDate(s.date)}, ${fmtWd(s.date, 'short')}, ${s.time}`;
+function renderSeats(){
+  const s = M.session, H = hallLayout(s);
+  const half = H.per / 2;
+  const cols = `22px repeat(${half}, 24px) 14px repeat(${half}, 24px) 22px`;
+  let grid = '';
+  for (let y = 1; y <= H.rows; y++){
+    grid += `<span class="rn">${y}</span>`;
+    for (let x = 1; x <= H.per; x++){
+      if (x === half + 1) grid += '<span class="aisle"></span>';
+      const k = `${y}-${x}`, taken = H.taken.has(k);
+      grid += `<button class="seat ${y === H.rows ? 'comfort' : ''}" data-seat="${k}" aria-pressed="${M.seats.has(k)}" ${taken ? 'disabled' : ''} aria-label="${esc(t('seat_l', y, x))}${taken ? t('taken_s') : ''}">${x}</button>`;
+    }
+    grid += `<span class="rn">${y}</span>`;
+  }
+  const n = M.seats.size;
+  return head(`${esc(title(s.it))} · ${esc(s.cin.name)} · ${sessLine(s)}`, 'info') + `<div class="m-body">
+    <div><h2 id="m-title" class="m-title">${t('seats_t')}</h2>
+    <p class="m-sub">${esc(s.cin.name)}, ${t('hall')} ${s.hall} · ${s.fmt} · ${sessLine(s)}</p></div>
+    <div class="hall-wrap"><div class="screen">${t('screen')}</div><div class="hall" style="grid-template-columns:${cols}">${grid}</div>
+    <div class="legend"><span><i></i>${t('free')} · ${money(s.price, s.c)}</span><span><i class="lc"></i>${t('comfort')} · ${money(seatPrice(s, H.rows, H.rows), s.c)}</span><span><i class="ls"></i>${t('selected')}</span><span><i class="lt"></i>${t('taken')}</span></div></div>
+  </div>
+  <div class="checkout"><div class="sel">${n ? `${seatsText()}<b>${money(seatsTotal(), s.c)}</b>` : t('seat_hint')}</div><button class="btn primary" data-step="pay" ${n ? '' : 'disabled'}>${t('cont')}</button></div>`;
+}
+function summaryBox(){
+  const s = M.session;
+  return `<div class="sum-box">${poster(s.it)}<dl>
+    <dt>${t('f_film')}</dt><dd>${esc(title(s.it))}, ${esc(rating(s.it))}</dd>
+    <dt>${t('f_cinema')}</dt><dd>${esc(s.cin.name)}, ${esc(venue(s.cin))}</dd>
+    <dt>${t('f_session')}</dt><dd>${sessLine(s)} · ${t('hall')} ${s.hall} · ${s.fmt}</dd>
+    <dt>${t('f_seats')}</dt><dd>${seatsText()}</dd>
+    <dt>${t('f_total')}</dt><dd style="font-family:var(--mono);font-weight:600">${money(seatsTotal(), s.c)}</dd>
+  </dl></div>`;
+}
+function renderPay(){
+  const s = M.session;
+  return head(`${esc(title(s.it))} · ${t('checkout_c')}`, 'seats') + `<div class="m-body">
+    <h2 id="m-title" class="m-title">${t('how_buy')}</h2>
+    ${summaryBox()}
+    <div class="pay-opts">
+      <div class="opt main"><h4>${t('pay_t')}</h4><p>${t('pay_d')}</p><button class="btn primary" data-step="done">${t('pay_b')} · ${money(seatsTotal(), s.c)}</button></div>
+      <div class="opt"><h4>${t('partner_t')}</h4><p>${t('partner_d')}</p><button class="btn" data-act="partner">${t('partner_b')}</button></div>
+    </div>
+    <p class="note">${t('proto')}</p>
+  </div>`;
+}
+function renderDone(){
+  const s = M.session;
+  const code = (hash(s.id + [...M.seats].join()) % 900000 + 100000).toString();
+  return head(t('ticket'), null) + `<div class="m-body">
+    <div class="ticket">
+      <div class="main">
+        <span class="tag t-cinema">${t('demo_ticket', code)}</span>
+        <h3 id="m-title">${esc(title(s.it))}</h3>
+        <span class="ln"><b>${fmtDate(s.date)}, ${s.time}</b> · ${fmtWd(s.date)}</span>
+        <span class="ln">${esc(s.cin.name)}, ${esc(venue(s.cin))} · <b>${t('hall')} ${s.hall}</b> · ${s.fmt}</span>
+        <span class="ln"><b>${seatsText()}</b></span>
+        <span class="ln">${t('paid')}: <b>${money(seatsTotal(), s.c)}</b></span>
+      </div>
+      <div class="stub"><canvas id="qr" width="25" height="25" aria-label="${esc(t('qr'))}"></canvas><small>${code}</small></div>
+    </div>
+    <p class="done-note">${t('done_note')}</p>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap"><button class="btn" data-close>${t('close')}</button><button class="btn primary" data-back="info">${t('other_sess')}</button></div>
+  </div>`;
+}
+function drawQR(seed){
+  const cv = $('#qr'); if (!cv) return;
+  const x = cv.getContext('2d'), r = rng(seed), N = 25;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, N, N); x.fillStyle = '#111';
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (r() < .5) x.fillRect(i, j, 1, 1);
+  const finder = (ox, oy) => { x.fillStyle = '#fff'; x.fillRect(ox - 1, oy - 1, 9, 9); x.fillStyle = '#111'; x.fillRect(ox, oy, 7, 7); x.fillStyle = '#fff'; x.fillRect(ox + 1, oy + 1, 5, 5); x.fillStyle = '#111'; x.fillRect(ox + 2, oy + 2, 3, 3); };
+  finder(0, 0); finder(N - 7, 0); finder(0, N - 7);
+}
+function renderModal(){
+  let html;
+  if (M.step === 'seats') html = renderSeats();
+  else if (M.step === 'pay') html = renderPay();
+  else if (M.step === 'done') html = renderDone();
+  else html = M.ctx.kind === 'film' ? renderFilm(BY_ID[M.ctx.id]) : renderCinema(cinemasFor(state.city).find(c => c.id === M.ctx.id));
+  modal.innerHTML = html;
+  modal.setAttribute('aria-labelledby', 'm-title');
+  if (M.step === 'done') drawQR(M.session.id);
+}
+
+/* ===================== interactions ===================== */
+let toastT;
+function toast(msg){ const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 3200); }
+function toggleWatch(id){
+  if (watch.has(id)) watch.delete(id); else watch.add(id);
+  store.set('premiero.watch', [...watch]);
+  const it = BY_ID[id], on = watch.has(id);
+  document.querySelectorAll(`[data-watch="${id}"]`).forEach(b => {
+    b.setAttribute('aria-pressed', on);
+    const sp = b.querySelector('span');
+    if (b.classList.contains('watch')){ sp.textContent = watchCount(it); b.setAttribute('aria-label', on ? t('unwant') : t('want')); }
+    else sp.textContent = on ? t('in_list') : t('want');
+  });
+  toast(on ? t('added', title(it)) : t('removed', title(it)));
+  if (state.onlyWatch) render(); else renderSide();
+}
+function shiftMonth(n){
+  if (n === 0){ state.month = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1); state.showPast = false; }
+  else state.month = new Date(state.month.getFullYear(), state.month.getMonth() + n, 1);
+  render(n === 0);
+  if (n !== 0) window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+function rerenderModalKeepScroll(){ const top = modal.scrollTop; renderModal(); modal.scrollTop = top; }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const d = b.dataset;
+  if (d.watch) return toggleWatch(d.watch);
+  if (d.open) return openModal({ kind: 'film', id: d.open }, { tickets: d.tab === 'tickets' });
+  if (d.cinema) return openModal({ kind: 'cinema', id: d.cinema });
+  if (d.close !== undefined) return modal.close();
+  if (d.page){ state.page = d.page; render(); window.scrollTo({ top: 0 }); return; }
+  if (d.cat){ state.cat = d.cat; return render(); }
+  if (d.view){ state.view = d.view; store.set('premiero.view', d.view); return render(); }
+  if (d.month !== undefined) return shiftMonth(+d.month);
+  if (d.genre){ state.genres.has(d.genre) ? state.genres.delete(d.genre) : state.genres.add(d.genre); return render(); }
+  if (d.day){ state.showPast = true; state.view = 'feed'; store.set('premiero.view', 'feed'); render(); return scrollToDay(d.day, true); }
+  if (d.date){ M.date = d.date; return rerenderModalKeepScroll(); }
+  if (d.session){ M.session = SESS.get(d.session); M.seats = new Set(); M.step = 'seats'; renderModal(); modal.scrollTop = 0; return; }
+  if (d.seat){
+    if (M.seats.has(d.seat)) M.seats.delete(d.seat);
+    else if (M.seats.size >= 6) return toast(t('max6'));
+    else M.seats.add(d.seat);
+    const hl = modal.querySelector('.hall-wrap')?.scrollLeft || 0;
+    rerenderModalKeepScroll();
+    const hw = modal.querySelector('.hall-wrap'); if (hw) hw.scrollLeft = hl;
+    modal.querySelector(`[data-seat="${d.seat}"]`)?.focus({ preventScroll: true });
+    return;
+  }
+  if (d.step){ M.step = d.step; renderModal(); modal.scrollTop = 0; return; }
+  if (d.back){ M.step = d.back; if (d.back === 'info') M.seats = new Set(); renderModal(); modal.scrollTop = 0; return; }
+  switch (d.act){
+    case 'show-past': state.showPast = true; render(); break;
+    case 'reset': state.genres.clear(); state.onlyTickets = state.onlyWatch = false; state.showEpisodes = true; state.q = ''; $('#q').value = ''; render(); break;
+    case 'to-tickets': $('#tickets', modal)?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }); break;
+    case 'trailer': toast(t('t_trailer')); break;
+    case 'watch-online': toast(t('t_online', d.plat)); break;
+    case 'partner': toast(t('t_partner')); break;
+  }
+});
+document.addEventListener('change', e => {
+  const id = e.target.id, v = e.target.value;
+  if (id === 'f-tickets'){ state.onlyTickets = e.target.checked; render(); }
+  if (id === 'f-watch'){ state.onlyWatch = e.target.checked; render(); }
+  if (id === 'f-eps'){ state.showEpisodes = e.target.checked; render(); }
+  if (id === 'country'){
+    state.country = v; state.city = COUNTRIES[v].cities[0].id;
+    if (!store.get('premiero.lang', null)) L = COUNTRIES[v].lang;   // язык следует за страной, пока его не выбрали вручную
+    saveRegion(); render();
+  }
+  if (id === 'city'){ state.city = v; saveRegion(); render(); }
+  if (id === 'lang'){ L = v; store.set('premiero.lang', v); render(); if (modal.open) rerenderModalKeepScroll(); }
+});
+let qT;
+$('#q').addEventListener('input', e => { clearTimeout(qT); qT = setTimeout(() => { state.q = e.target.value.trim().toLowerCase(); state.page = 'calendar'; render(); }, 150); });
+function saveRegion(){ store.set('premiero.region', { country: state.country, city: state.city }); }
+
+render();
+if (location.hash && BY_ID[location.hash.slice(1)]) openModal({ kind: 'film', id: location.hash.slice(1) });
+</script>
