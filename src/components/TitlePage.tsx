@@ -81,9 +81,15 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     trailer: d.trailer ? { '@type': 'VideoObject', name: `${d.title}: ${t('trailer')}`, embedUrl: `https://www.youtube.com/embed/${d.trailer}`, thumbnailUrl: `https://i.ytimg.com/vi/${d.trailer}/hqdefault.jpg` } : undefined,
   };
 
+  const backdrop = IMG(d.backdrop, 'w1280');
   return (
-    <div className="wrap title-page">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
+    {/* Кинематографичная шапка: кадр из фильма во всю ширину, поверх постер и главное */}
+    <div className={`t-hero${backdrop ? '' : ' no-bd'}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {backdrop && <img className="t-hero-bg" src={backdrop} alt="" fetchPriority="high" />}
+      <div className="wrap t-hero-in">
       <nav className="crumbs"><Link href={calendarPath(lang, country)}><I.Prev /> {t('to_cal')}</Link></nav>
 
       <div className="hero">
@@ -118,7 +124,10 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
           <TitleActions core={core} tmdbUrl={d.tmdbUrl} />
         </div>
       </div>
+      </div>
+    </div>
 
+    <div className="wrap title-page">
       {d.trailer && <section className="sec"><h2>{t('trailer')}</h2><Trailer id={d.trailer} title={d.title} /></section>}
 
       {media === 'movie' && (
@@ -161,5 +170,6 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
         </section>
       )}
     </div>
+    </>
   );
 }

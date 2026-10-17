@@ -168,6 +168,37 @@ export default function CalendarView() {
   };
   const empty = <div className="empty"><b>{t('empty_t')}</b><span>{t('empty_s')}</span><button className="btn" onClick={resetFilters}>{t('reset')}</button></div>;
 
+  // Главные премьеры ближайших дней: большие карточки с кадром из фильма
+  const featured = () => {
+    const from = dkey(addDays(today, -3)), to = dkey(addDays(today, 10));
+    const seen = new Set<string>();
+    const list = events
+      .filter(e => e.date >= from && e.date <= to && (e.kind !== 'series' || e.premiere) && data!.items[e.item].backdrop)
+      .sort((a, b) => data!.items[b.item].popularity - data!.items[a.item].popularity)
+      .filter(e => !seen.has(e.item) && seen.add(e.item))
+      .slice(0, 8);
+    if (list.length < 3) return null;
+    return (
+      <section className="featured" aria-label={t('featured')}>
+        <h2 className="feat-h">{t('featured')}</h2>
+        <div className="feat-track">{list.map(e => {
+          const it = data!.items[e.item], d = fromKey(e.date);
+          return (
+            <Link key={e.item} className={`feat t-${e.kind}`} href={href(it)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={IMG(it.backdrop!, 'w780')!} alt="" loading="lazy" />
+              <span className="feat-body">
+                <span className="feat-meta"><span className="tag">{t('ty_' + e.kind)}</span>{it.rating ? <span className="stars"><I.Star />{it.rating.toFixed(1)}</span> : null}</span>
+                <span className="feat-title">{it.title}</span>
+                <span className="feat-date">{f.date(d)} · {f.rel(d)}</span>
+              </span>
+            </Link>
+          );
+        })}</div>
+      </section>
+    );
+  };
+
   /* ---------- views ---------- */
   const renderFeed = () => {
     if (!events.length) return empty;
@@ -176,8 +207,21 @@ export default function CalendarView() {
     const hidden = events.length - shown.length;
     const days = new Map<string, CalEvent[]>();
     shown.forEach(e => days.set(e.date, [...(days.get(e.date) ?? []), e]));
+    const allDays = new Map<string, number>();
+    events.forEach(e => allDays.set(e.date, (allDays.get(e.date) ?? 0) + 1));
     return (
       <>
+        {isCurMonth && !q && featured()}
+        <nav className="daybar" aria-label={t('v_feed')}>
+          {[...allDays].map(([k, n]) => {
+            const d = fromKey(k), rel = diffDays(d, today);
+            return (
+              <button key={k} className={`dchip${rel === 0 ? ' is-today' : ''}${rel < 0 ? ' is-past' : ''}`} onClick={() => jumpToDay(k)} aria-label={`${f.date(d)}, ${t('releases_n', n)}`}>
+                <span>{f.wd(d, true)}</span><b>{d.getDate()}</b><i>{n}</i>
+              </button>
+            );
+          })}
+        </nav>
         {summary(events)}
         {hidden > 0 && <button className="btn show-past" onClick={() => setShowPast(true)}>{t('show_past', hidden)}</button>}
         {[...days].map(([k, list]) => {
@@ -185,7 +229,8 @@ export default function CalendarView() {
           return (
             <section key={k} className={`day${n === 0 ? ' is-today' : ''}${n < 0 ? ' is-past' : ''}`} data-day-sec={k}>
               <header className="day-h">
-                <h2>{f.date(d)}<span className="wd">{f.wd(d)}</span></h2>
+                <span className="day-tile" aria-hidden><span>{f.wd(d, true)}</span><b>{d.getDate()}</b></span>
+                <div className="day-txt"><h2>{f.date(d)}</h2><span className="wd">{f.wd(d)}</span></div>
                 <span className="rel">{f.rel(d)}</span><span className="rule" /><span className="cnt">{t('releases_n', list.length)}</span>
               </header>
               <div className="grid">{list.map(card)}</div>

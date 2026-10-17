@@ -42,13 +42,13 @@ const isAnime = (genres: number[], lang: string | undefined) => genres.includes(
 
 /* ---------- raw TMDB shapes (only the fields we read) ---------- */
 interface Page<T> { results: T[]; total_results: number }
-interface RawMovie { id: number; title: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; release_date: string; original_language: string }
-interface RawTv { id: number; name: string; poster_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; original_language: string }
+interface RawMovie { id: number; title: string; poster_path: string | null; backdrop_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; release_date: string; original_language: string }
+interface RawTv { id: number; name: string; poster_path: string | null; backdrop_path: string | null; genre_ids: number[]; popularity: number; vote_average: number; vote_count: number; original_language: string }
 interface ReleaseDates { results: { iso_3166_1: string; release_dates: { type: number; release_date: string; certification: string }[] }[] }
 interface Providers { results: Record<string, { link: string; flatrate?: { provider_id: number; provider_name: string; logo_path: string | null }[] }> }
 interface MovieExtras { release_dates: ReleaseDates; 'watch/providers'?: Providers }
 interface TvDetails {
-  id: number; name: string; poster_path: string | null; genres: { id: number }[]; popularity: number; vote_average: number; vote_count: number;
+  id: number; name: string; poster_path: string | null; backdrop_path: string | null; genres: { id: number }[]; popularity: number; vote_average: number; vote_count: number;
   original_language: string; networks: { name: string }[];
   last_episode_to_air: { season_number: number } | null; next_episode_to_air: { season_number: number } | null;
   content_ratings?: { results: { iso_3166_1: string; rating: string }[] };
@@ -123,7 +123,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
     if (approx) theatrical = day(mv.release_date);
     const key = `movie-${mv.id}`;
     const item: CalItem = {
-      key, id: mv.id, media: 'movie', title: mv.title, poster: mv.poster_path, genres: mv.genre_ids,
+      key, id: mv.id, media: 'movie', title: mv.title, poster: mv.poster_path, backdrop: mv.backdrop_path, genres: mv.genre_ids,
       popularity: mv.popularity, rating: ratingOf(mv.vote_average, mv.vote_count),
       cert: regional.map(r => r.certification).find(Boolean) || null, theatrical, digital,
       anime: isAnime(mv.genre_ids, mv.original_language),
@@ -158,7 +158,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
       if (!byDate.size) continue;
       const key = `tv-${show.id}`;
       items[key] = {
-        key, id: show.id, media: 'tv', title: det.name || show.name, poster: det.poster_path ?? show.poster_path,
+        key, id: show.id, media: 'tv', title: det.name || show.name, poster: det.poster_path ?? show.poster_path, backdrop: det.backdrop_path ?? show.backdrop_path,
         genres: det.genres.map(g => g.id), popularity: det.popularity, rating: ratingOf(det.vote_average, det.vote_count),
         cert: det.content_ratings?.results.find(r => r.iso_3166_1 === C.region)?.rating || null,
         platform: det.networks[0]?.name ?? null, season: sn, totalEps: total,
@@ -188,7 +188,7 @@ export async function getNowPlaying(country: CountryCode, lang: Lang): Promise<C
   return list.map((mv, i) => {
     const regional = dates[i]?.results.find(r => r.iso_3166_1 === C.region)?.release_dates ?? [];
     return {
-      key: `movie-${mv.id}`, id: mv.id, media: 'movie' as const, title: mv.title, poster: mv.poster_path, genres: mv.genre_ids,
+      key: `movie-${mv.id}`, id: mv.id, media: 'movie' as const, title: mv.title, poster: mv.poster_path, backdrop: mv.backdrop_path, genres: mv.genre_ids,
       popularity: mv.popularity, rating: ratingOf(mv.vote_average, mv.vote_count),
       cert: regional.map(r => r.certification).find(Boolean) || null,
       theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(mv.release_date),

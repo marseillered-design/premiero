@@ -15,6 +15,7 @@ export interface CalItem {
   media: Media;
   title: string;
   poster: string | null;
+  backdrop?: string | null;   // кадр из фильма для больших карточек
   genres: number[];
   popularity: number;
   rating: number | null;      // средняя оценка TMDB, если голосов достаточно

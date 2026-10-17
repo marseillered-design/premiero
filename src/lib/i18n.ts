@@ -13,7 +13,7 @@ const pl = (lang: Lang) => (n: number, f: Forms) => {
 type P = ReturnType<typeof pl>;
 
 const uk = (p: P): Dict => ({
-  tagline: 'календар кіно та серіалів', nav_cal: 'Календар', nav_cin: 'Кінотеатри', nav: 'Розділи', search: 'Фільм або серіал', search_l: 'Пошук за назвою',
+  tagline: 'календар кіно та серіалів', featured: 'Головні прем’єри тижня', nav_cal: 'Календар', nav_cin: 'Кінотеатри', nav: 'Розділи', search: 'Фільм або серіал', search_l: 'Пошук за назвою',
   country: 'Країна', city: 'Місто', lang: 'Мова', rg_europe: 'Європа', rg_americas: 'Америка', rg_asia: 'Кавказ і Центральна Азія',
   all: 'Усі', cinema: 'У кіно', series: 'Серіали', online: 'Онлайн-релізи', kind: 'Тип релізу',
   ty_cinema: 'У кіно', ty_series: 'Серіал', ty_online: 'Онлайн',
@@ -63,7 +63,7 @@ const uk = (p: P): Dict => ({
 });
 
 const en = (p: P): Dict => ({
-  tagline: 'movie & series release calendar', nav_cal: 'Calendar', nav_cin: 'Cinemas', nav: 'Sections', search: 'Movie or series', search_l: 'Search by title',
+  tagline: 'movie & series release calendar', featured: 'Top releases this week', nav_cal: 'Calendar', nav_cin: 'Cinemas', nav: 'Sections', search: 'Movie or series', search_l: 'Search by title',
   country: 'Country', city: 'City', lang: 'Language', rg_europe: 'Europe', rg_americas: 'Americas', rg_asia: 'Caucasus & Central Asia',
   all: 'All', cinema: 'In theaters', series: 'Series', online: 'Digital', kind: 'Release type',
   ty_cinema: 'In theaters', ty_series: 'Series', ty_online: 'Digital',
@@ -113,7 +113,7 @@ const en = (p: P): Dict => ({
 });
 
 const es = (p: P): Dict => ({
-  tagline: 'calendario de estrenos de cine y series', nav_cal: 'Calendario', nav_cin: 'Cines', nav: 'Secciones', search: 'Película o serie', search_l: 'Buscar por título',
+  tagline: 'calendario de estrenos de cine y series', featured: 'Estrenos destacados de la semana', nav_cal: 'Calendario', nav_cin: 'Cines', nav: 'Secciones', search: 'Película o serie', search_l: 'Buscar por título',
   country: 'País', city: 'Ciudad', lang: 'Idioma', rg_europe: 'Europa', rg_americas: 'América', rg_asia: 'Cáucaso y Asia Central',
   all: 'Todo', cinema: 'En cines', series: 'Series', online: 'Digital', kind: 'Tipo de estreno',
   ty_cinema: 'En cines', ty_series: 'Serie', ty_online: 'Digital',
@@ -163,7 +163,7 @@ const es = (p: P): Dict => ({
 });
 
 const plDict = (p: P): Dict => ({
-  tagline: 'kalendarz premier filmów i seriali', nav_cal: 'Kalendarz', nav_cin: 'Kina', nav: 'Sekcje', search: 'Film lub serial', search_l: 'Szukaj po tytule',
+  tagline: 'kalendarz premier filmów i seriali', featured: 'Najważniejsze premiery tygodnia', nav_cal: 'Kalendarz', nav_cin: 'Kina', nav: 'Sekcje', search: 'Film lub serial', search_l: 'Szukaj po tytule',
   country: 'Kraj', city: 'Miasto', lang: 'Język', rg_europe: 'Europa', rg_americas: 'Ameryka', rg_asia: 'Kaukaz i Azja Środkowa',
   all: 'Wszystko', cinema: 'W kinach', series: 'Seriale', online: 'Premiery online', kind: 'Rodzaj premiery',
   ty_cinema: 'W kinach', ty_series: 'Serial', ty_online: 'Online',
@@ -213,7 +213,7 @@ const plDict = (p: P): Dict => ({
 });
 
 const de = (p: P): Dict => ({
-  tagline: 'Kalender für Film- und Serienstarts', nav_cal: 'Kalender', nav_cin: 'Kinos', nav: 'Bereiche', search: 'Film oder Serie', search_l: 'Nach Titel suchen',
+  tagline: 'Kalender für Film- und Serienstarts', featured: 'Die wichtigsten Starts der Woche', nav_cal: 'Kalender', nav_cin: 'Kinos', nav: 'Bereiche', search: 'Film oder Serie', search_l: 'Nach Titel suchen',
   country: 'Land', city: 'Stadt', lang: 'Sprache', rg_europe: 'Europa', rg_americas: 'Amerika', rg_asia: 'Kaukasus und Zentralasien',
   all: 'Alle', cinema: 'Im Kino', series: 'Serien', online: 'Digital', kind: 'Art des Starts',
   ty_cinema: 'Im Kino', ty_series: 'Serie', ty_online: 'Digital',
@@ -263,7 +263,7 @@ const de = (p: P): Dict => ({
 });
 
 const ru = (p: P): Dict => ({
-  tagline: 'календарь кино и сериалов', nav_cal: 'Календарь', nav_cin: 'Кинотеатры', nav: 'Разделы', search: 'Фильм или сериал', search_l: 'Поиск по названию',
+  tagline: 'календарь кино и сериалов', featured: 'Главные премьеры недели', nav_cal: 'Календарь', nav_cin: 'Кинотеатры', nav: 'Разделы', search: 'Фильм или сериал', search_l: 'Поиск по названию',
   country: 'Страна', city: 'Город', lang: 'Язык', rg_europe: 'Европа', rg_americas: 'Америка', rg_asia: 'Кавказ и Центральная Азия',
   all: 'Все', cinema: 'В кино', series: 'Сериалы', online: 'Онлайн-релизы', kind: 'Тип релиза',
   ty_cinema: 'В кино', ty_series: 'Сериал', ty_online: 'Онлайн',
