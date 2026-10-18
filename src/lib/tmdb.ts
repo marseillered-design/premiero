@@ -62,7 +62,7 @@ function flatrate(p: Providers | undefined, region: string, into: Record<number,
   for (const x of list) into[x.provider_id] ??= { id: x.provider_id, name: x.provider_name, logo: x.logo_path };
   return list.map(x => x.provider_id);
 }
-interface Season { season_number: number; episodes: { episode_number: number; name: string; air_date: string | null }[] }
+interface Season { season_number: number; poster_path?: string | null; episodes: { episode_number: number; name: string; air_date: string | null }[] }
 
 /* ---------- genres ---------- */
 async function getGenres(lang: Lang): Promise<Record<number, string>> {
@@ -158,8 +158,11 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
       }
       if (!byDate.size) continue;
       const key = `tv-${show.id}`;
+      // Фон сериала в TMDB часто остаётся от первого сезона, поэтому для новых сезонов берём постер сезона
+      const newSeasonPoster = sn > 1 ? season.poster_path || null : null;
       items[key] = {
-        key, id: show.id, media: 'tv', title: det.name || show.name, poster: det.poster_path ?? show.poster_path, backdrop: det.backdrop_path ?? show.backdrop_path,
+        key, id: show.id, media: 'tv', title: det.name || show.name, poster: newSeasonPoster ?? det.poster_path ?? show.poster_path, backdrop: det.backdrop_path ?? show.backdrop_path,
+        seasonArt: !!newSeasonPoster,
         genres: det.genres.map(g => g.id), popularity: det.popularity, rating: ratingOf(det.vote_average, det.vote_count),
         cert: det.content_ratings?.results.find(r => r.iso_3166_1 === C.region)?.rating || null,
         platform: det.networks[0]?.name ?? null, season: sn, totalEps: total,
@@ -293,12 +296,14 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
   let season: TitleDetail['season'] = null;
   let seasonTrailer: Video | null = null;
   let seasonStart: string | null = null;
+  let seasonPoster: string | null = null;
   if (seasonNo) {
     const s = await safe(tmdb<Season & { air_date: string | null; videos?: Videos }>(`/tv/${id}/season/${seasonNo}`, { language, append_to_response: 'videos', include_video_language: videoLangs }));
     if (s) {
       season = { number: s.season_number, episodes: s.episodes.map<Episode>(e => ({ n: e.episode_number, name: e.name, date: e.air_date })) };
       seasonTrailer = bestTrailer(s.videos?.results ?? [], lang);
       seasonStart = s.air_date ?? s.episodes[0]?.air_date ?? null;
+      if (s.season_number > 1) seasonPoster = s.poster_path || null;
     }
   }
   // Трейлер текущего сезона; общий трейлер сериала, только если он не от прошлых сезонов
@@ -309,7 +314,7 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
   }
   const nx = t.next_episode_to_air;
   return {
-    id, media, title: t.name, original: t.original_name, overview: t.overview, poster: t.poster_path, backdrop: t.backdrop_path,
+    id, media, title: t.name, original: t.original_name, overview: t.overview, poster: seasonPoster ?? t.poster_path, backdrop: t.backdrop_path,
     runtime: t.episode_run_time[0] ?? null, year: t.first_air_date?.slice(0, 4) || null, genres: t.genres.map(g => g.name.toLowerCase()),
     people: t.created_by.map(c => c.name).slice(0, 3), cast: t.credits.cast.slice(0, 5).map(c => c.name),
     ...trailerOf(trailer), ...providersOf(t['watch/providers']), releases: [],

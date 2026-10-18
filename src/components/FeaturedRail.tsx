@@ -6,7 +6,7 @@ import type { Kind } from '@/lib/types';
 import { store, useEnv } from './AppProvider';
 import * as I from './icons';
 
-export interface Slide { key: string; href: string; image: string; title: string; kind: Kind; rating: number | null; date: string }
+export interface Slide { key: string; href: string; image: string; portrait?: boolean; title: string; kind: Kind; rating: number | null; date: string }
 
 const STEP_MS = 6000;
 const PAUSE_KEY = 'premiero.featPaused';
@@ -93,9 +93,12 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
       </div>
       <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'}>
         {slides.map((s, i) => (
-          <Link key={s.key} className={`feat t-${s.kind}`} href={s.href} role="group" aria-roledescription="slide" aria-label={`${t('feat_slide', i + 1, slides.length)}: ${s.title}`}>
+          <Link key={s.key} className={`feat t-${s.kind}${s.portrait ? ' portrait' : ''}`} href={s.href} role="group" aria-roledescription="slide" aria-label={`${t('feat_slide', i + 1, slides.length)}: ${s.title}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={s.image} alt="" loading={i < 2 ? 'eager' : 'lazy'} />
+            {/* вертикальный постер сезона: размытый фон на всю карточку и сам постер справа */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {s.portrait && <img className="feat-poster" src={s.image} alt="" loading={i < 2 ? 'eager' : 'lazy'} />}
             <span className="feat-body">
               <span className="feat-meta"><span className="tag">{t('ty_' + s.kind)}</span>{s.rating ? <span className="stars"><I.Star />{s.rating.toFixed(1)}</span> : null}</span>
               <span className="feat-title">{s.title}</span>
