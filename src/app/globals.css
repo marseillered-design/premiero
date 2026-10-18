@@ -512,3 +512,18 @@ a.rel-c:hover{border-color:var(--muted)}
 body{transition:background-color .25s ease,color .25s ease}
 @media (prefers-reduced-motion: reduce){ body{transition:none} }
 .trailer-name{margin-top:8px;font-size:13px;color:var(--muted)}
+
+/* ---------- автопрокрутка ленты премьер: управление и точки с прогрессом ---------- */
+.feat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.feat-head .feat-h{margin:0}
+.feat-ctl{display:flex;gap:6px}
+.feat-ctl .icon-btn{width:32px;height:32px}
+.feat-track{scroll-behavior:auto}
+.feat-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.fdot{width:22px;height:6px;border-radius:999px;background:var(--line);overflow:hidden;padding:0;position:relative;transition:width .25s ease}
+.fdot.on{width:40px;background:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.fdot span{position:absolute;inset:0;width:0;background:var(--accent);border-radius:inherit}
+.fdot.on:not(.run) span{width:100%}
+.fdot.run span{animation:fdot-fill var(--step,6s) linear forwards}
+@keyframes fdot-fill{from{width:0}to{width:100%}}
+@media (prefers-reduced-motion: reduce){ .fdot.run span{animation:none;width:100%} .fdot{transition:none} }.feat-track{position:relative}

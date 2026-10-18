@@ -11,6 +11,7 @@ import Poster from './Poster';
 import { store, useEnv } from './AppProvider';
 import * as I from './icons';
 import { useModal } from './useModal';
+import FeaturedRail from './FeaturedRail';
 
 type View = 'feed' | 'month' | 'list';
 type Cat = 'all' | Kind;
@@ -179,25 +180,13 @@ export default function CalendarView() {
       .filter(e => !seen.has(e.item) && seen.add(e.item))
       .slice(0, 8);
     if (list.length < 3) return null;
-    return (
-      <section className="featured" aria-label={t('featured')}>
-        <h2 className="feat-h">{t('featured')}</h2>
-        <div className="feat-track">{list.map(e => {
-          const it = data!.items[e.item], d = fromKey(e.date);
-          return (
-            <Link key={e.item} className={`feat t-${e.kind}`} href={href(it)}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={IMG(it.backdrop!, 'w780')!} alt="" loading="lazy" />
-              <span className="feat-body">
-                <span className="feat-meta"><span className="tag">{t('ty_' + e.kind)}</span>{it.rating ? <span className="stars"><I.Star />{it.rating.toFixed(1)}</span> : null}</span>
-                <span className="feat-title">{it.title}</span>
-                <span className="feat-date">{f.date(d)} · {f.rel(d)}</span>
-              </span>
-            </Link>
-          );
-        })}</div>
-      </section>
-    );
+    return <FeaturedRail slides={list.map(e => {
+      const it = data!.items[e.item], d = fromKey(e.date);
+      return {
+        key: e.item, href: href(it), image: IMG(it.backdrop!, 'w780')!, title: it.title, kind: e.kind,
+        rating: it.rating, date: `${f.date(d)} · ${f.rel(d)}`,
+      };
+    })} />;
   };
 
   /* ---------- views ---------- */
