@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { cinemasFor, firstSessionDay, sessionsFor, ticketState, type Session } from '@/lib/demo-cinemas';
 import { addDays, dkey, fromKey } from '@/lib/dates';
 import type { CalItem, Episode, Media } from '@/lib/types';
@@ -92,10 +92,20 @@ const CalIcon = () => <svg width={14} height={14} viewBox="0 0 24 24" fill="none
 export function Trailer({ id, title }: { id: string; title: string }) {
   const { t } = useEnv();
   const [play, setPlay] = useState(false);
+  const frame = useRef<HTMLIFrameElement>(null);
+  // Next.js прячет ушедшую страницу через <Activity>, а не удаляет её, и видео продолжало бы
+  // играть на фоне. Перед скрытием выгружаем плеер и возвращаем обложку.
+  useLayoutEffect(() => {
+    const el = frame;
+    return () => {
+      if (el.current) el.current.src = 'about:blank';
+      setPlay(false);
+    };
+  }, []);
   return (
     <div className="trailer">
       {play ? (
-        <iframe src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`} title={`${t('trailer')}: ${title}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
+        <iframe ref={frame} src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`} title={`${t('trailer')}: ${title}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
       ) : (
         <button className="trailer-cover" onClick={() => setPlay(true)} aria-label={t('play_trailer')}>
           {/* eslint-disable-next-line @next/next/no-img-element */}

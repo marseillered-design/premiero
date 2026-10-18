@@ -10,6 +10,7 @@ import Poster from './Poster';
 import Checkout, { DateStrip, SessBtn } from './Checkout';
 import { useEnv } from './AppProvider';
 import * as I from './icons';
+import { useModal } from './useModal';
 
 export default function CinemasView() {
   const { t, lang, country, city, today, ready, cityName } = useEnv();
@@ -61,7 +62,7 @@ function CinemaDialog({ cinema, films, onClose, onSession }: { cinema: Cinema; f
   const { t, lang, country, today, cityName } = useEnv();
   const ref = useRef<HTMLDialogElement>(null);
   const [sel, setSel] = useState(dkey(today));
-  useEffect(() => { ref.current?.showModal(); }, []);
+  useModal(ref);
   const day = fromKey(sel);
   const rows = films.map(it => ({ it, ss: sessionsFor(it, cinema, day, country, today) })).filter(r => r.ss.length)
     .sort((a, b) => b.it.popularity - a.it.popularity);

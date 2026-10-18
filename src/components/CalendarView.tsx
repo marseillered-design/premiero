@@ -10,6 +10,7 @@ import type { CalEvent, CalItem, CalendarData, Kind } from '@/lib/types';
 import Poster from './Poster';
 import { store, useEnv } from './AppProvider';
 import * as I from './icons';
+import { useModal } from './useModal';
 
 type View = 'feed' | 'month' | 'list';
 type Cat = 'all' | Kind;
@@ -381,7 +382,7 @@ function SubsDialog({ providers, onClose, onSaved }: { providers: { id: number; 
   const { t, subs, setSubs, countryName, country } = useEnv();
   const ref = useRef<HTMLDialogElement>(null);
   const [sel, setSel] = useState<Set<number>>(() => new Set(subs));
-  useEffect(() => { ref.current?.showModal(); }, []);
+  useModal(ref);
   const toggle = (id: number) => setSel(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const save = () => { setSubs(sel); onSaved(sel); ref.current?.close(); };
   return (

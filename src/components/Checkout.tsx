@@ -8,6 +8,7 @@ import type { CalItem } from '@/lib/types';
 import Poster from './Poster';
 import { useEnv, type Env } from './AppProvider';
 import * as I from './icons';
+import { useModal } from './useModal';
 
 type Step = 'seats' | 'pay' | 'done';
 type Head = (crumb: string, back?: () => void) => React.ReactNode;
@@ -43,8 +44,8 @@ export default function Checkout({ session, item, onClose }: { session: Session;
   const ref = useRef<HTMLDialogElement>(null);
   const [step, setStep] = useState<Step>('seats');
   const [seats, setSeats] = useState<Set<string>>(new Set());
+  useModal(ref);
   useEffect(() => {
-    ref.current?.showModal();
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, []);
