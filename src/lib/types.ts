@@ -16,7 +16,6 @@ export interface CalItem {
   title: string;
   poster: string | null;
   backdrop?: string | null;   // кадр из фильма для больших карточек
-  seasonArt?: boolean;        // poster — постер нового сезона, а backdrop остался от прошлых
   genres: number[];
   popularity: number;
   rating: number | null;      // средняя оценка TMDB, если голосов достаточно

@@ -158,11 +158,10 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
       }
       if (!byDate.size) continue;
       const key = `tv-${show.id}`;
-      // Фон сериала в TMDB часто остаётся от первого сезона, поэтому для новых сезонов берём постер сезона
+      // Постер сериала в TMDB часто остаётся от первого сезона, поэтому для новых сезонов берём постер сезона
       const newSeasonPoster = sn > 1 ? season.poster_path || null : null;
       items[key] = {
         key, id: show.id, media: 'tv', title: det.name || show.name, poster: newSeasonPoster ?? det.poster_path ?? show.poster_path, backdrop: det.backdrop_path ?? show.backdrop_path,
-        seasonArt: !!newSeasonPoster,
         genres: det.genres.map(g => g.id), popularity: det.popularity, rating: ratingOf(det.vote_average, det.vote_count),
         cert: det.content_ratings?.results.find(r => r.iso_3166_1 === C.region)?.rating || null,
         platform: det.networks[0]?.name ?? null, season: sn, totalEps: total,

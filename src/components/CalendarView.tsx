@@ -175,7 +175,7 @@ export default function CalendarView() {
     const from = dkey(addDays(today, -3)), to = dkey(addDays(today, 10));
     const seen = new Set<string>();
     const list = events
-      .filter(e => e.date >= from && e.date <= to && (e.kind !== 'series' || e.premiere) && (data!.items[e.item].seasonArt || data!.items[e.item].backdrop))
+      .filter(e => e.date >= from && e.date <= to && (e.kind !== 'series' || e.premiere) && data!.items[e.item].backdrop)
       .sort((a, b) => data!.items[b.item].popularity - data!.items[a.item].popularity)
       .filter(e => !seen.has(e.item) && seen.add(e.item))
       .slice(0, 8);
@@ -183,7 +183,7 @@ export default function CalendarView() {
     return <FeaturedRail slides={list.map(e => {
       const it = data!.items[e.item], d = fromKey(e.date);
       return {
-        key: e.item, href: href(it), image: it.seasonArt ? IMG(it.poster, 'w500')! : IMG(it.backdrop!, 'w780')!, portrait: it.seasonArt, title: it.title, kind: e.kind,
+        key: e.item, href: href(it), image: IMG(it.backdrop!, 'w780')!, title: it.title, kind: e.kind,
         rating: it.rating, date: `${f.date(d)} · ${f.rel(d)}`,
       };
     })} />;
