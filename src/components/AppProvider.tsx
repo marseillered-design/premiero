@@ -2,6 +2,8 @@
 
 import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Logo from './Logo';
+import { THEME_KEY } from '@/lib/theme';
 import { usePathname, useRouter } from 'next/navigation';
 import { COUNTRIES, COUNTRY_CODES, GEO_CITY_COOKIE, GROUPS, LANGS, LANG_CODES, LOCALE, PREF_COOKIE, cityName as cityNameOf, nameIn } from '@/lib/regions';
 import { translator, type T } from '@/lib/i18n';
@@ -109,7 +111,7 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
     <Ctx.Provider value={env}>
       <header className="top">
         <div className="wrap">
-          <Link href={home} className="brand"><span className="bulbs" aria-hidden>{Array.from({ length: 9 }, (_, i) => <i key={i} />)}</span>Premiero<small>{t('tagline')}</small></Link>
+          <Link href={home} className="brand"><Logo />Premiero<small>{t('tagline')}</small></Link>
           <nav className="nav" aria-label={t('nav')}>
             <Suspense fallback={<NavLinks home={home} t={t} pathname="" />}><CurrentNav home={home} t={t} /></Suspense>
           </nav>
@@ -128,6 +130,9 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
               {LANG_CODES.map(k => <option key={k} value={k}>{LANGS[k]}</option>)}
             </select>
           </div>
+          <button className="icon-btn theme-btn" onClick={toggleTheme} aria-label={t('theme')} title={t('theme')}>
+            <SunIcon /><MoonIcon />
+          </button>
         </div>
       </header>
 
@@ -153,3 +158,13 @@ function NavLinks({ home, t, pathname }: { home: string; t: T; pathname: string 
     <Link href={`${home}/cinemas`} aria-current={onCinemas ? 'page' : undefined}>{t('nav_cin')}</Link>
   </>;
 }
+/* День и ночь: data-theme на <html>; без выбора сайт следует системе. Скрипт в <head> ставит тему до отрисовки */
+function toggleTheme() {
+  const el = document.documentElement;
+  const dark = el.dataset.theme ? el.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const next = dark ? 'light' : 'dark';
+  el.dataset.theme = next;
+  try { localStorage.setItem(THEME_KEY, next); } catch { /* приватный режим */ }
+}
+const SunIcon = () => <svg className="i-sun" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>;
+const MoonIcon = () => <svg className="i-moon" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>;

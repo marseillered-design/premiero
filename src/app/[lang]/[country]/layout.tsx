@@ -5,6 +5,7 @@ import { Golos_Text, JetBrains_Mono, Unbounded } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import AppProvider from '@/components/AppProvider';
 import { COUNTRY_CODES, LANG_CODES, isCountry, isLang } from '@/lib/regions';
+import { THEME_INIT } from '@/lib/theme';
 import '../../globals.css';
 
 const display = Unbounded({ variable: '--font-display', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['500', '700', '800'] });
@@ -27,7 +28,8 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]/[cou
   const country = await rootCountry();
   if (!isLang(lang) || !isCountry(country)) notFound();
   return (
-    <html lang={lang} className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang={lang} className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT }} /></head>
       <body>
         <AppProvider lang={lang} country={country}>{children}</AppProvider>
         <Analytics />
