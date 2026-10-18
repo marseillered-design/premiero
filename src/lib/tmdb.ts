@@ -36,6 +36,7 @@ const safe = async <T>(p: Promise<T>): Promise<T | null> => { try { return await
 const day = (s: string | null | undefined) => (s ? s.slice(0, 10) : null);
 const minDate = (dates: (string | null)[]) => dates.filter(Boolean).sort()[0] ?? null;
 const inMonth = (d: string | null | undefined, month: string) => !!d && d.startsWith(month);
+const shiftYears = (d: string, n: number) => `${Number(d.slice(0, 4)) + n}${d.slice(4, 10)}`;
 const ratingOf = (avg: number, votes: number) => (votes >= MIN_VOTES ? Math.round(avg * 10) / 10 : null);
 const ANIMATION = 16;
 const isAnime = (genres: number[], lang: string | undefined) => genres.includes(ANIMATION) && lang === 'ja';
@@ -217,7 +218,18 @@ async function getImdbRating(imdbId: string | null | undefined) {
 
 /* ---------- title details ---------- */
 interface Credits { cast: { name: string }[]; crew: { name: string; job: string }[] }
-interface Videos { results: { key: string; site: string; type: string; iso_639_1: string; official: boolean }[] }
+interface Video { key: string; name: string; site: string; type: string; iso_639_1: string; official: boolean; published_at: string }
+interface Videos { results: Video[] }
+
+/**
+ * Лучший трейлер: трейлер важнее тизера, затем язык посетителя, затем официальный,
+ * затем самый свежий. Так новый трейлер не проигрывает старому ролику прошлых лет.
+ */
+function bestTrailer(list: Video[], lang: string): Video | null {
+  const yt = list.filter(x => x.site === 'YouTube' && (x.type === 'Trailer' || x.type === 'Teaser'));
+  const score = (x: Video) => (x.type === 'Trailer' ? 8 : 0) + (x.iso_639_1 === lang ? 4 : 0) + (x.official ? 2 : 0);
+  return yt.sort((a, b) => score(b) - score(a) || b.published_at.localeCompare(a.published_at))[0] ?? null;
+}
 interface EpisodeRef { air_date: string | null; season_number: number; episode_number: number }
 interface MovieFull {
   id: number; title: string; original_title: string; overview: string; poster_path: string | null; backdrop_path: string | null;
@@ -242,11 +254,7 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
   const C = COUNTRIES[country];
   const language = LOCALE[lang];
   const videoLangs = [...new Set([lang, 'en'])].join(',');
-  const pickTrailer = (v: Videos) => {
-    const yt = v.results.filter(x => x.site === 'YouTube' && (x.type === 'Trailer' || x.type === 'Teaser'));
-    const best = yt.find(x => x.iso_639_1 === lang && x.type === 'Trailer') ?? yt.find(x => x.type === 'Trailer') ?? yt[0];
-    return best?.key ?? null;
-  };
+  const trailerOf = (v: Video | null) => ({ trailer: v?.key ?? null, trailerName: v?.name ?? null });
   const providersOf = (p: Providers) => {
     const r = p.results[C.region];
     return {
@@ -267,7 +275,7 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
       id, media, title: m.title, original: m.original_title, overview: m.overview, poster: m.poster_path, backdrop: m.backdrop_path,
       runtime: m.runtime || null, year: m.release_date?.slice(0, 4) || null, genres: m.genres.map(g => g.name.toLowerCase()),
       people: m.credits.crew.filter(c => c.job === 'Director').map(c => c.name).slice(0, 2),
-      cast: m.credits.cast.slice(0, 5).map(c => c.name), trailer: pickTrailer(m.videos), ...providersOf(m['watch/providers']),
+      cast: m.credits.cast.slice(0, 5).map(c => c.name), ...trailerOf(bestTrailer(m.videos.results, lang)), ...providersOf(m['watch/providers']),
       releases, cert: regional.map(r => r.certification).find(Boolean) || null, rating: ratingOf(m.vote_average, m.vote_count),
       network: null, season: null,
       theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(m.release_date),
@@ -283,16 +291,28 @@ export async function getTitle(media: Media, id: number, lang: Lang, country: Co
   // показываем сезон, который выходит сейчас или вышел последним
   const seasonNo = t.next_episode_to_air?.season_number || t.last_episode_to_air?.season_number || null;
   let season: TitleDetail['season'] = null;
+  let seasonTrailer: Video | null = null;
+  let seasonStart: string | null = null;
   if (seasonNo) {
-    const s = await safe(tmdb<Season>(`/tv/${id}/season/${seasonNo}`, { language }));
-    if (s) season = { number: s.season_number, episodes: s.episodes.map<Episode>(e => ({ n: e.episode_number, name: e.name, date: e.air_date })) };
+    const s = await safe(tmdb<Season & { air_date: string | null; videos?: Videos }>(`/tv/${id}/season/${seasonNo}`, { language, append_to_response: 'videos', include_video_language: videoLangs }));
+    if (s) {
+      season = { number: s.season_number, episodes: s.episodes.map<Episode>(e => ({ n: e.episode_number, name: e.name, date: e.air_date })) };
+      seasonTrailer = bestTrailer(s.videos?.results ?? [], lang);
+      seasonStart = s.air_date ?? s.episodes[0]?.air_date ?? null;
+    }
+  }
+  // Трейлер текущего сезона; общий трейлер сериала, только если он не от прошлых сезонов
+  let trailer = seasonTrailer;
+  if (!trailer) {
+    const fresh = t.videos.results.filter(v => (seasonNo ?? 1) <= 1 || !seasonStart || v.published_at.slice(0, 10) >= shiftYears(seasonStart, -1));
+    trailer = bestTrailer(fresh, lang);
   }
   const nx = t.next_episode_to_air;
   return {
     id, media, title: t.name, original: t.original_name, overview: t.overview, poster: t.poster_path, backdrop: t.backdrop_path,
     runtime: t.episode_run_time[0] ?? null, year: t.first_air_date?.slice(0, 4) || null, genres: t.genres.map(g => g.name.toLowerCase()),
     people: t.created_by.map(c => c.name).slice(0, 3), cast: t.credits.cast.slice(0, 5).map(c => c.name),
-    trailer: pickTrailer(t.videos), ...providersOf(t['watch/providers']), releases: [],
+    ...trailerOf(trailer), ...providersOf(t['watch/providers']), releases: [],
     cert: t.content_ratings.results.find(r => r.iso_3166_1 === C.region)?.rating || null, rating: ratingOf(t.vote_average, t.vote_count),
     network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null,
     nextEpisode: nx?.air_date ? { date: nx.air_date, season: nx.season_number, episode: nx.episode_number } : null,

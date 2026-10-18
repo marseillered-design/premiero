@@ -128,7 +128,13 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     </div>
 
     <div className="wrap title-page">
-      {d.trailer && <section className="sec"><h2>{t('trailer')}</h2><Trailer id={d.trailer} title={d.title} /></section>}
+      {d.trailer && (
+        <section className="sec">
+          <h2>{t('trailer')}{d.season && media === 'tv' ? <small>{t('season')} {d.season.number}</small> : null}</h2>
+          <Trailer id={d.trailer} title={d.title} />
+          {d.trailerName && <p className="trailer-name">{d.trailerName}</p>}
+        </section>
+      )}
 
       {media === 'movie' && (
         <section className="sec" id="tickets">

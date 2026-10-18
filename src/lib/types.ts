@@ -66,6 +66,7 @@ export interface TitleDetail {
   people: string[];          // режиссёр фильма или авторы сериала
   cast: string[];
   trailer: string | null;    // ключ видео на YouTube
+  trailerName: string | null; // название ролика в TMDB, например «… Season 2 Official Trailer»
   providers: Provider[];
   providersLink: string | null;
   releases: { country: CountryCode; date: string | null }[];

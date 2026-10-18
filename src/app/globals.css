@@ -511,3 +511,4 @@ a.rel-c:hover{border-color:var(--muted)}
 :root[data-theme="dark"] .theme-btn .i-moon{display:none}
 body{transition:background-color .25s ease,color .25s ease}
 @media (prefers-reduced-motion: reduce){ body{transition:none} }
+.trailer-name{margin-top:8px;font-size:13px;color:var(--muted)}
