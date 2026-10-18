@@ -19,6 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function Page() {
-  return <CalendarView />;
+export default async function Page() {
+  const lang = await rootLang(), country = await rootCountry();
+  // Месяц зависит от часов посетителя, поэтому адрес собирает браузер. CalendarView подхватит этот запрос.
+  const early = `(function(){try{var d=new Date(),m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),u='/api/calendar?country=${country}&lang=${lang}&month='+m;window.__premieroCal={url:u,res:fetch(u)}}catch(e){}})()`;
+  return <>
+    {isLang(lang) && isCountry(country) && <script dangerouslySetInnerHTML={{ __html: early }} />}
+    <CalendarView />
+  </>;
 }

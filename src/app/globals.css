@@ -456,7 +456,8 @@ a.rel-c:hover{border-color:var(--muted)}
 .dchip:hover{border-color:var(--muted)}
 .dchip.is-today{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .dchip.is-today b,.dchip.is-today i{color:var(--accent-ink)}
-.dchip.is-past{opacity:.55}
+.dchip.is-past{background:transparent}
+.dchip.is-past b{color:var(--muted)}
 
 /* заголовок дня: плитка-календарик */
 .day-h{align-items:center}
@@ -527,3 +528,4 @@ body{transition:background-color .25s ease,color .25s ease}
 .fdot.run span{animation:fdot-fill var(--step,6s) linear forwards}
 @keyframes fdot-fill{from{width:0}to{width:100%}}
 @media (prefers-reduced-motion: reduce){ .fdot.run span{animation:none;width:100%} .fdot{transition:none} }.feat-track{position:relative}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}

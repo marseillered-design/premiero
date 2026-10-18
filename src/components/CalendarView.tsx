@@ -54,14 +54,20 @@ export default function CalendarView() {
     const ac = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoad({ status: 'loading' });
-    fetch(`/api/calendar?country=${country}&lang=${lang}&month=${monthKey}`, { signal: ac.signal })
+    const url = `/api/calendar?country=${country}&lang=${lang}&month=${monthKey}`;
+    // запрос, начатый ещё из HTML (см. page.tsx), используем один раз
+    const w = window as { __premieroCal?: { url: string; res: Promise<Response> } };
+    const early = w.__premieroCal?.url === url ? w.__premieroCal.res : null;
+    delete w.__premieroCal;
+    (early ?? fetch(url, { signal: ac.signal }))
       .then(async r => {
         const j = await r.json();
+        if (ac.signal.aborted) return;
         if (r.status === 503 && j.error === 'no_token') setLoad({ status: 'no_token' });
         else if (!r.ok) setLoad({ status: 'error' });
         else setLoad({ status: 'ok', data: j as CalendarData });
       })
-      .catch(e => { if ((e as Error).name !== 'AbortError') setLoad({ status: 'error' }); });
+      .catch(e => { if (!ac.signal.aborted && (e as Error).name !== 'AbortError') setLoad({ status: 'error' }); });
     return () => ac.abort();
   }, [country, lang, monthKey]);
 
@@ -206,8 +212,9 @@ export default function CalendarView() {
           {[...allDays].map(([k, n]) => {
             const d = fromKey(k), rel = diffDays(d, today);
             return (
-              <button key={k} className={`dchip${rel === 0 ? ' is-today' : ''}${rel < 0 ? ' is-past' : ''}`} onClick={() => jumpToDay(k)} aria-label={`${f.date(d)}, ${t('releases_n', n)}`}>
-                <span>{f.wd(d, true)}</span><b>{d.getDate()}</b><i>{n}</i>
+              <button key={k} className={`dchip${rel === 0 ? ' is-today' : ''}${rel < 0 ? ' is-past' : ''}`} onClick={() => jumpToDay(k)} >
+                <span aria-hidden>{f.wd(d, true)}</span><b aria-hidden>{d.getDate()}</b><i aria-hidden>{n}</i>
+                <span className="sr">{`${f.date(d)}, ${t('releases_n', n)}`}</span>
               </button>
             );
           })}

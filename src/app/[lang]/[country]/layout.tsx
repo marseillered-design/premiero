@@ -2,15 +2,18 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import { Golos_Text, JetBrains_Mono, Unbounded } from 'next/font/google';
+import { preconnect } from 'react-dom';
 import { Analytics } from '@vercel/analytics/next';
 import AppProvider from '@/components/AppProvider';
 import { COUNTRY_CODES, LANG_CODES, isCountry, isLang } from '@/lib/regions';
 import { THEME_INIT } from '@/lib/theme';
 import '../../globals.css';
 
-const display = Unbounded({ variable: '--font-display', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['500', '700', '800'] });
-const body = Golos_Text({ variable: '--font-body', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['400', '500', '600'] });
-const mono = JetBrains_Mono({ variable: '--font-mono', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['400', '600'] });
+// Без предзагрузки: браузер скачивает только те наборы букв, что встречаются на странице
+// (украинской странице не нужна латиница с диакритикой), а не все девять файлов сразу
+const display = Unbounded({ variable: '--font-display', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['500', '700', '800'], preload: false });
+const body = Golos_Text({ variable: '--font-body', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['400', '500', '600'], preload: false });
+const mono = JetBrains_Mono({ variable: '--font-mono', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['400', '600'], preload: false });
 
 const site = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000';
 
@@ -27,6 +30,8 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]/[cou
   const lang = await rootLang();
   const country = await rootCountry();
   if (!isLang(lang) || !isCountry(country)) notFound();
+  // постеры и кадры идут с image.tmdb.org: соединение открываем, пока грузится остальное
+  preconnect('https://image.tmdb.org');
   return (
     <html lang={lang} className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT }} /></head>

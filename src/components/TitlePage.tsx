@@ -93,7 +93,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
       <nav className="crumbs"><Link href={calendarPath(lang, country)}><I.Prev /> {t('to_cal')}</Link></nav>
 
       <div className="hero">
-        <Poster path={d.poster} title={d.title} cert={d.cert} size="w500" />
+        <Poster path={d.poster} title={d.title} cert={d.cert} size="w500" sizes="(max-width: 640px) 160px, (max-width: 960px) 200px, 280px" eager />
         <div>
           <span className={`tag t-${kindCls}`}>{t(kindKey)}{d.network ? ` · ${d.network}` : ''}</span>
           <h1>{d.title}</h1>
@@ -103,9 +103,10 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
             <div className="ratings">
               {d.imdbId && (
                 <a className="imdb" href={`https://www.imdb.com/title/${d.imdbId}/`} target="_blank" rel="noreferrer"
-                  aria-label={d.imdb ? t('imdb_l', d.imdb.rating.toFixed(1), compact.format(d.imdb.votes)) : 'IMDb'}>
-                  <span className="imdb-logo">IMDb</span>
-                  {d.imdb && <><b>{d.imdb.rating.toFixed(1)}</b><small>/10 · {compact.format(d.imdb.votes)}</small></>}
+                  >
+                  <span className="imdb-logo" aria-hidden={!!d.imdb}>IMDb</span>
+                  {d.imdb && <><b aria-hidden>{d.imdb.rating.toFixed(1)}</b><small aria-hidden>/10 · {compact.format(d.imdb.votes)}</small>
+                    <span className="sr">{t('imdb_l', d.imdb.rating.toFixed(1), compact.format(d.imdb.votes))}</span></>}
                 </a>
               )}
               {d.rating ? <span className="tmdb-r" aria-label={t('tmdb_l', d.rating.toFixed(1))}><span className="tmdb-logo">TMDB</span><b>{d.rating.toFixed(1)}</b><small>/10</small></span> : null}
