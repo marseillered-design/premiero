@@ -489,3 +489,5 @@ a.tmdb-r:hover{border-color:#9147FF}
   .lang-code{display:inline}
   .top .brand{font-size:20px}
 }
+.genres .chip.more{border-style:dashed;color:var(--muted);background:transparent}
+.genres .chip.more:hover{color:var(--fg);border-color:var(--muted)}

@@ -18,6 +18,8 @@ type Load = { status: 'loading' | 'ok' | 'error' | 'no_token'; data?: CalendarDa
 const KINDS: Kind[] = ['cinema', 'series', 'online', 'game'];
 const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, series: 2, game: 3 };
 const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)', game: 'var(--t-game)' };
+// сколько самых частых жанров месяца показывать сразу; остальные — по кнопке «Ещё»
+const TOP_GENRES = 10;
 const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
 /** Календарь релизов. На странице игр открывается сразу с категорией «Игры». */
@@ -29,6 +31,7 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
   const [cat, setCat] = useState<Cat>(initialCat);
   const [plats, setPlats] = useState<Set<Platform>>(new Set());
   const [genres, setGenres] = useState<Set<number>>(new Set());
+  const [allGenres, setAllGenres] = useState(false);
   const [onlyWatch, setOnlyWatch] = useState(false);
   const [onlySubs, setOnlySubs] = useState(false);
   const [showEps, setShowEps] = useState(true);
@@ -343,9 +346,15 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
         <aside className="side">
           <div hidden={!genreIds.length}>
             <h3>{t('genres')}</h3>
-            <div className="genres">{genreIds.map(g => (
+            <div className="genres">{(allGenres ? genreIds : genreIds.filter((g, i) => i < TOP_GENRES || genres.has(g))).map(g => (
               <button key={g} className="chip" aria-pressed={genres.has(g)} onClick={() => setGenres(s => { const n = new Set(s); if (n.has(g)) n.delete(g); else n.add(g); return n; })}>{data!.genres[g]}</button>
-            ))}</div>
+            ))}
+              {genreIds.length > TOP_GENRES && (
+                <button className="chip more" onClick={() => setAllGenres(v => !v)} aria-expanded={allGenres}>
+                  {allGenres ? t('less') : t('more_n', genreIds.length - TOP_GENRES)}
+                </button>
+              )}
+            </div>
           </div>
           {hasGames && (cat === 'all' || cat === 'game') && (
             <div>
