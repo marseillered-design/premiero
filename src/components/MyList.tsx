@@ -9,7 +9,7 @@ import * as I from './icons';
 
 /** «Мой список»: всё, что посетитель отметил, ближайшие релизы сверху, вышедшие внизу. */
 export default function MyList() {
-  const { t, f, lang, country, today, ready, watchItems, toggleWatch, account } = useEnv();
+  const { t, f, lang, country, today, ready, watchItems, toggleWatch, account, deleteAccount } = useEnv();
   const items = Object.values(watchItems);
   const now = ready ? today : null;
   const upcoming = items.filter(i => !i.date || !now || fromKey(i.date) >= now).sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999'));
@@ -38,6 +38,14 @@ export default function MyList() {
           {upcoming.length > 0 && <section className="sec"><h2>{t('my_soon')}</h2><div className="grid">{upcoming.map(row)}</div></section>}
           {past.length > 0 && <section className="sec"><h2>{t('my_out')}</h2><div className="grid">{past.map(row)}</div></section>}
         </>}
+      {/* удаление аккаунта спрятано сюда, чтобы его не нажали случайно в меню */}
+      {account.user && (
+        <details className="danger-zone">
+          <summary>{t('acc_settings')}</summary>
+          <p>{t('del_explain')}</p>
+          <button className="btn danger" onClick={() => { if (confirm(t('del_confirm'))) deleteAccount(); }}>{t('del_account')}</button>
+        </details>
+      )}
     </div>
   );
 }

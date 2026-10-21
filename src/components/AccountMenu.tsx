@@ -6,7 +6,7 @@ import { useEnv } from './AppProvider';
 
 /** Кнопка «Войти через Google» или меню аккаунта. Пока вход не настроен на сервере, ничего не показывает. */
 export default function AccountMenu({ home }: { home: string }) {
-  const { t, account, signOut, deleteAccount } = useEnv();
+  const { t, account, signOut } = useEnv();
   const menu = useRef<HTMLDetailsElement>(null);
   if (!account.enabled) return null;
   const close = () => menu.current?.removeAttribute('open');
@@ -30,7 +30,6 @@ export default function AccountMenu({ home }: { home: string }) {
         <Link href={`${home}/my`} onClick={close}>{t('my_page')}</Link>
         <Link href={`${home}/privacy`} onClick={close}>{t('privacy')}</Link>
         <button onClick={() => { close(); signOut(); }}>{t('sign_out')}</button>
-        <button className="danger" onClick={() => { if (confirm(t('del_confirm'))) { close(); deleteAccount(); } }}>{t('del_account')}</button>
       </div>
     </details>
   );

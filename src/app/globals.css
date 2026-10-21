@@ -529,3 +529,9 @@ a.tmdb-r:hover{border-color:#9147FF}
 .top-tools .sign-in{height:38px;border-radius:999px}
 .top-tools .acc-btn{width:38px;height:38px}
 @media (max-width:720px){ .top-tools .sign-in span{display:none} .top-tools .sign-in{width:38px;padding:0;justify-content:center} }
+/* ---------- удаление аккаунта внизу «Моего списка» ---------- */
+.danger-zone{margin:48px 0 24px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+.danger-zone summary{cursor:pointer;width:max-content}
+.danger-zone p{margin:12px 0;max-width:60ch;line-height:1.5}
+.btn.danger{color:var(--t-online);border-color:color-mix(in srgb,var(--t-online) 45%,transparent)}
+.btn.danger:hover{background:color-mix(in srgb,var(--t-online) 12%,transparent)}
