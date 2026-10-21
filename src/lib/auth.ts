@@ -10,8 +10,11 @@ export const SESSION_COOKIE = 'premiero_session';
 export const FLOW_COOKIE = 'premiero_oauth';
 const SESSION_DAYS = 180;
 
-export const hasGoogle = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.AUTH_SECRET);
-const secret = () => new TextEncoder().encode(process.env.AUTH_SECRET!);
+// ключи вставляют вручную в настройки Vercel: случайный пробел или перенос строки по краям не должен ломать вход
+const env = (k: string) => (process.env[k] ?? '').trim();
+const CLIENT_ID = () => env('GOOGLE_CLIENT_ID'), CLIENT_SECRET = () => env('GOOGLE_CLIENT_SECRET'), AUTH_SECRET = () => env('AUTH_SECRET');
+export const hasGoogle = () => Boolean(CLIENT_ID() && CLIENT_SECRET() && AUTH_SECRET());
+const secret = () => new TextEncoder().encode(AUTH_SECRET());
 
 export interface User { sub: string; name: string; email: string; picture: string | null }
 
@@ -20,7 +23,7 @@ async function sign(payload: Record<string, unknown>, ttl: string) {
   return new SignJWT(payload).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime(ttl).sign(secret());
 }
 async function verify<T>(value: string | undefined): Promise<T | null> {
-  if (!value || !process.env.AUTH_SECRET) return null;
+  if (!value || !AUTH_SECRET()) return null;
   try { return (await jwtVerify(value, secret(), { algorithms: ['HS256'] })).payload as T; } catch { return null; }
 }
 
@@ -46,7 +49,7 @@ export async function startFlow(req: NextRequest) {
   const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   url.search = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID!, redirect_uri: redirectUri(req), response_type: 'code',
+    client_id: CLIENT_ID(), redirect_uri: redirectUri(req), response_type: 'code',
     scope: 'openid email profile', state, code_challenge: challenge, code_challenge_method: 'S256', prompt: 'select_account',
   }).toString();
   const flow = await sign({ state, verifier, next: safeNext(req.nextUrl.searchParams.get('next')) }, '10m');
@@ -55,29 +58,38 @@ export async function startFlow(req: NextRequest) {
 
 const GOOGLE_KEYS = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
-/** Обмен кода на данные пользователя; null — если что-то не сошлось. */
-export async function finishFlow(req: NextRequest): Promise<{ user: User; next: string } | null> {
+export type FlowResult = { user: User; next: string } | { failed: string; next: string };
+
+/** Обмен кода на данные пользователя; при неудаче — короткая причина (без секретов) для адреса и журнала. */
+export async function finishFlow(req: NextRequest): Promise<FlowResult> {
   const flow = await verify<{ state: string; verifier: string; next: string }>(req.cookies.get(FLOW_COOKIE)?.value);
-  const code = req.nextUrl.searchParams.get('code'), state = req.nextUrl.searchParams.get('state');
-  if (!flow || !code || !state || state !== flow.state) return null;
+  const next = flow?.next ?? '/';
+  const sp = req.nextUrl.searchParams;
+  const code = sp.get('code'), state = sp.get('state');
+  if (sp.get('error')) return { failed: 'google_' + sp.get('error')!.slice(0, 40), next };
+  if (!flow) return { failed: 'no_flow', next };
+  if (!code || !state || state !== flow.state) return { failed: 'state', next };
 
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST', cache: 'no-store',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      code, client_id: process.env.GOOGLE_CLIENT_ID!, client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+      code, client_id: CLIENT_ID(), client_secret: CLIENT_SECRET(),
       redirect_uri: redirectUri(req), grant_type: 'authorization_code', code_verifier: flow.verifier,
     }),
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const err = ((await res.json().catch(() => ({}))) as { error?: string }).error ?? String(res.status);
+    return { failed: 'token_' + err.slice(0, 40), next };
+  }
   const { id_token } = (await res.json()) as { id_token?: string };
-  if (!id_token) return null;
+  if (!id_token) return { failed: 'no_id_token', next };
   try {
-    const { payload: p } = await jwtVerify(id_token, GOOGLE_KEYS, { issuer: ['https://accounts.google.com', 'accounts.google.com'], audience: process.env.GOOGLE_CLIENT_ID! });
-    if (!p.sub || !p.email || p.email_verified === false) return null;
+    const { payload: p } = await jwtVerify(id_token, GOOGLE_KEYS, { issuer: ['https://accounts.google.com', 'accounts.google.com'], audience: CLIENT_ID() });
+    if (!p.sub || !p.email || p.email_verified === false) return { failed: 'email', next };
     return {
       user: { sub: p.sub, email: String(p.email), name: String(p.name ?? p.email), picture: typeof p.picture === 'string' ? p.picture : null },
-      next: flow.next,
+      next,
     };
-  } catch { return null; }
+  } catch { return { failed: 'id_token', next }; }
 }
