@@ -17,7 +17,7 @@ const STEP_MS = 6000;
  * Тем, кто просил систему уменьшить движение, лента сама не крутится.
  */
 export default function FeaturedRail({ slides }: { slides: Slide[] }) {
-  const { t } = useEnv();
+  const { t, lang, country } = useEnv();
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [stopped, setStopped] = useState(false);   // посетитель сам листал ленту
@@ -84,7 +84,10 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
     <section className="featured" aria-roledescription="carousel" aria-label={t('featured')}
       onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}
       onFocus={() => setHold(true)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHold(false); }}>
-      <h2 className="feat-h">{t('featured')}</h2>
+      <div className="feat-top">
+        <h2 className="feat-h">{t('featured')}</h2>
+        <Link className="feat-more" href={`/${lang}/${country}/upcoming`}>{t('up_link')} →</Link>
+      </div>
       <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'} onPointerDown={stop} onWheel={e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }}>
         {slides.map((s, i) => (
           <Link key={s.key} className={`feat t-${s.kind}`} href={s.href}>

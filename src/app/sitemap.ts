@@ -14,7 +14,7 @@ export async function generateSitemaps() {
   return [{ id: 'pages' }, ...COUNTRY_CODES.map(id => ({ id }))];
 }
 
-const SECTIONS = ['', '/movies', '/series', '/games'];
+const SECTIONS = ['', '/movies', '/series', '/games', '/upcoming'];
 
 export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
   const key = await id;

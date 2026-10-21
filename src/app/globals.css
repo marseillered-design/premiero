@@ -550,3 +550,13 @@ a.tmdb-r:hover{border-color:#9147FF}
 .search-t{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .search-y{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:34px;text-align:right}
 @media (max-width:640px){ .search-box{max-width:none;flex-basis:100%;order:3} }
+/* ---------- «Самые ожидаемые» ---------- */
+.feat-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.feat-top .feat-h{margin:0}
+.feat-more{font-size:14px;color:var(--accent-text);text-decoration:none;white-space:nowrap}
+.feat-more:hover{text-decoration:underline}
+.up-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.up-tabs .chip{text-decoration:none}
+.up-list{list-style:none;padding:0;margin:0}
+.up-list .poster-btn{position:relative}
+.up-rank{position:absolute;left:-6px;top:-6px;z-index:2;display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:800;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
