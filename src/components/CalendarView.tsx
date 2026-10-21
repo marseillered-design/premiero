@@ -12,6 +12,7 @@ import { store, useEnv } from './AppProvider';
 import * as I from './icons';
 import { useModal } from './useModal';
 import FeaturedRail from './FeaturedRail';
+import SearchBox from './SearchBox';
 
 type View = 'feed' | 'month' | 'list';
 export type Cat = 'all' | Kind;
@@ -334,10 +335,7 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
           ))}
         </div>}
         <GenreMenu ids={genreIds} names={data?.genres ?? {}} counts={genreCount} selected={genres} onChange={setGenres} />
-        <label className="search">
-          <I.Search />
-          <input id="q" type="search" value={q} placeholder={t('search')} aria-label={t('search_l')} onChange={e => setQ(e.target.value)} />
-        </label>
+        <SearchBox q={q} onChange={setQ} />
         <div className="month-nav">
           <button className="icon-btn" aria-label={t('prev')} onClick={() => shiftMonth(-1)}><I.Prev /></button>
           <h2>{month ? f.monthTitle(month) : ' '}</h2>

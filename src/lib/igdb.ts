@@ -206,3 +206,17 @@ export async function getGame(id: number, country: CountryCode): Promise<GameDet
     popularity: gamePopularity(g, 0),
   };
 }
+
+/* ---------- поиск игр по названию ---------- */
+export async function searchGames(q: string): Promise<{ key: string; media: 'game'; id: number; title: string; poster: string | null; year: string | null; popularity: number }[]> {
+  'use cache';
+  cacheLife('hours');
+  // кавычки и обратную косую черту убираем: запрос IGDB пишется строкой
+  const safeQ = q.replace(/["\\]/g, ' ').slice(0, 80);
+  const list = await igdb<RawGame[]>('games', `search "${safeQ}"; fields name,cover.image_id,first_release_date,hypes,total_rating_count; where game_type = ${GAME_TYPES} & themes != (${EROTIC_THEME}) & cover != null; limit 20;`);
+  // IGDB ищет по совпадению названия; из найденного показываем самые известные
+  return list.map(g => ({
+    key: `game-${g.id}`, media: 'game' as const, id: g.id, title: g.name, poster: cover(g.cover?.image_id),
+    year: g.first_release_date ? day(g.first_release_date).slice(0, 4) : null, popularity: (g.hypes ?? 0) * 3 + (g.total_rating_count ?? 0),
+  })).filter(g => g.popularity > 0).sort((a, b) => b.popularity - a.popularity).slice(0, 5);
+}

@@ -308,3 +308,20 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
     tmdbUrl: `https://www.themoviedb.org/tv/${id}`,
   };
 }
+/* ---------- поиск по всей базе TMDB: фильмы и сериалы ---------- */
+export interface SearchHit { key: string; media: 'movie' | 'tv' | 'game'; id: number; title: string; poster: string | null; year: string | null; popularity: number }
+
+export async function searchTmdb(q: string, lang: Lang): Promise<SearchHit[]> {
+  'use cache';
+  cacheLife('hours');
+  type Raw = { id: number; media_type: string; title?: string; name?: string; poster_path: string | null; release_date?: string; first_air_date?: string; popularity: number };
+  const page = await tmdb<Page<Raw>>('/search/multi', { query: q, language: LOCALE[lang], include_adult: 'false', page: 1 });
+  return page.results
+    // без постера и почти без популярности — обычно любительские ролики и дубли
+    .filter(r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path && r.popularity >= 1.5)
+    .slice(0, 6)
+    .map(r => ({
+      key: `${r.media_type}-${r.id}`, media: r.media_type as 'movie' | 'tv', id: r.id, title: (r.title ?? r.name ?? '').trim(),
+      poster: r.poster_path, year: (r.release_date || r.first_air_date || '').slice(0, 4) || null, popularity: r.popularity,
+    }));
+}
