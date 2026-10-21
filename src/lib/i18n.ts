@@ -13,7 +13,7 @@ const pl = (lang: Lang) => (n: number, f: Forms) => {
 type P = ReturnType<typeof pl>;
 
 const uk = (p: P): Dict => ({
-  tagline: 'календар кіно, серіалів та ігор', featured: 'Головні прем’єри тижня', feat_pause: 'Зупинити прокручування', feat_play: 'Увімкнути прокручування', feat_prev: 'Попередня прем’єра', feat_next: 'Наступна прем’єра', feat_slide: (i: number, n: number) => `Прем’єра ${i} з ${n}`, theme: 'Денна / нічна тема', nav_cal: 'Календар', nav: 'Розділи', search: 'Фільм або серіал', search_l: 'Пошук за назвою',
+  tagline: 'календар кіно, серіалів та ігор', featured: 'Головні прем’єри тижня', feat_pause: 'Зупинити прокручування', feat_play: 'Увімкнути прокручування', feat_prev: 'Попередня прем’єра', feat_next: 'Наступна прем’єра', feat_slide: (i: number, n: number) => `Прем’єра ${i} з ${n}`, theme: 'Денна / нічна тема', nav_cal: 'Календар', nav: 'Розділи', search: 'Фільм, серіал або гра', search_l: 'Пошук за назвою',
   country: 'Країна', lang: 'Мова', rg_europe: 'Європа', rg_americas: 'Америка', rg_asia: 'Кавказ і Центральна Азія',
   all: 'Усі', cinema: 'У кіно', series: 'Серіали', online: 'Онлайн-релізи', kind: 'Тип релізу',
   ty_cinema: 'У кіно', ty_series: 'Серіал', ty_online: 'Онлайн',
@@ -30,7 +30,7 @@ const uk = (p: P): Dict => ({
   notoken_t: 'Потрібен ключ TMDB', notoken_s: 'Додайте TMDB_TOKEN у файл .env.local у корені проєкту й перезапустіть сервер.',
   th_date: 'Дата', th_title: 'Назва', th_type: 'Тип', th_genre: 'Жанр', th_where: 'Де дивитися',
   in_theaters: 'у кінотеатрах', streaming: 'стримінг',
-  watch_btn: 'Дивитися', want: 'Хочу подивитися', unwant: 'Прибрати зі списку «Хочу подивитися»', in_list: 'У моєму списку',
+  watch_btn: 'Дивитися', want: 'Хочу подивитися', want_game: 'Хочу пограти', unwant: 'Прибрати зі списку «Хочу подивитися»', in_list: 'У моєму списку',
   added: (x: string) => `«${x}» у вашому списку. Нагадаємо про прем’єру.`, removed: (x: string) => `«${x}» прибрано зі списку`, open: (x: string) => `Відкрити «${x}»`,
   season: 'сезон', eps_range: (a: number, b: number) => `серії ${a}–${b}`, ep_one: (a: number) => `Серія ${a}`, premiere: 'прем’єра', finale: 'фінал', season_finale: 'фінал сезону', out: 'вийшла', world: 'світова прем’єра',
   min: 'хв', people_movie: 'Режисер', people_tv: 'Автори', cast: 'У ролях', trailer: 'Трейлер', play_trailer: 'Дивитися трейлер', tmdb_page: 'Сторінка на TMDB', imdb_l: (r: string, v: string) => `IMDb: ${r} з 10, ${v} оцінок`, tmdb_l: (r: string) => `TMDB: ${r} з 10`, to_cal: 'До календаря',
@@ -56,7 +56,7 @@ const uk = (p: P): Dict => ({
 });
 
 const en = (p: P): Dict => ({
-  tagline: 'movie, series & game release calendar', featured: 'Top releases this week', feat_pause: 'Stop auto-scroll', feat_play: 'Start auto-scroll', feat_prev: 'Previous release', feat_next: 'Next release', feat_slide: (i: number, n: number) => `Release ${i} of ${n}`, theme: 'Day / night theme', nav_cal: 'Calendar', nav: 'Sections', search: 'Movie or series', search_l: 'Search by title',
+  tagline: 'movie, series & game release calendar', featured: 'Top releases this week', feat_pause: 'Stop auto-scroll', feat_play: 'Start auto-scroll', feat_prev: 'Previous release', feat_next: 'Next release', feat_slide: (i: number, n: number) => `Release ${i} of ${n}`, theme: 'Day / night theme', nav_cal: 'Calendar', nav: 'Sections', search: 'Movie, series or game', search_l: 'Search by title',
   country: 'Country', lang: 'Language', rg_europe: 'Europe', rg_americas: 'Americas', rg_asia: 'Caucasus & Central Asia',
   all: 'All', cinema: 'In theaters', series: 'Series', online: 'Digital', kind: 'Release type',
   ty_cinema: 'In theaters', ty_series: 'Series', ty_online: 'Digital',
@@ -73,7 +73,7 @@ const en = (p: P): Dict => ({
   notoken_t: 'TMDB key required', notoken_s: 'Add TMDB_TOKEN to .env.local in the project root and restart the server.',
   th_date: 'Date', th_title: 'Title', th_type: 'Type', th_genre: 'Genre', th_where: 'Where to watch',
   in_theaters: 'in theaters', streaming: 'streaming',
-  watch_btn: 'Watch', want: 'Want to watch', unwant: 'Remove from “Want to watch”', in_list: 'In my list',
+  watch_btn: 'Watch', want: 'Want to watch', want_game: 'Want to play', unwant: 'Remove from “Want to watch”', in_list: 'In my list',
   added: (x: string) => `“${x}” added to your list. We’ll remind you on release day.`, removed: (x: string) => `“${x}” removed from your list`, open: (x: string) => `Open “${x}”`,
   season: 'season', eps_range: (a: number, b: number) => `episodes ${a}–${b}`, ep_one: (a: number) => `Episode ${a}`, premiere: 'premiere', finale: 'finale', season_finale: 'season finale', out: 'out', world: 'worldwide release',
   min: 'min', people_movie: 'Director', people_tv: 'Created by', cast: 'Cast', trailer: 'Trailer', play_trailer: 'Play trailer', tmdb_page: 'TMDB page', imdb_l: (r: string, v: string) => `IMDb: ${r} out of 10, ${v} votes`, tmdb_l: (r: string) => `TMDB: ${r} out of 10`, to_cal: 'Back to calendar',
@@ -99,7 +99,7 @@ const en = (p: P): Dict => ({
 });
 
 const es = (p: P): Dict => ({
-  tagline: 'calendario de estrenos de cine, series y videojuegos', featured: 'Estrenos destacados de la semana', feat_pause: 'Detener desplazamiento', feat_play: 'Reanudar desplazamiento', feat_prev: 'Estreno anterior', feat_next: 'Siguiente estreno', feat_slide: (i: number, n: number) => `Estreno ${i} de ${n}`, theme: 'Tema de día / de noche', nav_cal: 'Calendario', nav: 'Secciones', search: 'Película o serie', search_l: 'Buscar por título',
+  tagline: 'calendario de estrenos de cine, series y videojuegos', featured: 'Estrenos destacados de la semana', feat_pause: 'Detener desplazamiento', feat_play: 'Reanudar desplazamiento', feat_prev: 'Estreno anterior', feat_next: 'Siguiente estreno', feat_slide: (i: number, n: number) => `Estreno ${i} de ${n}`, theme: 'Tema de día / de noche', nav_cal: 'Calendario', nav: 'Secciones', search: 'Película, serie o videojuego', search_l: 'Buscar por título',
   country: 'País', lang: 'Idioma', rg_europe: 'Europa', rg_americas: 'América', rg_asia: 'Cáucaso y Asia Central',
   all: 'Todo', cinema: 'En cines', series: 'Series', online: 'Digital', kind: 'Tipo de estreno',
   ty_cinema: 'En cines', ty_series: 'Serie', ty_online: 'Digital',
@@ -116,7 +116,7 @@ const es = (p: P): Dict => ({
   notoken_t: 'Se necesita la clave de TMDB', notoken_s: 'Agrega TMDB_TOKEN en .env.local en la raíz del proyecto y reinicia el servidor.',
   th_date: 'Fecha', th_title: 'Título', th_type: 'Tipo', th_genre: 'Género', th_where: 'Dónde ver',
   in_theaters: 'en cines', streaming: 'streaming',
-  watch_btn: 'Ver', want: 'Quiero verla', unwant: 'Quitar de “Quiero verla”', in_list: 'En mi lista',
+  watch_btn: 'Ver', want: 'Quiero verla', want_game: 'Quiero jugarlo', unwant: 'Quitar de “Quiero verla”', in_list: 'En mi lista',
   added: (x: string) => `«${x}» está en tu lista. Te avisaremos el día del estreno.`, removed: (x: string) => `«${x}» se quitó de tu lista`, open: (x: string) => `Abrir «${x}»`,
   season: 'temporada', eps_range: (a: number, b: number) => `episodios ${a}–${b}`, ep_one: (a: number) => `Episodio ${a}`, premiere: 'estreno', finale: 'final', season_finale: 'final de temporada', out: 'disponible', world: 'estreno mundial',
   min: 'min', people_movie: 'Dirección', people_tv: 'Creadores', cast: 'Reparto', trailer: 'Tráiler', play_trailer: 'Ver tráiler', tmdb_page: 'Página en TMDB', imdb_l: (r: string, v: string) => `IMDb: ${r} de 10, ${v} votos`, tmdb_l: (r: string) => `TMDB: ${r} de 10`, to_cal: 'Al calendario',
@@ -142,7 +142,7 @@ const es = (p: P): Dict => ({
 });
 
 const plDict = (p: P): Dict => ({
-  tagline: 'kalendarz premier filmów, seriali i gier', featured: 'Najważniejsze premiery tygodnia', feat_pause: 'Zatrzymaj przewijanie', feat_play: 'Włącz przewijanie', feat_prev: 'Poprzednia premiera', feat_next: 'Następna premiera', feat_slide: (i: number, n: number) => `Premiera ${i} z ${n}`, theme: 'Motyw dzienny / nocny', nav_cal: 'Kalendarz', nav: 'Sekcje', search: 'Film lub serial', search_l: 'Szukaj po tytule',
+  tagline: 'kalendarz premier filmów, seriali i gier', featured: 'Najważniejsze premiery tygodnia', feat_pause: 'Zatrzymaj przewijanie', feat_play: 'Włącz przewijanie', feat_prev: 'Poprzednia premiera', feat_next: 'Następna premiera', feat_slide: (i: number, n: number) => `Premiera ${i} z ${n}`, theme: 'Motyw dzienny / nocny', nav_cal: 'Kalendarz', nav: 'Sekcje', search: 'Film, serial lub gra', search_l: 'Szukaj po tytule',
   country: 'Kraj', lang: 'Język', rg_europe: 'Europa', rg_americas: 'Ameryka', rg_asia: 'Kaukaz i Azja Środkowa',
   all: 'Wszystko', cinema: 'W kinach', series: 'Seriale', online: 'Premiery online', kind: 'Rodzaj premiery',
   ty_cinema: 'W kinach', ty_series: 'Serial', ty_online: 'Online',
@@ -159,7 +159,7 @@ const plDict = (p: P): Dict => ({
   notoken_t: 'Potrzebny klucz TMDB', notoken_s: 'Dodaj TMDB_TOKEN do pliku .env.local w katalogu projektu i uruchom serwer ponownie.',
   th_date: 'Data', th_title: 'Tytuł', th_type: 'Rodzaj', th_genre: 'Gatunek', th_where: 'Gdzie obejrzeć',
   in_theaters: 'w kinach', streaming: 'streaming',
-  watch_btn: 'Obejrzyj', want: 'Chcę obejrzeć', unwant: 'Usuń z listy „Chcę obejrzeć”', in_list: 'Na mojej liście',
+  watch_btn: 'Obejrzyj', want: 'Chcę obejrzeć', want_game: 'Chcę zagrać', unwant: 'Usuń z listy „Chcę obejrzeć”', in_list: 'Na mojej liście',
   added: (x: string) => `„${x}” jest na Twojej liście. Przypomnimy o premierze.`, removed: (x: string) => `„${x}” usunięto z listy`, open: (x: string) => `Otwórz „${x}”`,
   season: 'sezon', eps_range: (a: number, b: number) => `odcinki ${a}–${b}`, ep_one: (a: number) => `Odcinek ${a}`, premiere: 'premiera', finale: 'finał', season_finale: 'finał sezonu', out: 'dostępny', world: 'premiera światowa',
   min: 'min', people_movie: 'Reżyseria', people_tv: 'Twórcy', cast: 'Obsada', trailer: 'Zwiastun', play_trailer: 'Odtwórz zwiastun', tmdb_page: 'Strona w TMDB', imdb_l: (r: string, v: string) => `IMDb: ${r} na 10, ${v} ocen`, tmdb_l: (r: string) => `TMDB: ${r} na 10`, to_cal: 'Do kalendarza',
@@ -185,7 +185,7 @@ const plDict = (p: P): Dict => ({
 });
 
 const de = (p: P): Dict => ({
-  tagline: 'Kalender für Filme, Serien und Spiele', featured: 'Die wichtigsten Starts der Woche', feat_pause: 'Automatisches Blättern stoppen', feat_play: 'Automatisches Blättern starten', feat_prev: 'Vorheriger Start', feat_next: 'Nächster Start', feat_slide: (i: number, n: number) => `Start ${i} von ${n}`, theme: 'Tag- / Nachtmodus', nav_cal: 'Kalender', nav: 'Bereiche', search: 'Film oder Serie', search_l: 'Nach Titel suchen',
+  tagline: 'Kalender für Filme, Serien und Spiele', featured: 'Die wichtigsten Starts der Woche', feat_pause: 'Automatisches Blättern stoppen', feat_play: 'Automatisches Blättern starten', feat_prev: 'Vorheriger Start', feat_next: 'Nächster Start', feat_slide: (i: number, n: number) => `Start ${i} von ${n}`, theme: 'Tag- / Nachtmodus', nav_cal: 'Kalender', nav: 'Bereiche', search: 'Film, Serie oder Spiel', search_l: 'Nach Titel suchen',
   country: 'Land', lang: 'Sprache', rg_europe: 'Europa', rg_americas: 'Amerika', rg_asia: 'Kaukasus und Zentralasien',
   all: 'Alle', cinema: 'Im Kino', series: 'Serien', online: 'Digital', kind: 'Art des Starts',
   ty_cinema: 'Im Kino', ty_series: 'Serie', ty_online: 'Digital',
@@ -202,7 +202,7 @@ const de = (p: P): Dict => ({
   notoken_t: 'TMDB-Schlüssel nötig', notoken_s: 'Trage TMDB_TOKEN in .env.local im Projektordner ein und starte den Server neu.',
   th_date: 'Datum', th_title: 'Titel', th_type: 'Art', th_genre: 'Genre', th_where: 'Wo ansehen',
   in_theaters: 'im Kino', streaming: 'Streaming',
-  watch_btn: 'Ansehen', want: 'Will ich sehen', unwant: 'Von „Will ich sehen“ entfernen', in_list: 'In meiner Liste',
+  watch_btn: 'Ansehen', want: 'Will ich sehen', want_game: 'Will ich spielen', unwant: 'Von „Will ich sehen“ entfernen', in_list: 'In meiner Liste',
   added: (x: string) => `„${x}“ ist auf deiner Liste. Wir erinnern dich zum Start.`, removed: (x: string) => `„${x}“ von der Liste entfernt`, open: (x: string) => `„${x}“ öffnen`,
   season: 'Staffel', eps_range: (a: number, b: number) => `Folgen ${a}–${b}`, ep_one: (a: number) => `Folge ${a}`, premiere: 'Premiere', finale: 'Finale', season_finale: 'Staffelfinale', out: 'verfügbar', world: 'weltweiter Start',
   min: 'Min.', people_movie: 'Regie', people_tv: 'Idee', cast: 'Besetzung', trailer: 'Trailer', play_trailer: 'Trailer abspielen', tmdb_page: 'Seite bei TMDB', imdb_l: (r: string, v: string) => `IMDb: ${r} von 10, ${v} Bewertungen`, tmdb_l: (r: string) => `TMDB: ${r} von 10`, to_cal: 'Zum Kalender',
@@ -228,7 +228,7 @@ const de = (p: P): Dict => ({
 });
 
 const ru = (p: P): Dict => ({
-  tagline: 'календарь кино, сериалов и игр', featured: 'Главные премьеры недели', feat_pause: 'Остановить прокрутку', feat_play: 'Включить прокрутку', feat_prev: 'Предыдущая премьера', feat_next: 'Следующая премьера', feat_slide: (i: number, n: number) => `Премьера ${i} из ${n}`, theme: 'Дневная / ночная тема', nav_cal: 'Календарь', nav: 'Разделы', search: 'Фильм или сериал', search_l: 'Поиск по названию',
+  tagline: 'календарь кино, сериалов и игр', featured: 'Главные премьеры недели', feat_pause: 'Остановить прокрутку', feat_play: 'Включить прокрутку', feat_prev: 'Предыдущая премьера', feat_next: 'Следующая премьера', feat_slide: (i: number, n: number) => `Премьера ${i} из ${n}`, theme: 'Дневная / ночная тема', nav_cal: 'Календарь', nav: 'Разделы', search: 'Фильм, сериал или игра', search_l: 'Поиск по названию',
   country: 'Страна', lang: 'Язык', rg_europe: 'Европа', rg_americas: 'Америка', rg_asia: 'Кавказ и Центральная Азия',
   all: 'Все', cinema: 'В кино', series: 'Сериалы', online: 'Онлайн-релизы', kind: 'Тип релиза',
   ty_cinema: 'В кино', ty_series: 'Сериал', ty_online: 'Онлайн',
@@ -245,7 +245,7 @@ const ru = (p: P): Dict => ({
   notoken_t: 'Нужен ключ TMDB', notoken_s: 'Добавьте TMDB_TOKEN в файл .env.local в корне проекта и перезапустите сервер.',
   th_date: 'Дата', th_title: 'Название', th_type: 'Тип', th_genre: 'Жанр', th_where: 'Где смотреть',
   in_theaters: 'в кинотеатрах', streaming: 'стриминг',
-  watch_btn: 'Смотреть', want: 'Хочу посмотреть', unwant: 'Убрать из списка «Хочу посмотреть»', in_list: 'В моём списке',
+  watch_btn: 'Смотреть', want: 'Хочу посмотреть', want_game: 'Хочу поиграть', unwant: 'Убрать из списка «Хочу посмотреть»', in_list: 'В моём списке',
   added: (x: string) => `«${x}» в вашем списке. Напомним о премьере.`, removed: (x: string) => `«${x}» убран из списка`, open: (x: string) => `Открыть «${x}»`,
   season: 'сезон', eps_range: (a: number, b: number) => `серии ${a}–${b}`, ep_one: (a: number) => `Серия ${a}`, premiere: 'премьера', finale: 'финал', season_finale: 'финал сезона', out: 'вышла', world: 'мировая премьера',
   min: 'мин', people_movie: 'Режиссёр', people_tv: 'Создатели', cast: 'В ролях', trailer: 'Трейлер', play_trailer: 'Смотреть трейлер', tmdb_page: 'Страница на TMDB', imdb_l: (r: string, v: string) => `IMDb: ${r} из 10, ${v} оценок`, tmdb_l: (r: string) => `TMDB: ${r} из 10`, to_cal: 'К календарю',

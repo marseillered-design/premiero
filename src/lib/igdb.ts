@@ -70,6 +70,15 @@ export function platformLabel(p: { name: string; abbreviation?: string }) {
 const day = (unix: number) => new Date(unix * 1000).toISOString().slice(0, 10);
 const shot = (id: string | undefined) => (id ? `igdb:shot:${id}` : null);
 const cover = (id: string | undefined) => (id ? `igdb:cover:${id}` : null);
+/**
+ * Шкала, сравнимая с популярностью TMDB: ожидание до выхода плюс оценки после.
+ * Переиздания и порты старых игр (вышли больше трёх месяцев назад) опускаем ниже новинок.
+ */
+const gamePopularity = (g: { hypes?: number; total_rating_count?: number; first_release_date?: number }, monthStart: number) => {
+  const base = (g.hypes ?? 0) * 3 + (g.total_rating_count ?? 0) * 0.5;
+  const rerelease = !!g.first_release_date && g.first_release_date < monthStart - 90 * 86400;
+  return Math.round(base * (rerelease ? 0.2 : 1));
+};
 const rating10 = (r: number | undefined, n: number | undefined) => (r && (n ?? 0) >= 3 ? Math.round(r) / 10 : null);
 
 /* ---------- сырые ответы IGDB (только то, что читаем) ---------- */
@@ -91,13 +100,13 @@ export async function getGameCalendar(country: CountryCode, month: string): Prom
   const from = Date.UTC(y, m - 1, 1) / 1000, to = Date.UTC(y, m, 1) / 1000;
   const regions = regionsFor(country);
 
-  const fields = 'name,slug,cover.image_id,artworks.image_id,screenshots.image_id,genres,hypes,total_rating,total_rating_count,'
+  const fields = 'name,slug,cover.image_id,artworks.image_id,screenshots.image_id,genres,hypes,total_rating,total_rating_count,first_release_date,'
     + 'release_dates.date,release_dates.date_format,release_dates.release_region,release_dates.platform.name,release_dates.platform.abbreviation';
   const where = `release_dates.date >= ${from} & release_dates.date < ${to} & game_type = ${GAME_TYPES} & themes != (${EROTIC_THEME}) & cover != null`;
   // ожидание до выхода (hypes) и число оценок после: берём лучшее по обоим
   const [byHype, byRating] = await Promise.all([
-    igdb<RawGame[]>('games', `fields ${fields}; where ${where} & hypes > 0; sort hypes desc; limit 120;`),
-    igdb<RawGame[]>('games', `fields ${fields}; where ${where} & total_rating_count > 0; sort total_rating_count desc; limit 60;`),
+    igdb<RawGame[]>('games', `fields ${fields}; where ${where} & hypes > 0; sort hypes desc; limit 70;`),
+    igdb<RawGame[]>('games', `fields ${fields}; where ${where} & total_rating_count > 0; sort total_rating_count desc; limit 25;`),
   ]);
 
   const items: Record<string, CalItem> = {};
@@ -124,8 +133,7 @@ export async function getGameCalendar(country: CountryCode, month: string): Prom
       key, id: g.id, media: 'game', title: g.name, poster: cover(g.cover?.image_id),
       backdrop: shot(g.artworks?.[0]?.image_id ?? g.screenshots?.[0]?.image_id),
       genres: (g.genres ?? []).map(x => x + GAME_GENRE_OFFSET),
-      // шкала, сравнимая с популярностью TMDB: ожидание до выхода плюс оценки после
-      popularity: (g.hypes ?? 0) * 3 + (g.total_rating_count ?? 0),
+      popularity: gamePopularity(g, from),
       rating: rating10(g.total_rating, g.total_rating_count), cert: null,
       platforms: [...families],
     };
@@ -195,6 +203,6 @@ export async function getGame(id: number, country: CountryCode): Promise<GameDet
     releases, trailer: video?.video_id ?? null, trailerName: video?.name ?? null,
     stores: [...stores].map(([name, url]) => ({ name, url })),
     igdbUrl: g.url ?? `https://www.igdb.com/games/${g.slug}`,
-    popularity: (g.hypes ?? 0) * 3 + (g.total_rating_count ?? 0),
+    popularity: gamePopularity(g, 0),
   };
 }

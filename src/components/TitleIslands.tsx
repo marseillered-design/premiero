@@ -20,7 +20,7 @@ export function TitleActions({ core, ext }: { core: TitleCore; ext: { url: strin
   const on = watch.has(key);
   return (
     <div className="hero-a">
-      <button className="btn" aria-pressed={on} onClick={() => toggleWatch(key, core.title)}><I.Bell /> <span>{on ? t('in_list') : t('want')}</span></button>
+      <button className="btn" aria-pressed={on} onClick={() => toggleWatch(key, core.title)}><I.Bell /> <span>{on ? t('in_list') : t(core.media === 'game' ? 'want_game' : 'want')}</span></button>
       <AddToCalendar core={core} />
       <a className="btn" href={ext.url} target="_blank" rel="noreferrer">{ext.label}</a>
     </div>
