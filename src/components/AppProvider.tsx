@@ -93,14 +93,20 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
           <nav className="nav" aria-label={t('nav')}>
             <Suspense fallback={<NavLinks home={home} t={t} pathname="" />}><CurrentNav home={home} t={t} /></Suspense>
           </nav>
-          <div className="region">
-            <select id="lang" aria-label={t('lang')} value={lang} onChange={e => go(e.target.value as Lang, country)}>
-              {LANG_CODES.map(k => <option key={k} value={k}>{LANGS[k]}</option>)}
-            </select>
+          {/* справа: язык, тема (и вход, когда он появится) */}
+          <div className="top-tools">
+            <label className="lang-pick" title={t('lang')}>
+              <GlobeIcon />
+              {/* видимая подпись; сам список прозрачный и лежит поверх, поэтому открывается системный выбор */}
+              <span className="lang-full" aria-hidden>{LANGS[lang]}</span><span className="lang-code" aria-hidden>{lang.toUpperCase()}</span>
+              <select id="lang" aria-label={t('lang')} value={lang} onChange={e => go(e.target.value as Lang, country)}>
+                {LANG_CODES.map(k => <option key={k} value={k}>{LANGS[k]}</option>)}
+              </select>
+            </label>
+            <button className="icon-btn theme-btn" onClick={toggleTheme} aria-label={t('theme')} title={t('theme')}>
+              <SunIcon /><MoonIcon />
+            </button>
           </div>
-          <button className="icon-btn theme-btn" onClick={toggleTheme} aria-label={t('theme')} title={t('theme')}>
-            <SunIcon /><MoonIcon />
-          </button>
         </div>
       </header>
 
@@ -146,5 +152,6 @@ function toggleTheme() {
   el.dataset.theme = next;
   try { localStorage.setItem(THEME_KEY, next); } catch { /* приватный режим */ }
 }
+const GlobeIcon = () => <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></svg>;
 const SunIcon = () => <svg className="i-sun" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>;
 const MoonIcon = () => <svg className="i-moon" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>;
