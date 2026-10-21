@@ -560,3 +560,6 @@ a.tmdb-r:hover{border-color:#9147FF}
 .up-list{list-style:none;padding:0;margin:0}
 .up-list .poster-btn{position:relative}
 .up-rank{position:absolute;left:-6px;top:-6px;z-index:2;display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:800;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.cal-sub .note{margin-bottom:12px}
+.cal-sub-a{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cal-sub-a a.btn{text-decoration:none}

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { fromKey } from '@/lib/dates';
 import { titlePath } from '@/lib/slug';
 import Poster from './Poster';
+import CalendarLink from './CalendarLink';
 import { useEnv } from './AppProvider';
 import * as I from './icons';
 
@@ -38,6 +39,7 @@ export default function MyList() {
           {upcoming.length > 0 && <section className="sec"><h2>{t('my_soon')}</h2><div className="grid">{upcoming.map(row)}</div></section>}
           {past.length > 0 && <section className="sec"><h2>{t('my_out')}</h2><div className="grid">{past.map(row)}</div></section>}
         </>}
+      {account.user && <CalendarLink />}
       {/* удаление аккаунта спрятано сюда, чтобы его не нажали случайно в меню */}
       {account.user && (
         <details className="danger-zone">
