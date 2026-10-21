@@ -7,6 +7,7 @@ import { Analytics } from '@vercel/analytics/next';
 import AppProvider from '@/components/AppProvider';
 import { COUNTRY_CODES, LANG_CODES, isCountry, isLang } from '@/lib/regions';
 import { THEME_INIT } from '@/lib/theme';
+import { SITE } from '@/lib/site';
 import '../../globals.css';
 
 // Без предзагрузки: браузер скачивает только те наборы букв, что встречаются на странице
@@ -15,14 +16,14 @@ const display = Unbounded({ variable: '--font-display', subsets: ['latin', 'lati
 const body = Golos_Text({ variable: '--font-body', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['400', '500', '600'], preload: false });
 const mono = JetBrains_Mono({ variable: '--font-mono', subsets: ['latin', 'latin-ext', 'cyrillic'], weight: ['400', '600'], preload: false });
 
-const site = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000';
+
 
 export async function generateStaticParams() {
   return LANG_CODES.flatMap(lang => COUNTRY_CODES.map(country => ({ lang, country })));
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site),
+  metadataBase: new URL(SITE),
   title: { default: 'Premiero', template: '%s · Premiero' },
 };
 
