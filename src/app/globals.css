@@ -434,10 +434,6 @@ body{transition:background-color .25s ease,color .25s ease}
 .trailer-name{margin-top:8px;font-size:13px;color:var(--muted)}
 
 /* ---------- автопрокрутка ленты премьер: управление и точки с прогрессом ---------- */
-.feat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.feat-head .feat-h{margin:0}
-.feat-ctl{display:flex;gap:6px}
-.feat-ctl .icon-btn{width:32px;height:32px}
 .feat-track{scroll-behavior:auto}
 .feat-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
 .fdot{width:22px;height:6px;border-radius:999px;background:var(--line);overflow:hidden;padding:0;position:relative;transition:width .25s ease}

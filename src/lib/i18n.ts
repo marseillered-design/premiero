@@ -13,7 +13,7 @@ const pl = (lang: Lang) => (n: number, f: Forms) => {
 type P = ReturnType<typeof pl>;
 
 const uk = (p: P): Dict => ({
-  tagline: 'календар кіно, серіалів та ігор', featured: 'Головні прем’єри тижня', feat_pause: 'Зупинити прокручування', feat_play: 'Увімкнути прокручування', feat_prev: 'Попередня прем’єра', feat_next: 'Наступна прем’єра', feat_slide: (i: number, n: number) => `Прем’єра ${i} з ${n}`, theme: 'Денна / нічна тема', nav: 'Розділи', search: 'Фільм, серіал або гра', search_l: 'Пошук за назвою',
+  tagline: 'календар кіно, серіалів та ігор', featured: 'Головні прем’єри тижня', feat_slide: (i: number, n: number) => `Прем’єра ${i} з ${n}`, theme: 'Денна / нічна тема', nav: 'Розділи', search: 'Фільм, серіал або гра', search_l: 'Пошук за назвою',
   country: 'Країна', change_country: 'Змінити країну', lang: 'Мова', rg_europe: 'Європа', rg_americas: 'Америка', rg_asia: 'Кавказ і Центральна Азія',
   all: 'Усі', cinema: 'У кіно', series: 'Серіали', online: 'Онлайн-релізи', kind: 'Тип релізу',
   ty_cinema: 'У кіно', ty_series: 'Серіал', ty_online: 'Онлайн',
@@ -58,7 +58,7 @@ const uk = (p: P): Dict => ({
 });
 
 const en = (p: P): Dict => ({
-  tagline: 'movie, series & game release calendar', featured: 'Top releases this week', feat_pause: 'Stop auto-scroll', feat_play: 'Start auto-scroll', feat_prev: 'Previous release', feat_next: 'Next release', feat_slide: (i: number, n: number) => `Release ${i} of ${n}`, theme: 'Day / night theme', nav: 'Sections', search: 'Movie, series or game', search_l: 'Search by title',
+  tagline: 'movie, series & game release calendar', featured: 'Top releases this week', feat_slide: (i: number, n: number) => `Release ${i} of ${n}`, theme: 'Day / night theme', nav: 'Sections', search: 'Movie, series or game', search_l: 'Search by title',
   country: 'Country', change_country: 'Change country', lang: 'Language', rg_europe: 'Europe', rg_americas: 'Americas', rg_asia: 'Caucasus & Central Asia',
   all: 'All', cinema: 'In theaters', series: 'Series', online: 'Digital', kind: 'Release type',
   ty_cinema: 'In theaters', ty_series: 'Series', ty_online: 'Digital',
@@ -103,7 +103,7 @@ const en = (p: P): Dict => ({
 });
 
 const es = (p: P): Dict => ({
-  tagline: 'calendario de estrenos de cine, series y videojuegos', featured: 'Estrenos destacados de la semana', feat_pause: 'Detener desplazamiento', feat_play: 'Reanudar desplazamiento', feat_prev: 'Estreno anterior', feat_next: 'Siguiente estreno', feat_slide: (i: number, n: number) => `Estreno ${i} de ${n}`, theme: 'Tema de día / de noche', nav: 'Secciones', search: 'Película, serie o videojuego', search_l: 'Buscar por título',
+  tagline: 'calendario de estrenos de cine, series y videojuegos', featured: 'Estrenos destacados de la semana', feat_slide: (i: number, n: number) => `Estreno ${i} de ${n}`, theme: 'Tema de día / de noche', nav: 'Secciones', search: 'Película, serie o videojuego', search_l: 'Buscar por título',
   country: 'País', change_country: 'Cambiar país', lang: 'Idioma', rg_europe: 'Europa', rg_americas: 'América', rg_asia: 'Cáucaso y Asia Central',
   all: 'Todo', cinema: 'En cines', series: 'Series', online: 'Digital', kind: 'Tipo de estreno',
   ty_cinema: 'En cines', ty_series: 'Serie', ty_online: 'Digital',
@@ -148,7 +148,7 @@ const es = (p: P): Dict => ({
 });
 
 const plDict = (p: P): Dict => ({
-  tagline: 'kalendarz premier filmów, seriali i gier', featured: 'Najważniejsze premiery tygodnia', feat_pause: 'Zatrzymaj przewijanie', feat_play: 'Włącz przewijanie', feat_prev: 'Poprzednia premiera', feat_next: 'Następna premiera', feat_slide: (i: number, n: number) => `Premiera ${i} z ${n}`, theme: 'Motyw dzienny / nocny', nav: 'Sekcje', search: 'Film, serial lub gra', search_l: 'Szukaj po tytule',
+  tagline: 'kalendarz premier filmów, seriali i gier', featured: 'Najważniejsze premiery tygodnia', feat_slide: (i: number, n: number) => `Premiera ${i} z ${n}`, theme: 'Motyw dzienny / nocny', nav: 'Sekcje', search: 'Film, serial lub gra', search_l: 'Szukaj po tytule',
   country: 'Kraj', change_country: 'Zmień kraj', lang: 'Język', rg_europe: 'Europa', rg_americas: 'Ameryka', rg_asia: 'Kaukaz i Azja Środkowa',
   all: 'Wszystko', cinema: 'W kinach', series: 'Seriale', online: 'Premiery online', kind: 'Rodzaj premiery',
   ty_cinema: 'W kinach', ty_series: 'Serial', ty_online: 'Online',
@@ -193,7 +193,7 @@ const plDict = (p: P): Dict => ({
 });
 
 const de = (p: P): Dict => ({
-  tagline: 'Kalender für Filme, Serien und Spiele', featured: 'Die wichtigsten Starts der Woche', feat_pause: 'Automatisches Blättern stoppen', feat_play: 'Automatisches Blättern starten', feat_prev: 'Vorheriger Start', feat_next: 'Nächster Start', feat_slide: (i: number, n: number) => `Start ${i} von ${n}`, theme: 'Tag- / Nachtmodus', nav: 'Bereiche', search: 'Film, Serie oder Spiel', search_l: 'Nach Titel suchen',
+  tagline: 'Kalender für Filme, Serien und Spiele', featured: 'Die wichtigsten Starts der Woche', feat_slide: (i: number, n: number) => `Start ${i} von ${n}`, theme: 'Tag- / Nachtmodus', nav: 'Bereiche', search: 'Film, Serie oder Spiel', search_l: 'Nach Titel suchen',
   country: 'Land', change_country: 'Land ändern', lang: 'Sprache', rg_europe: 'Europa', rg_americas: 'Amerika', rg_asia: 'Kaukasus und Zentralasien',
   all: 'Alle', cinema: 'Im Kino', series: 'Serien', online: 'Digital', kind: 'Art des Starts',
   ty_cinema: 'Im Kino', ty_series: 'Serie', ty_online: 'Digital',
@@ -238,7 +238,7 @@ const de = (p: P): Dict => ({
 });
 
 const ru = (p: P): Dict => ({
-  tagline: 'календарь кино, сериалов и игр', featured: 'Главные премьеры недели', feat_pause: 'Остановить прокрутку', feat_play: 'Включить прокрутку', feat_prev: 'Предыдущая премьера', feat_next: 'Следующая премьера', feat_slide: (i: number, n: number) => `Премьера ${i} из ${n}`, theme: 'Дневная / ночная тема', nav: 'Разделы', search: 'Фильм, сериал или игра', search_l: 'Поиск по названию',
+  tagline: 'календарь кино, сериалов и игр', featured: 'Главные премьеры недели', feat_slide: (i: number, n: number) => `Премьера ${i} из ${n}`, theme: 'Дневная / ночная тема', nav: 'Разделы', search: 'Фильм, сериал или игра', search_l: 'Поиск по названию',
   country: 'Страна', change_country: 'Сменить страну', lang: 'Язык', rg_europe: 'Европа', rg_americas: 'Америка', rg_asia: 'Кавказ и Центральная Азия',
   all: 'Все', cinema: 'В кино', series: 'Сериалы', online: 'Онлайн-релизы', kind: 'Тип релиза',
   ty_cinema: 'В кино', ty_series: 'Сериал', ty_online: 'Онлайн',
