@@ -111,3 +111,13 @@ export interface GameDetail {
   igdbUrl: string;
   popularity: number;
 }
+
+/** Запись в «Моём списке»: хватает, чтобы показать карточку без запроса к TMDB или IGDB. */
+export interface WatchItem {
+  key: string;               // `${media}-${id}`
+  media: Media;
+  id: number;
+  title: string;
+  poster: string | null;
+  date: string | null;       // ближайшая дата выхода на момент добавления
+}

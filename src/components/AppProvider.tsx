@@ -1,15 +1,18 @@
 'use client';
 
-import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
+import AccountMenu from './AccountMenu';
 import { THEME_KEY } from '@/lib/theme';
 import { usePathname, useRouter } from 'next/navigation';
 import { COUNTRIES, COUNTRY_CODES, GROUPS, LANGS, LANG_CODES, PREF_COOKIE, nameIn } from '@/lib/regions';
 import { translator, type T } from '@/lib/i18n';
 import { dateFmt, sod, type DateFmt } from '@/lib/dates';
 import { calendarPath } from '@/lib/slug';
-import type { CountryCode, Lang } from '@/lib/types';
+import type { CountryCode, Lang, WatchItem } from '@/lib/types';
+
+export interface Account { enabled: boolean; user: { name: string; email: string; picture: string | null } | null }
 
 export interface Env {
   ready: boolean;            // дата и localStorage доступны только после монтирования
@@ -20,10 +23,14 @@ export interface Env {
   today: Date;
   countryName: (c: CountryCode) => string;
   watch: Set<string>;
-  toggleWatch: (key: string, title: string) => void;
+  watchItems: Record<string, WatchItem>;
+  toggleWatch: (item: WatchItem) => void;
   subs: Set<number>;
   setSubs: (s: Set<number>) => void;
   toast: (msg: string) => void;
+  account: Account;
+  signOut: () => void;
+  deleteAccount: () => void;
 }
 
 export const store = {
@@ -39,16 +46,44 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
   const router = useRouter();
   const [boot, setBoot] = useState<{ today: Date } | null>(null);
   const [watch, setWatch] = useState<Set<string>>(new Set());
+  const [watchItems, setWatchItems] = useState<Record<string, WatchItem>>({});
+  const [account, setAccount] = useState<Account>({ enabled: false, user: null });
+  const serverSubs = useRef<Record<string, number[]> | null>(null);
   const [subs, setSubsState] = useState<Set<number>>(new Set());
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setWatch(new Set(store.get<string[]>('premiero.watch', [])));
-    setSubsState(new Set(store.get<number[]>(`premiero.subs.${country}`, [])));
+    setWatchItems(store.get<Record<string, WatchItem>>('premiero.watchItems', {}));
+    setSubsState(new Set(serverSubs.current?.[country] ?? store.get<number[]>(`premiero.subs.${country}`, [])));
     setBoot({ today: sod(new Date()) });
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [country]);
+
+  // Аккаунт: при входе список из браузера добавляется к сохранённому, дальше всё пишется и туда, и туда
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch('/api/me', { signal: ac.signal }).then(r => r.json()).then((d: { enabled: boolean; user: Account['user']; watch?: Record<string, WatchItem>; subs?: Record<string, number[]> }) => {
+      setAccount({ enabled: !!d.enabled, user: d.user ?? null });
+      if (new URLSearchParams(location.search).get('login') === 'failed') setToastMsg(translator(lang)('login_failed'));
+      if (!d.user) return;
+      const localItems = store.get<Record<string, WatchItem>>('premiero.watchItems', {});
+      const missing = Object.values(localItems).filter(i => !d.watch?.[i.key]);
+      if (missing.length) fetch('/api/me/watch', { method: 'POST', body: JSON.stringify({ add: missing }) }).catch(() => {});
+      const items = { ...localItems, ...d.watch };
+      store.set('premiero.watchItems', items);
+      setWatchItems(items);
+      setWatch(prev => { const n = new Set([...prev, ...Object.keys(items)]); store.set('premiero.watch', [...n]); return n; });
+      serverSubs.current = d.subs ?? {};
+      const local = store.get<number[]>(`premiero.subs.${country}`, []);
+      if (d.subs?.[country]) setSubsState(new Set(d.subs[country]));
+      else if (local.length) fetch('/api/me/subs', { method: 'PUT', body: JSON.stringify({ country, ids: local }) }).catch(() => {});
+    }).catch(() => {});
+    return () => ac.abort();
+    // проверяем один раз за загрузку страницы
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!toastMsg) return;
@@ -60,21 +95,41 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
   const today = boot?.today ?? EPOCH;
   const f = useMemo(() => dateFmt(lang, today), [lang, today]);
 
-  const toggleWatch = useCallback((key: string, title: string) => {
-    setWatch(prev => {
-      const next = new Set(prev);
-      const on = !next.has(key);
-      if (on) next.add(key); else next.delete(key);
-      store.set('premiero.watch', [...next]);
-      setToastMsg(on ? t('added', title) : t('removed', title));
-      return next;
-    });
+  const signedIn = !!account.user;
+  const toggleWatch = useCallback((item: WatchItem) => {
+    const on = !watch.has(item.key);
+    const next = new Set(watch);
+    const items = { ...store.get<Record<string, WatchItem>>('premiero.watchItems', {}) };
+    if (on) { next.add(item.key); items[item.key] = item; } else { next.delete(item.key); delete items[item.key]; }
+    setWatch(next); setWatchItems(items);
+    store.set('premiero.watch', [...next]); store.set('premiero.watchItems', items);
+    setToastMsg(on ? t('added', item.title) : t('removed', item.title));
+    if (signedIn) fetch('/api/me/watch', { method: 'POST', body: JSON.stringify(on ? { add: [item] } : { remove: item.key }) }).catch(() => {});
+  }, [watch, t, signedIn]);
+  const setSubs = useCallback((s: Set<number>) => {
+    setSubsState(s);
+    store.set(`premiero.subs.${country}`, [...s]);
+    if (serverSubs.current) serverSubs.current[country] = [...s];
+    if (signedIn) fetch('/api/me/subs', { method: 'PUT', body: JSON.stringify({ country, ids: [...s] }) }).catch(() => {});
+  }, [country, signedIn]);
+  const signOut = useCallback(() => {
+    fetch('/api/auth/logout', { method: 'POST' }).finally(() => { serverSubs.current = null; setAccount(a => ({ ...a, user: null })); });
+  }, []);
+  const deleteAccount = useCallback(() => {
+    fetch('/api/me', { method: 'DELETE' }).then(r => {
+      if (!r.ok) return;
+      serverSubs.current = null;
+      setAccount(a => ({ ...a, user: null }));
+      // вместе с аккаунтом очищаем и список в этом браузере
+      setWatch(new Set()); setWatchItems({});
+      store.set('premiero.watch', []); store.set('premiero.watchItems', {});
+      setToastMsg(t('deleted'));
+    }).catch(() => {});
   }, [t]);
-  const setSubs = useCallback((s: Set<number>) => { setSubsState(s); store.set(`premiero.subs.${country}`, [...s]); }, [country]);
 
   const env: Env = {
     ready: !!boot, t, f, lang, country, today, countryName: c => nameIn(COUNTRIES[c].name, lang),
-    watch, toggleWatch, subs, setSubs, toast: setToastMsg,
+    watch, watchItems, toggleWatch, subs, setSubs, toast: setToastMsg, account, signOut, deleteAccount,
   };
 
   // Смена языка или страны меняет начало адреса, остальная часть пути сохраняется
@@ -98,6 +153,7 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
               {LANG_CODES.map(k => <option key={k} value={k}>{LANGS[k]}</option>)}
             </select>
           </div>
+          <AccountMenu home={home} />
           <button className="icon-btn theme-btn" onClick={toggleTheme} aria-label={t('theme')} title={t('theme')}>
             <SunIcon /><MoonIcon />
           </button>
@@ -117,6 +173,7 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
             ))}
           </select>
         </label>
+        <Link href={`${home}/privacy`}>{t('privacy')}</Link>
         <span>{t('attr')} This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
         <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">themoviedb.org</a>
         <span>{t('attr_games')}</span>

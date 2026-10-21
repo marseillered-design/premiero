@@ -460,3 +460,23 @@ a.tmdb-r:hover{border-color:#9147FF}
 .foot-country select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 8px;color:var(--fg);font:inherit;cursor:pointer}
 .side-note a{color:var(--accent-text);text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
 #country{scroll-margin-bottom:40px}
+/* ---------- аккаунт: кнопка входа, меню, «Мой список», страница о конфиденциальности ---------- */
+.sign-in{height:36px;padding:0 12px;gap:8px;white-space:nowrap}
+.acc{position:relative}
+.acc-btn{list-style:none;cursor:pointer;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.acc-btn::-webkit-details-marker{display:none}
+.acc-btn img{width:100%;height:100%;object-fit:cover}
+.acc-ph{font-weight:700;color:var(--fg)}
+.acc-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:240px;display:flex;flex-direction:column;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 16px 40px -18px rgba(0,0,0,.5)}
+.acc-pop a,.acc-pop button{display:block;text-align:left;padding:9px 12px;border-radius:8px;font-size:14px;color:var(--fg);text-decoration:none;background:none;border:0;cursor:pointer;font:inherit}
+.acc-pop a:hover,.acc-pop button:hover{background:var(--surface-2)}
+.acc-pop .danger{color:var(--t-online)}
+.acc-who{display:flex;flex-direction:column;padding:8px 12px 10px;margin:0 0 4px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);min-width:0}
+.acc-who b{color:var(--fg);font-size:14px}
+.acc-who span{overflow:hidden;text-overflow:ellipsis}
+.my-h{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,36px);margin:24px 0 18px}
+.my-page .note{margin-bottom:18px}
+.legal{max-width:760px}
+.legal-intro{font-size:17px;margin-bottom:8px}
+.legal .sec p{line-height:1.6;margin:0 0 10px;color:var(--fg)}
+.legal-date{color:var(--muted);font-size:13px;margin-top:24px}

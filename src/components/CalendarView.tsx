@@ -133,9 +133,10 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
   };
   const kindTag = (k: Kind) => <span className={`tag t-${k}`}>{t('ty_' + k)}</span>;
   const genreName = (id: number) => data?.genres[id] ?? '';
-  const watchBtn = (it: CalItem) => {
+  const watchBtn = (ev: CalEvent, it: CalItem) => {
     const on = watch.has(it.key);
-    return <button className="watch" aria-pressed={on} aria-label={on ? t('unwant') : t('want')} title={t('want')} onClick={() => env.toggleWatch(it.key, it.title)}><I.Bell /></button>;
+    const item = { key: it.key, media: it.media, id: it.id, title: it.title, poster: it.poster, date: ev.date };
+    return <button className="watch" aria-pressed={on} aria-label={on ? t('unwant') : t('want')} title={t('want')} onClick={() => env.toggleWatch(item)}><I.Bell /></button>;
   };
   const actionBtn = (ev: CalEvent, it: CalItem) =>
     ev.kind === 'online' || ev.kind === 'series' ? <Link className="buy ghost" href={href(it)}>{t('watch_btn')}</Link> : null;
@@ -158,7 +159,7 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
         <Link className="poster-btn" href={href(it)} aria-label={t('open', it.title)}><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
         <h3 className="card-t"><Link href={href(it)}>{it.title}</Link></h3>
         {meta(ev, it)}
-        <div className="card-a">{watchBtn(it)}{actionBtn(ev, it)}</div>
+        <div className="card-a">{watchBtn(ev, it)}{actionBtn(ev, it)}</div>
       </article>
     );
   };
