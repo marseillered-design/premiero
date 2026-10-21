@@ -5,5 +5,5 @@ export function generateMetadata() {
 }
 
 export default function Page() {
-  return <CalendarPage cat="game" />;
+  return <CalendarPage section="games" />;
 }

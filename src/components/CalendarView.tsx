@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { COUNTRIES, IMG, nameIn } from '@/lib/regions';
 import { addDays, diffDays, dkey, fromKey, mkey } from '@/lib/dates';
@@ -16,17 +17,21 @@ type View = 'feed' | 'month' | 'list';
 export type Cat = 'all' | Kind;
 type Load = { status: 'loading' | 'ok' | 'error' | 'no_token'; data?: CalendarData };
 const KINDS: Kind[] = ['cinema', 'series', 'online', 'game'];
+/** Разделы сайта и какие типы релизов в них входят. */
+export type Section = 'all' | 'movies' | 'series' | 'games';
+const SECTION_KINDS: Record<Section, Kind[]> = { all: KINDS, movies: ['cinema', 'online'], series: ['series'], games: ['game'] };
 const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, series: 2, game: 3 };
 const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)', game: 'var(--t-game)' };
 const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
-/** Календарь релизов. На странице игр открывается сразу с категорией «Игры». */
-export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat }) {
+/** Календарь релизов: весь или один раздел (фильмы, сериалы, игры). */
+export default function CalendarView({ section = 'all' }: { section?: Section }) {
+  const kinds = SECTION_KINDS[section];
   const env = useEnv();
   const { t, f, lang, country, today, ready, watch, subs } = env;
   const [month, setMonth] = useState<Date | null>(null);
   const [view, setView] = useState<View>('feed');
-  const [cat, setCat] = useState<Cat>(initialCat);
+  const [cat, setCat] = useState<Cat>('all');
   const [plats, setPlats] = useState<Set<Platform>>(new Set());
   const [genres, setGenres] = useState<Set<number>>(new Set());
   const [onlyWatch, setOnlyWatch] = useState(false);
@@ -81,6 +86,7 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
     return data.events.filter(ev => {
       const it = data.items[ev.item];
       if (!it) return false;
+      if (!kinds.includes(ev.kind)) return false;
       if (cat !== 'all' && ev.kind !== cat) return false;
       if (genres.size && !it.genres.some(g => genres.has(g))) return false;
       if (onlyWatch && !watch.has(it.key)) return false;
@@ -92,7 +98,7 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
       if (needle && !it.title.toLowerCase().includes(needle)) return false;
       return true;
     }).sort((a, b) => a.date.localeCompare(b.date) || TYPE_ORDER[a.kind] - TYPE_ORDER[b.kind] || data.items[b.item].popularity - data.items[a.item].popularity);
-  }, [data, q, cat, genres, plats, onlyWatch, watch, showEps, showAnime, subsActive, subs]);
+  }, [data, kinds, q, cat, genres, plats, onlyWatch, watch, showEps, showAnime, subsActive, subs]);
 
   useEffect(() => {
     if (!pendingScroll || load.status !== 'ok') return;
@@ -297,14 +303,16 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
     );
   };
 
-  const genreIds = (() => {
-    if (!data) return [];
-    const cnt: Record<number, number> = {};
-    const keys = new Set(data.events.filter(e => cat === 'all' || e.kind === cat).map(e => e.item));
-    keys.forEach(k => data.items[k]?.genres.forEach(g => { if (data.genres[g]) cnt[g] = (cnt[g] ?? 0) + 1; }));
-    return Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a]);
-  })();
+  const genreCount: Record<number, number> = {};
+  if (data) {
+    const keys = new Set(data.events.filter(e => (cat === 'all' ? kinds.includes(e.kind) : e.kind === cat)).map(e => e.item));
+    keys.forEach(k => data.items[k]?.genres.forEach(g => { if (data.genres[g]) genreCount[g] = (genreCount[g] ?? 0) + 1; }));
+  }
+  const genreIds = Object.keys(genreCount).map(Number).sort((a, b) => genreCount[b] - genreCount[a]);
   const hasGames = !!data?.events.some(e => e.kind === 'game');
+  const shown = cat === 'all' ? kinds : [cat];
+  const showsScreen = shown.some(k => k !== 'game');
+  const showsStreaming = shown.includes('online') || shown.includes('series');
   const dirty = genres.size > 0 || plats.size > 0 || onlyWatch || !showEps || q !== '';
 
   let main: React.ReactNode;
@@ -316,13 +324,16 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
   return (
     <>
       <div className="bar"><div className="wrap">
-        <div className="cats" role="group" aria-label={t('kind')}>
-          {(['all', ...KINDS] as Cat[]).map(k => (
+        {kinds.length > 1 && <div className="cats" role="group" aria-label={t('kind')}>
+          {(['all', ...kinds] as Cat[]).map(k => (
             <button key={k} className="chip" aria-pressed={cat === k} onClick={() => setCat(k)}>
               {k !== 'all' && <span className="sw" style={{ background: KIND_COLOR[k] }} />}{t(k)}
             </button>
           ))}
-        </div>
+        </div>}
+        {genreIds.length > 0 && (
+          <GenreMenu ids={genreIds} names={data!.genres} counts={genreCount} selected={genres} onChange={setGenres} />
+        )}
         <label className="search">
           <I.Search />
           <input id="q" type="search" value={q} placeholder={t('search')} aria-label={t('search_l')} onChange={e => setQ(e.target.value)} />
@@ -342,13 +353,7 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
 
       <div className="wrap layout">
         <aside className="side">
-          <div hidden={!genreIds.length}>
-            <h3>{t('genres')}</h3>
-            <div className="genres">{genreIds.map(g => (
-              <button key={g} className="chip" aria-pressed={genres.has(g)} onClick={() => setGenres(s => { const n = new Set(s); if (n.has(g)) n.delete(g); else n.add(g); return n; })}>{data!.genres[g]}</button>
-            ))}</div>
-          </div>
-          {hasGames && (cat === 'all' || cat === 'game') && (
+          {hasGames && kinds.includes('game') && (cat === 'all' || cat === 'game') && (
             <div>
               <h3>{t('platforms')}</h3>
               <div className="genres">{PLATFORMS.map(x => (
@@ -360,13 +365,13 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
             <h3>{t('show')}</h3>
             <div className="toggles">
               <label className="toggle"><input type="checkbox" checked={onlyWatch} onChange={e => setOnlyWatch(e.target.checked)} /> {t('my_list')} ({watch.size})</label>
-              {cat !== 'game' && <>
-                <label className="toggle"><input type="checkbox" checked={showEps} onChange={e => setShowEps(e.target.checked)} /> {t('new_eps')}</label>
+              {shown.includes('series') && <label className="toggle"><input type="checkbox" checked={showEps} onChange={e => setShowEps(e.target.checked)} /> {t('new_eps')}</label>}
+              {showsScreen && <>
                 <label className="toggle"><input type="checkbox" checked={showAnime} onChange={e => { setShowAnime(e.target.checked); store.set('premiero.anime', e.target.checked); }} /> {t('anime')}</label>
               </>}
             </div>
           </div>
-          <div hidden={cat === 'game' || cat === 'cinema'}>
+          <div hidden={!showsStreaming}>
             <h3>{t('subs')}</h3>
             <div className="toggles">
               <label className="toggle"><input type="checkbox" checked={onlySubs} disabled={!subs.size} onChange={e => { setOnlySubs(e.target.checked); store.set('premiero.subsOnly', e.target.checked); }} /> {t('subs_only')}{subs.size ? ` (${subs.size})` : ''}</label>
@@ -413,3 +418,51 @@ function SubsDialog({ providers, onClose, onSaved }: { providers: { id: number; 
     </dialog>
   );
 }
+
+/**
+ * «Жанры» в панели сверху, как у JustWatch: кнопка с числом выбранных и выпадающий список
+ * с количеством релизов месяца. На телефоне список выезжает снизу на всю ширину.
+ */
+function GenreMenu({ ids, names, counts, selected, onChange }: {
+  ids: number[]; names: Record<number, string>; counts: Record<number, number>;
+  selected: Set<number>; onChange: (s: Set<number>) => void;
+}) {
+  const { t } = useEnv();
+  // на телефоне — лист снизу поверх страницы (вне липкой панели, иначе он окажется внутри неё)
+  const [open, setOpen] = useState<false | 'menu' | 'sheet'>(false);
+  const box = useRef<HTMLDivElement>(null);
+  const pop = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => { const n = e.target as Node; if (!box.current?.contains(n) && !pop.current?.contains(n)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
+  }, [open]);
+  const toggle = (g: number) => { const n = new Set(selected); if (n.has(g)) n.delete(g); else n.add(g); onChange(n); };
+  return (
+    <div className="gmenu" ref={box}>
+      <button className="chip gmenu-btn" aria-expanded={!!open} aria-haspopup="true" aria-pressed={selected.size > 0} onClick={() => setOpen(v => (v ? false : matchMedia('(max-width: 640px)').matches ? 'sheet' : 'menu'))}>
+        {t('genres')}{selected.size ? <b className="gmenu-n">{selected.size}</b> : null}<I.Chevron />
+      </button>
+      {open && wrapSheet(open,
+        <div className="gmenu-pop" ref={pop} role="group" aria-label={t('genres')}>
+          <div className="gmenu-head">
+            <b>{t('genres')}</b>
+            {selected.size > 0 && <button className="reset" onClick={() => onChange(new Set())}>{t('clear')}</button>}
+          </div>
+          <div className="gmenu-grid">{ids.map(g => (
+            <button key={g} className="gmenu-item" aria-pressed={selected.has(g)} onClick={() => toggle(g)}>
+              <span>{names[g]}</span><small>{counts[g]}</small>
+            </button>
+          ))}</div>
+          <button className="btn primary gmenu-done" onClick={() => setOpen(false)}>{t('done')}</button>
+        </div>,
+      )}
+    </div>
+  );
+}
+
+const wrapSheet = (mode: 'menu' | 'sheet', pop: React.ReactNode) =>
+  mode === 'menu' ? pop : createPortal(<div className="gmenu-sheet">{pop}</div>, document.body);

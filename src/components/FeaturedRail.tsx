@@ -3,24 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Kind } from '@/lib/types';
-import { store, useEnv } from './AppProvider';
+import { useEnv } from './AppProvider';
 import * as I from './icons';
 
 export interface Slide { key: string; href: string; image: string; title: string; kind: Kind; rating: number | null; date: string }
 
 const STEP_MS = 6000;
-const PAUSE_KEY = 'premiero.featPaused';
 
 /**
- * Лента главных премьер с автопрокруткой. По правилам доступности (WCAG 2.2.2):
- * видимая кнопка паузы, остановка при наведении, фокусе и скрытой вкладке,
- * без автопрокрутки для тех, кто просил систему уменьшить движение.
+ * Лента главных премьер с автопрокруткой, без отдельных кнопок управления.
+ * Пауза — при наведении, фокусе и скрытой вкладке; любое действие посетителя
+ * (точка, свайп, прокрутка колёсиком, касание) останавливает ленту до конца визита.
+ * Тем, кто просил систему уменьшить движение, лента сама не крутится.
  */
 export default function FeaturedRail({ slides }: { slides: Slide[] }) {
   const { t } = useEnv();
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const [stopped, setStopped] = useState(false);   // выбор посетителя: кнопка «стоп»
+  const [stopped, setStopped] = useState(false);   // посетитель сам листал ленту
   const [hold, setHold] = useState(false);         // временно: наведение или фокус внутри
   const [hidden, setHidden] = useState(false);     // вкладка браузера не видна
   const [reduced, setReduced] = useState(false);
@@ -30,7 +30,7 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
     const mq = matchMedia('(prefers-reduced-motion: reduce)');
     /* eslint-disable react-hooks/set-state-in-effect */
     setReduced(mq.matches);
-    setStopped(store.get<boolean>(PAUSE_KEY, false) || mq.matches);
+    setStopped(mq.matches);
     /* eslint-enable react-hooks/set-state-in-effect */
     const late = setTimeout(() => setWarm(true), 3000);
     const onVis = () => setHidden(document.hidden);
@@ -78,23 +78,14 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
     return () => clearTimeout(id);
   }, [running, index, slides.length, goTo]);
 
-  const toggle = () => { const v = !stopped; setStopped(v); store.set(PAUSE_KEY, v); };
+  const stop = () => setStopped(true);
 
   return (
     <section className="featured" aria-roledescription="carousel" aria-label={t('featured')}
       onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}
       onFocus={() => setHold(true)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHold(false); }}>
-      <div className="feat-head">
-        <h2 className="feat-h">{t('featured')}</h2>
-        <div className="feat-ctl">
-          <button className="icon-btn" onClick={toggle} aria-label={stopped ? t('feat_play') : t('feat_pause')} title={stopped ? t('feat_play') : t('feat_pause')}>
-            {stopped ? <I.Play /> : <PauseIcon />}
-          </button>
-          <button className="icon-btn" onClick={() => goTo(index - 1)} aria-label={t('feat_prev')}><I.Prev /></button>
-          <button className="icon-btn" onClick={() => goTo(index + 1)} aria-label={t('feat_next')}><I.Next /></button>
-        </div>
-      </div>
-      <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'}>
+      <h2 className="feat-h">{t('featured')}</h2>
+      <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'} onPointerDown={stop} onWheel={e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }}>
         {slides.map((s, i) => (
           <Link key={s.key} className={`feat t-${s.kind}`} href={s.href}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -110,7 +101,7 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
       <div className="feat-dots" role="group" aria-label={t('featured')}>
         {slides.map((s, i) => (
           <button key={s.key} className={`fdot${i === index ? ' on' : ''}${i === index && running ? ' run' : ''}`} style={{ ['--step' as string]: `${STEP_MS}ms` }}
-            aria-label={`${t('feat_slide', i + 1, slides.length)}: ${s.title}`} aria-current={i === index ? 'true' : undefined} onClick={() => goTo(i)}>
+            aria-label={`${t('feat_slide', i + 1, slides.length)}: ${s.title}`} aria-current={i === index ? 'true' : undefined} onClick={() => { stop(); goTo(i); }}>
             <span />
           </button>
         ))}
@@ -119,4 +110,3 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
   );
 }
 
-const PauseIcon = () => <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>;
