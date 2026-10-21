@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { IMG, LOCALE, isCountry, isLang } from '@/lib/regions';
+import { IMG, LOCALE, SRCSET, isCountry, isLang } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
@@ -147,9 +147,9 @@ async function GameContent({ params }: { params: Params }) {
       {d.screenshots.length > 0 && (
         <section className="sec">
           <h2>{t('g_shots')}</h2>
-          <div className="shots">{d.screenshots.map(s => (
+          <div className="shots">{d.screenshots.map((s, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <a key={s} href={IMG(s, 'w1280')!} target="_blank" rel="noreferrer"><img src={IMG(s, 'w780')!} alt="" loading="lazy" decoding="async" /></a>
+            <a key={s} href={IMG(s, 'w1280')!} target="_blank" rel="noreferrer" aria-label={`${t('g_shots')} ${i + 1}: ${d.title}`}><img src={IMG(s, 'w780')!} srcSet={SRCSET(s, 'backdrop')} sizes="(max-width: 640px) 92vw, 300px" alt="" loading="lazy" decoding="async" /></a>
           ))}</div>
         </section>
       )}

@@ -6,7 +6,7 @@ import type { Kind } from '@/lib/types';
 import { useEnv } from './AppProvider';
 import * as I from './icons';
 
-export interface Slide { key: string; href: string; image: string; title: string; kind: Kind; rating: number | null; date: string }
+export interface Slide { key: string; href: string; image: string; srcSet?: string; title: string; kind: Kind; rating: number | null; date: string }
 
 const STEP_MS = 6000;
 
@@ -89,7 +89,7 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
         {slides.map((s, i) => (
           <Link key={s.key} className={`feat t-${s.kind}`} href={s.href}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {(i < 2 || warm) && <img src={s.image} alt="" loading={i < 2 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : undefined} onLoad={i === 0 ? () => setWarm(true) : undefined} />}
+            {(i < 2 || warm) && <img src={s.image} srcSet={s.srcSet} sizes="(max-width: 640px) 86vw, 420px" alt="" loading={i < 2 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : undefined} onLoad={i === 0 ? () => setWarm(true) : undefined} />}
             <span className="feat-body">
               <span className="feat-meta"><span className="tag">{t('ty_' + s.kind)}</span>{s.rating ? <span className="stars"><I.Star />{s.rating.toFixed(1)}</span> : null}</span>
               <span className="feat-title">{s.title}</span>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { COUNTRIES, IMG, nameIn } from '@/lib/regions';
+import { COUNTRIES, IMG, SRCSET, nameIn } from '@/lib/regions';
 import { addDays, diffDays, dkey, fromKey, mkey } from '@/lib/dates';
 import { titlePath } from '@/lib/slug';
 import type { CalEvent, CalItem, CalendarData, Kind, Platform } from '@/lib/types';
@@ -116,12 +116,14 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
     return Object.values(data.providers).sort((a, b) => (cnt[b.id] ?? 0) - (cnt[a.id] ?? 0));
   }, [data]);
 
-  if (!month) return <div className="wrap layout"><div /><main><div className="empty"><span className="spinner" aria-hidden />{t('loading')}</div></main></div>;
+  // До монтирования месяц неизвестен (он зависит от часов посетителя), но панель и боковая колонка
+  // рисуются сразу, чтобы страница не прыгала, когда появятся данные
 
   const C = COUNTRIES[country];
   const cName = nameIn(C.name, lang);
-  const isCurMonth = mkey(month) === mkey(today);
+  const isCurMonth = !!month && mkey(month) === mkey(today);
   const shiftMonth = (n: number) => {
+    if (!month) return;
     if (n === 0) { setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setShowPast(false); setPendingScroll(dkey(today)); }
     else { setMonth(m => new Date(m!.getFullYear(), m!.getMonth() + n, 1)); window.scrollTo({ top: 0 }); }
   };
@@ -162,7 +164,7 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
     const it = data!.items[ev.item];
     return (
       <article className="card" key={ev.item + ev.kind + ev.date}>
-        <Link className="poster-btn" href={href(it)} aria-label={t('open', it.title)}><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
+        <Link className="poster-btn" href={href(it)} tabIndex={-1} aria-hidden><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
         <h3 className="card-t"><Link href={href(it)}>{it.title}</Link></h3>
         {meta(ev, it)}
         <div className="card-a">{watchBtn(ev, it)}{actionBtn(ev, it)}</div>
@@ -195,7 +197,7 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
     return <FeaturedRail slides={list.map(e => {
       const it = data!.items[e.item], d = fromKey(e.date);
       return {
-        key: e.item, href: href(it), image: IMG(it.backdrop!, 'w780')!, title: it.title, kind: e.kind,
+        key: e.item, href: href(it), image: IMG(it.backdrop!, 'w780')!, srcSet: SRCSET(it.backdrop!, 'backdrop'), title: it.title, kind: e.kind,
         rating: it.rating, date: `${f.date(d)} · ${f.rel(d)}`,
       };
     })} />;
@@ -245,6 +247,7 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
   };
 
   const renderMonth = () => {
+    if (!month) return null;
     const lead = (month.getDay() + 6) % 7;
     const dim = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
     const weeks = Math.ceil((lead + dim) / 7);
@@ -309,14 +312,13 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
     keys.forEach(k => data.items[k]?.genres.forEach(g => { if (data.genres[g]) genreCount[g] = (genreCount[g] ?? 0) + 1; }));
   }
   const genreIds = Object.keys(genreCount).map(Number).sort((a, b) => genreCount[b] - genreCount[a]);
-  const hasGames = !!data?.events.some(e => e.kind === 'game');
   const shown = cat === 'all' ? kinds : [cat];
   const showsScreen = shown.some(k => k !== 'game');
   const showsStreaming = shown.includes('online') || shown.includes('series');
   const dirty = genres.size > 0 || plats.size > 0 || onlyWatch || !showEps || q !== '';
 
   let main: React.ReactNode;
-  if (load.status === 'loading') main = <div className="empty"><span className="spinner" aria-hidden />{t('loading')}</div>;
+  if (!month || load.status === 'loading') main = <div className="empty"><span className="spinner" aria-hidden />{t('loading')}</div>;
   else if (load.status === 'no_token') main = <div className="empty"><b>{t('notoken_t')}</b><span>{t('notoken_s')}</span></div>;
   else if (load.status === 'error') main = <div className="empty"><b>{t('err_t')}</b><span>{t('err_s')}</span></div>;
   else main = view === 'month' ? renderMonth() : view === 'list' ? renderList() : renderFeed();
@@ -331,16 +333,14 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
             </button>
           ))}
         </div>}
-        {genreIds.length > 0 && (
-          <GenreMenu ids={genreIds} names={data!.genres} counts={genreCount} selected={genres} onChange={setGenres} />
-        )}
+        <GenreMenu ids={genreIds} names={data?.genres ?? {}} counts={genreCount} selected={genres} onChange={setGenres} />
         <label className="search">
           <I.Search />
           <input id="q" type="search" value={q} placeholder={t('search')} aria-label={t('search_l')} onChange={e => setQ(e.target.value)} />
         </label>
         <div className="month-nav">
           <button className="icon-btn" aria-label={t('prev')} onClick={() => shiftMonth(-1)}><I.Prev /></button>
-          <h2>{f.monthTitle(month)}</h2>
+          <h2>{month ? f.monthTitle(month) : ' '}</h2>
           <button className="icon-btn" aria-label={t('next')} onClick={() => shiftMonth(1)}><I.Next /></button>
           <button className="today-btn" onClick={() => shiftMonth(0)}>{t('today')}</button>
         </div>
@@ -353,7 +353,7 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
 
       <div className="wrap layout">
         <aside className="side">
-          {hasGames && kinds.includes('game') && (cat === 'all' || cat === 'game') && (
+          {kinds.includes('game') && (cat === 'all' || cat === 'game') && (
             <div>
               <h3>{t('platforms')}</h3>
               <div className="genres">{PLATFORMS.map(x => (
@@ -443,7 +443,7 @@ function GenreMenu({ ids, names, counts, selected, onChange }: {
   const toggle = (g: number) => { const n = new Set(selected); if (n.has(g)) n.delete(g); else n.add(g); onChange(n); };
   return (
     <div className="gmenu" ref={box}>
-      <button className="chip gmenu-btn" aria-expanded={!!open} aria-haspopup="true" aria-pressed={selected.size > 0} onClick={() => setOpen(v => (v ? false : matchMedia('(max-width: 640px)').matches ? 'sheet' : 'menu'))}>
+      <button className="chip gmenu-btn" disabled={!ids.length} aria-expanded={!!open} aria-haspopup="true" aria-pressed={selected.size > 0} onClick={() => setOpen(v => (v ? false : matchMedia('(max-width: 640px)').matches ? 'sheet' : 'menu'))}>
         {t('genres')}{selected.size ? <b className="gmenu-n">{selected.size}</b> : null}<I.Chevron />
       </button>
       {open && wrapSheet(open,

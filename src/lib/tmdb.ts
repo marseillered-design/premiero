@@ -181,7 +181,8 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
 /* ---------- IMDb rating via OMDb (нужен OMDB_API_KEY, бесплатно до 1000 запросов в день) ---------- */
 async function fetchImdbRating(imdbId: string): Promise<{ rating: number; votes: number } | null> {
   'use cache';
-  cacheLife('days');
+  // рейтинг IMDb меняется медленно, а у бесплатного ключа OMDb 1000 запросов в сутки
+  cacheLife('weeks');
   const res = await fetch(`https://www.omdbapi.com/?i=${encodeURIComponent(imdbId)}&apikey=${process.env.OMDB_API_KEY}`);
   // ошибку ключа или лимита бросаем, чтобы она не попала в суточный кэш
   if (!res.ok) throw new Error(`OMDb ${res.status}`);
@@ -190,9 +191,14 @@ async function fetchImdbRating(imdbId: string): Promise<{ rating: number; votes:
   if (j.Response !== 'True' || !Number.isFinite(rating) || rating <= 0) return null;
   return { rating, votes: Number((j.imdbVotes ?? '0').replace(/[^\d]/g, '')) || 0 };
 }
+let omdbPausedUntil = 0; // после ответа «лимит исчерпан» час не обращаемся к OMDb
 async function getImdbRating(imdbId: string | null | undefined) {
-  if (!imdbId || !process.env.OMDB_API_KEY) return null;
-  return safe(fetchImdbRating(imdbId));
+  if (!imdbId || !process.env.OMDB_API_KEY || Date.now() < omdbPausedUntil) return null;
+  try { return await fetchImdbRating(imdbId); }
+  catch (e) {
+    if (/OMDb 401|OMDb 429/.test(String(e))) omdbPausedUntil = Date.now() + 3600_000;
+    return null;
+  }
 }
 
 /* ---------- title details ---------- */

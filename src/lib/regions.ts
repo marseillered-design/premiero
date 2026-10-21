@@ -59,7 +59,20 @@ export const IMG = (path: string | null, size = 'w342') => {
   const t = type === 'cover'
     ? (w <= 92 ? 'cover_small' : w <= 264 ? 'cover_big' : 'cover_big_2x')
     : (w <= 569 ? 'screenshot_med' : w <= 889 ? 'screenshot_big' : '1080p');
-  return `https://images.igdb.com/igdb/image/upload/t_${t}/${id}.jpg`;
+  // IGDB отдаёт WebP по тому же адресу: заметно легче JPEG
+  return `https://images.igdb.com/igdb/image/upload/t_${t}/${id}.webp`;
+};
+
+/**
+ * Набор размеров для srcset: браузер сам берёт картинку под ширину на экране и плотность пикселей.
+ * Постеры TMDB — w185/w342/w500, обложки IGDB — 264/528, кадры TMDB — w300/w780/w1280, кадры IGDB — 569/889/1920.
+ */
+export const SRCSET = (path: string | null, kind: 'poster' | 'backdrop') => {
+  if (!path) return undefined;
+  const sizes: [string, number][] = path.startsWith('igdb:')
+    ? (kind === 'poster' ? [['w264', 264], ['w528', 528]] : [['w569', 569], ['w889', 889], ['w1920', 1920]])
+    : (kind === 'poster' ? [['w185', 185], ['w342', 342], ['w500', 500]] : [['w300', 300], ['w780', 780], ['w1280', 1280]]);
+  return sizes.map(([size, w]) => `${IMG(path, size)} ${w}w`).join(', ');
 };
 
 /** Куки с выбором посетителя: proxy на «/» уводит по ним, а не по IP. */

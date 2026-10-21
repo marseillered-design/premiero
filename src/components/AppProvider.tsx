@@ -166,7 +166,7 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
         </div>
       </header>
 
-      {children}
+      <div className="page">{children}</div>
 
       <footer className="foot"><div className="wrap">
         {/* Страну сайт определяет по IP; поменять её можно здесь (даты выхода и стриминги зависят от страны) */}

@@ -15,7 +15,7 @@ export default function AccountMenu({ home }: { home: string }) {
     // вход идёт через обработчик /api/auth/login, а не через страницу, поэтому нужен полный переход
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     const signIn = () => { location.href = `/api/auth/login?next=${encodeURIComponent(location.pathname + location.search)}`; };
-    return <button className="btn sign-in" onClick={signIn}><GoogleIcon /> <span>{t('sign_in')}</span></button>;
+    return <button className="btn sign-in" onClick={signIn} aria-label={t('sign_in')}><GoogleIcon /> <span>{t('sign_in')}</span></button>;
   }
 
   const u = account.user;

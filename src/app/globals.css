@@ -67,7 +67,7 @@ p{margin:0}
 .region select{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:46vw}
 
 /* ---------- toolbar ---------- */
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 97%,transparent);border-bottom:1px solid var(--line)}
 .bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:10px}
 .cats{display:flex;gap:6px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:14px;white-space:nowrap}
@@ -111,8 +111,7 @@ p{margin:0}
 .day-h .cnt{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
 .day.is-today .day-h h2{color:var(--accent-text)}
 /* прошедшие дни приглушены подписями, а не прозрачностью: на светлом фоне прозрачные постеры выглядят выцветшими */
-.day.is-past .day-h{opacity:.6}
-.day.is-past .card-t,.day.is-past .card-m,.day.is-past .card-a{opacity:.7}
+.day.is-past .day-h h2,.day.is-past .card-t a{color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:22px 18px}
 .card{display:flex;flex-direction:column;gap:9px;min-width:0}
 .poster-btn{display:block;width:100%;border-radius:8px;transition:transform .18s ease}
@@ -537,3 +536,6 @@ a.tmdb-r:hover{border-color:#9147FF}
 .danger-zone p{margin:12px 0;max-width:60ch;line-height:1.5}
 .btn.danger{color:var(--t-online);border-color:color-mix(in srgb,var(--t-online) 45%,transparent)}
 .btn.danger:hover{background:color-mix(in srgb,var(--t-online) 12%,transparent)}
+/* ---------- страница занимает экран, пока данные грузятся: подвал не прыгает вниз ---------- */
+.page{min-height:calc(100vh - 64px);min-height:calc(100dvh - 64px)}
+.gmenu-btn:disabled{opacity:.6;cursor:default}
