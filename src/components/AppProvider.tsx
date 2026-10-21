@@ -94,13 +94,6 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
             <Suspense fallback={<NavLinks home={home} t={t} pathname="" />}><CurrentNav home={home} t={t} /></Suspense>
           </nav>
           <div className="region">
-            <select id="country" aria-label={t('country')} value={country} onChange={e => go(lang, e.target.value as CountryCode)}>
-              {GROUPS.map(g => (
-                <optgroup key={g} label={t('rg_' + g)}>
-                  {COUNTRY_CODES.filter(k => COUNTRIES[k].group === g).map(k => <option key={k} value={k}>{nameIn(COUNTRIES[k].name, lang)}</option>)}
-                </optgroup>
-              ))}
-            </select>
             <select id="lang" aria-label={t('lang')} value={lang} onChange={e => go(e.target.value as Lang, country)}>
               {LANG_CODES.map(k => <option key={k} value={k}>{LANGS[k]}</option>)}
             </select>
@@ -114,6 +107,16 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
       {children}
 
       <footer className="foot"><div className="wrap">
+        {/* Страну сайт определяет по IP; поменять её можно здесь (даты выхода и стриминги зависят от страны) */}
+        <label className="foot-country">{t('country')}
+          <select id="country" value={country} onChange={e => go(lang, e.target.value as CountryCode)}>
+            {GROUPS.map(g => (
+              <optgroup key={g} label={t('rg_' + g)}>
+                {COUNTRY_CODES.filter(k => COUNTRIES[k].group === g).map(k => <option key={k} value={k}>{nameIn(COUNTRIES[k].name, lang)}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
         <span>{t('attr')} This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
         <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">themoviedb.org</a>
         <span>{t('attr_games')}</span>

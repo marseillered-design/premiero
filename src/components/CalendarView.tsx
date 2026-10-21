@@ -373,7 +373,8 @@ export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat 
             </div>
           </div>
           {dirty && <button className="reset" onClick={resetFilters}>{t('reset')}</button>}
-          <p className="side-note">{data?.approxRegion ? t('approx', cName) : t('side_note', cName)}</p>
+          <p className="side-note">{data?.approxRegion ? t('approx', cName) : t('side_note', cName)}{' '}
+            <a href="#country" onClick={() => setTimeout(() => document.getElementById('country')?.focus(), 300)}>{t('change_country')}</a></p>
         </aside>
         <main aria-live="polite">{main}</main>
       </div>
