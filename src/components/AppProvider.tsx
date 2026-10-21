@@ -170,15 +170,7 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
 
       <footer className="foot"><div className="wrap">
         {/* Страну сайт определяет по IP; поменять её можно здесь (даты выхода и стриминги зависят от страны) */}
-        <label className="foot-country">{t('country')}
-          <select id="country" value={country} onChange={e => go(lang, e.target.value as CountryCode)}>
-            {GROUPS.map(g => (
-              <optgroup key={g} label={t('rg_' + g)}>
-                {COUNTRY_CODES.filter(k => COUNTRIES[k].group === g).map(k => <option key={k} value={k}>{nameIn(COUNTRIES[k].name, lang)}</option>)}
-              </optgroup>
-            ))}
-          </select>
-        </label>
+        <Suspense fallback={null}><CountryPicker t={t} lang={lang} country={country} onPick={c => go(lang, c)} /></Suspense>
         <Link href={`${home}/privacy`}>{t('privacy')}</Link>
         <span>{t('attr')} This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
         <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">themoviedb.org</a>
@@ -187,6 +179,23 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
       </div></footer>
       <div className={`toast${toastMsg ? ' show' : ''}`} role="status">{toastMsg}</div>
     </Ctx.Provider>
+  );
+}
+
+/** Выбор страны в подвале. На «Моём списке» и странице о конфиденциальности страна ни на что не влияет — там его нет. */
+function CountryPicker({ t, lang, country, onPick }: { t: T; lang: Lang; country: CountryCode; onPick: (c: CountryCode) => void }) {
+  const pathname = usePathname();
+  if (/\/(my|privacy)$/.test(pathname)) return null;
+  return (
+    <label className="foot-country">{t('country')}
+      <select id="country" value={country} onChange={e => onPick(e.target.value as CountryCode)}>
+        {GROUPS.map(g => (
+          <optgroup key={g} label={t('rg_' + g)}>
+            {COUNTRY_CODES.filter(k => COUNTRIES[k].group === g).map(k => <option key={k} value={k}>{nameIn(COUNTRIES[k].name, lang)}</option>)}
+          </optgroup>
+        ))}
+      </select>
+    </label>
   );
 }
 
