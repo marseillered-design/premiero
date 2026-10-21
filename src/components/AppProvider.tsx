@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Logo from './Logo';
 import { THEME_KEY } from '@/lib/theme';
 import { usePathname, useRouter } from 'next/navigation';
-import { COUNTRIES, COUNTRY_CODES, GEO_CITY_COOKIE, GROUPS, LANGS, LANG_CODES, LOCALE, PREF_COOKIE, cityName as cityNameOf, nameIn } from '@/lib/regions';
+import { COUNTRIES, COUNTRY_CODES, GROUPS, LANGS, LANG_CODES, PREF_COOKIE, nameIn } from '@/lib/regions';
 import { translator, type T } from '@/lib/i18n';
 import { dateFmt, sod, type DateFmt } from '@/lib/dates';
 import { calendarPath } from '@/lib/slug';
@@ -17,26 +17,18 @@ export interface Env {
   f: DateFmt;
   lang: Lang;
   country: CountryCode;
-  city: string;
   today: Date;
-  nowMin: number;
-  cityName: (id: string) => string;
   countryName: (c: CountryCode) => string;
   watch: Set<string>;
   toggleWatch: (key: string, title: string) => void;
   subs: Set<number>;
   setSubs: (s: Set<number>) => void;
   toast: (msg: string) => void;
-  money: (v: number) => string;
 }
 
 export const store = {
   get<V>(k: string, d: V): V { try { const v = localStorage.getItem(k); return v ? (JSON.parse(v) as V) : d; } catch { return d; } },
   set(k: string, v: unknown) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* приватный режим */ } },
-};
-const readCookie = (name: string) => {
-  const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-  return m ? decodeURIComponent(m[1]) : null;
 };
 
 const EPOCH = new Date(2000, 0, 1); // заглушка до монтирования, на экран не попадает
@@ -45,24 +37,16 @@ export const useEnv = () => { const v = useContext(Ctx); if (!v) throw new Error
 
 export default function AppProvider({ lang, country, children }: { lang: Lang; country: CountryCode; children: React.ReactNode }) {
   const router = useRouter();
-  const [boot, setBoot] = useState<{ today: Date; nowMin: number } | null>(null);
-  const [city, setCity] = useState(COUNTRIES[country].cities[0].id);
+  const [boot, setBoot] = useState<{ today: Date } | null>(null);
   const [watch, setWatch] = useState<Set<string>>(new Set());
   const [subs, setSubsState] = useState<Set<number>>(new Set());
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    const C = COUNTRIES[country];
-    // город: выбор посетителя, иначе город по IP, если он есть в списке, иначе первый
-    const saved = store.get<string | null>(`premiero.city.${country}`, null);
-    const geo = readCookie(GEO_CITY_COOKIE)?.toLowerCase();
-    const byGeo = geo ? C.cities.find(c => Object.values(c.name).some(n => n?.toLowerCase() === geo)) : undefined;
     /* eslint-disable react-hooks/set-state-in-effect */
-    setCity(C.cities.some(c => c.id === saved) ? saved! : byGeo?.id ?? C.cities[0].id);
     setWatch(new Set(store.get<string[]>('premiero.watch', [])));
     setSubsState(new Set(store.get<number[]>(`premiero.subs.${country}`, [])));
-    setBoot({ today: sod(now), nowMin: now.getHours() * 60 + now.getMinutes() });
+    setBoot({ today: sod(new Date()) });
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [country]);
 
@@ -87,15 +71,10 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
     });
   }, [t]);
   const setSubs = useCallback((s: Set<number>) => { setSubsState(s); store.set(`premiero.subs.${country}`, [...s]); }, [country]);
-  const money = useCallback((v: number) => {
-    const C = COUNTRIES[country];
-    return new Intl.NumberFormat(LOCALE[lang], { style: 'currency', currency: C.currency, minimumFractionDigits: C.decimals, maximumFractionDigits: C.decimals }).format(v);
-  }, [country, lang]);
 
   const env: Env = {
-    ready: !!boot, t, f, lang, country, city, today, nowMin: boot?.nowMin ?? 0,
-    cityName: id => cityNameOf(id, lang), countryName: c => nameIn(COUNTRIES[c].name, lang),
-    watch, toggleWatch, subs, setSubs, toast: setToastMsg, money,
+    ready: !!boot, t, f, lang, country, today, countryName: c => nameIn(COUNTRIES[c].name, lang),
+    watch, toggleWatch, subs, setSubs, toast: setToastMsg,
   };
 
   // Смена языка или страны меняет начало адреса, остальная часть пути сохраняется
@@ -104,7 +83,6 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
     const rest = location.pathname.split('/').filter(Boolean).slice(2).join('/');
     router.push(`/${l}/${c}${rest ? '/' + rest : ''}${location.search}`);
   };
-  const onCity = (id: string) => { setCity(id); store.set(`premiero.city.${country}`, id); };
   const home = calendarPath(lang, country);
 
   return (
@@ -123,9 +101,6 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
                 </optgroup>
               ))}
             </select>
-            <select id="city" aria-label={t('city')} value={city} onChange={e => onCity(e.target.value)}>
-              {COUNTRIES[country].cities.map(c => <option key={c.id} value={c.id}>{nameIn(c.name, lang)}</option>)}
-            </select>
             <select id="lang" aria-label={t('lang')} value={lang} onChange={e => go(e.target.value as Lang, country)}>
               {LANG_CODES.map(k => <option key={k} value={k}>{LANGS[k]}</option>)}
             </select>
@@ -141,6 +116,8 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
       <footer className="foot"><div className="wrap">
         <span>{t('attr')} This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
         <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">themoviedb.org</a>
+        <span>{t('attr_games')}</span>
+        <a href="https://www.igdb.com/" target="_blank" rel="noreferrer">igdb.com</a>
       </div></footer>
       <div className={`toast${toastMsg ? ' show' : ''}`} role="status">{toastMsg}</div>
     </Ctx.Provider>
@@ -152,10 +129,10 @@ function CurrentNav({ home, t }: { home: string; t: T }) {
   return <NavLinks home={home} t={t} pathname={usePathname()} />;
 }
 function NavLinks({ home, t, pathname }: { home: string; t: T; pathname: string }) {
-  const onCinemas = pathname.endsWith('/cinemas');
+  const games = `${home}/games`;
   return <>
     <Link href={home} aria-current={pathname === home ? 'page' : undefined}>{t('nav_cal')}</Link>
-    <Link href={`${home}/cinemas`} aria-current={onCinemas ? 'page' : undefined}>{t('nav_cin')}</Link>
+    <Link href={games} aria-current={pathname === games || pathname.includes('/game/') ? 'page' : undefined}>{t('nav_games')}</Link>
   </>;
 }
 /* День и ночь: data-theme на <html>; без выбора сайт следует системе. Скрипт в <head> ставит тему до отрисовки */

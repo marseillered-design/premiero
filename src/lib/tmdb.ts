@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { COUNTRIES, COUNTRY_CODES, LOCALE } from './regions';
-import type { CalendarData, CalEvent, CalItem, CountryCode, Episode, Lang, Media, Provider, TitleDetail } from './types';
+import type { CalendarData, CalEvent, CalItem, CountryCode, Episode, Lang, Provider, TitleDetail, TmdbMedia } from './types';
 
 const BASE = 'https://api.themoviedb.org/3';
 // жанры без календарной ценности: новости, реалити, мыльные оперы, ток-шоу
@@ -178,29 +178,6 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   return { month, country, lang, items, events, genres, providers, approxRegion };
 }
 
-/* ---------- now playing (для кинотеатров и сеансов) ---------- */
-export async function getNowPlaying(country: CountryCode, lang: Lang): Promise<CalItem[]> {
-  'use cache';
-  cacheLife('hours');
-
-  const C = COUNTRIES[country];
-  const language = LOCALE[lang];
-  const pages = await Promise.all([1, 2].map(page => safe(tmdb<Page<RawMovie>>('/movie/now_playing', { region: C.region, language, page }))));
-  const list = [...new Map(pages.flatMap(p => p?.results ?? []).map(r => [r.id, r])).values()].slice(0, 30);
-  const dates = await mapLimit(list, 8, mv => safe(tmdb<ReleaseDates>(`/movie/${mv.id}/release_dates`)));
-  return list.map((mv, i) => {
-    const regional = dates[i]?.results.find(r => r.iso_3166_1 === C.region)?.release_dates ?? [];
-    return {
-      key: `movie-${mv.id}`, id: mv.id, media: 'movie' as const, title: mv.title, poster: mv.poster_path, backdrop: mv.backdrop_path, genres: mv.genre_ids,
-      popularity: mv.popularity, rating: ratingOf(mv.vote_average, mv.vote_count),
-      cert: regional.map(r => r.certification).find(Boolean) || null,
-      theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(mv.release_date),
-      digital: minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date))),
-      anime: isAnime(mv.genre_ids, mv.original_language),
-    };
-  });
-}
-
 /* ---------- IMDb rating via OMDb (нужен OMDB_API_KEY, бесплатно до 1000 запросов в день) ---------- */
 async function fetchImdbRating(imdbId: string): Promise<{ rating: number; votes: number } | null> {
   'use cache';
@@ -249,7 +226,7 @@ interface TvFull {
 }
 
 /** Карточка фильма или сериала; `null`, если такого тайтла в TMDB нет. */
-export async function getTitle(media: Media, id: number, lang: Lang, country: CountryCode): Promise<TitleDetail | null> {
+export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country: CountryCode): Promise<TitleDetail | null> {
   'use cache';
   cacheLife('hours');
 

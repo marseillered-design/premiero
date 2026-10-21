@@ -4,9 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { COUNTRIES, IMG, nameIn } from '@/lib/regions';
 import { addDays, diffDays, dkey, fromKey, mkey } from '@/lib/dates';
-import { hasTickets, ticketState } from '@/lib/demo-cinemas';
 import { titlePath } from '@/lib/slug';
-import type { CalEvent, CalItem, CalendarData, Kind } from '@/lib/types';
+import type { CalEvent, CalItem, CalendarData, Kind, Platform } from '@/lib/types';
 import Poster from './Poster';
 import { store, useEnv } from './AppProvider';
 import * as I from './icons';
@@ -14,19 +13,22 @@ import { useModal } from './useModal';
 import FeaturedRail from './FeaturedRail';
 
 type View = 'feed' | 'month' | 'list';
-type Cat = 'all' | Kind;
+export type Cat = 'all' | Kind;
 type Load = { status: 'loading' | 'ok' | 'error' | 'no_token'; data?: CalendarData };
-const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, series: 2 };
-const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)' };
+const KINDS: Kind[] = ['cinema', 'series', 'online', 'game'];
+const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, series: 2, game: 3 };
+const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)', game: 'var(--t-game)' };
+const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
-export default function CalendarView() {
+/** Календарь релизов. На странице игр открывается сразу с категорией «Игры». */
+export default function CalendarView({ initialCat = 'all' }: { initialCat?: Cat }) {
   const env = useEnv();
   const { t, f, lang, country, today, ready, watch, subs } = env;
   const [month, setMonth] = useState<Date | null>(null);
   const [view, setView] = useState<View>('feed');
-  const [cat, setCat] = useState<Cat>('all');
+  const [cat, setCat] = useState<Cat>(initialCat);
+  const [plats, setPlats] = useState<Set<Platform>>(new Set());
   const [genres, setGenres] = useState<Set<number>>(new Set());
-  const [onlyTickets, setOnlyTickets] = useState(false);
   const [onlyWatch, setOnlyWatch] = useState(false);
   const [onlySubs, setOnlySubs] = useState(false);
   const [showEps, setShowEps] = useState(true);
@@ -82,14 +84,15 @@ export default function CalendarView() {
       if (cat !== 'all' && ev.kind !== cat) return false;
       if (genres.size && !it.genres.some(g => genres.has(g))) return false;
       if (onlyWatch && !watch.has(it.key)) return false;
-      if (onlyTickets && !hasTickets(it, today)) return false;
       if (!showEps && ev.kind === 'series' && !ev.premiere) return false;
       if (!showAnime && it.anime) return false;
-      if (subsActive && ev.kind !== 'cinema' && !(it.providers ?? []).some(p => subs.has(p))) return false;
+      if (plats.size && ev.kind === 'game' && !(it.platforms ?? []).some(x => plats.has(x))) return false;
+      // подписки на стриминги касаются только онлайн-релизов и сериалов
+      if (subsActive && (ev.kind === 'online' || ev.kind === 'series') && !(it.providers ?? []).some(p => subs.has(p))) return false;
       if (needle && !it.title.toLowerCase().includes(needle)) return false;
       return true;
     }).sort((a, b) => a.date.localeCompare(b.date) || TYPE_ORDER[a.kind] - TYPE_ORDER[b.kind] || data.items[b.item].popularity - data.items[a.item].popularity);
-  }, [data, q, cat, genres, onlyWatch, watch, onlyTickets, today, showEps, showAnime, subsActive, subs]);
+  }, [data, q, cat, genres, plats, onlyWatch, watch, showEps, showAnime, subsActive, subs]);
 
   useEffect(() => {
     if (!pendingScroll || load.status !== 'ok') return;
@@ -116,7 +119,7 @@ export default function CalendarView() {
     if (n === 0) { setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setShowPast(false); setPendingScroll(dkey(today)); }
     else { setMonth(m => new Date(m!.getFullYear(), m!.getMonth() + n, 1)); window.scrollTo({ top: 0 }); }
   };
-  const resetFilters = () => { setGenres(new Set()); setOnlyTickets(false); setOnlyWatch(false); setShowEps(true); setQ(''); };
+  const resetFilters = () => { setGenres(new Set()); setPlats(new Set()); setOnlyWatch(false); setShowEps(true); setQ(''); };
   const jumpToDay = (k: string) => { setShowPast(true); setView('feed'); store.set('premiero.view', 'feed'); setPendingScroll(k); };
   const href = (it: CalItem) => titlePath(lang, country, it.media, it.id, it.title);
 
@@ -134,18 +137,14 @@ export default function CalendarView() {
     const on = watch.has(it.key);
     return <button className="watch" aria-pressed={on} aria-label={on ? t('unwant') : t('want')} title={t('want')} onClick={() => env.toggleWatch(it.key, it.title)}><I.Bell /></button>;
   };
-  const actionBtn = (ev: CalEvent, it: CalItem) => {
-    const st = ev.kind === 'cinema' ? ticketState(it, today) : 'none';
-    if (st === 'on') return <Link className="buy" href={`${href(it)}#tickets`}>{t('tickets')}</Link>;
-    if (st === 'presale') return <Link className="buy" href={`${href(it)}#tickets`}>{t('presale')}</Link>;
-    if (ev.kind !== 'cinema') return <Link className="buy ghost" href={href(it)}>{t('watch_btn')}</Link>;
-    return null;
-  };
+  const actionBtn = (ev: CalEvent, it: CalItem) =>
+    ev.kind === 'online' || ev.kind === 'series' ? <Link className="buy ghost" href={href(it)}>{t('watch_btn')}</Link> : null;
   const meta = (ev: CalEvent, it: CalItem) => (
     <p className="card-m">
       {kindTag(ev.kind)}
       <span>
         {ev.kind === 'series' ? [it.platform, epLabel(ev, it)].filter(Boolean).join(' · ')
+          : ev.kind === 'game' ? (ev.plat ?? []).join(', ')
           : ev.approx ? t('world')
           : [it.cert, genreName(it.genres[0])].filter(Boolean).join(' · ')}
       </span>
@@ -164,11 +163,11 @@ export default function CalendarView() {
     );
   };
   const summary = (list: CalEvent[]) => {
-    const n: Record<Kind, Set<string>> = { cinema: new Set(), series: new Set(), online: new Set() };
+    const n: Record<Kind, Set<string>> = { cinema: new Set(), series: new Set(), online: new Set(), game: new Set() };
     list.forEach(e => n[e.kind].add(e.item));
     return (
       <div className="summary">
-        {(['cinema', 'series', 'online'] as Kind[]).filter(k => n[k].size).map(k => (
+        {KINDS.filter(k => n[k].size).map(k => (
           <span className="k" key={k}><span className="sw" style={{ background: KIND_COLOR[k] }} /><b>{n[k].size}</b> {t('s_' + k, n[k].size)}</span>
         ))}
       </div>
@@ -280,7 +279,7 @@ export default function CalendarView() {
           <thead><tr><th>{t('th_date')}</th><th>{t('th_title')}</th><th>{t('th_type')}</th><th>{t('th_genre')}</th><th>{t('th_where')}</th><th /></tr></thead>
           <tbody>{events.map(e => {
             const it = data!.items[e.item], d = fromKey(e.date);
-            const where = e.kind === 'cinema' ? t('in_theaters') : e.kind === 'series' ? [it.platform, epLabel(e, it)].filter(Boolean).join(' · ') : t('streaming');
+            const where = e.kind === 'cinema' ? t('in_theaters') : e.kind === 'series' ? [it.platform, epLabel(e, it)].filter(Boolean).join(' · ') : e.kind === 'game' ? (e.plat ?? []).join(', ') : t('streaming');
             return (
               <tr key={e.item + e.kind + e.date}>
                 <td className="date">{f.date(d)}<small>{f.wd(d, true)} · {f.rel(d)}</small></td>
@@ -300,10 +299,12 @@ export default function CalendarView() {
   const genreIds = (() => {
     if (!data) return [];
     const cnt: Record<number, number> = {};
-    Object.values(data.items).forEach(it => it.genres.forEach(g => { if (data.genres[g]) cnt[g] = (cnt[g] ?? 0) + 1; }));
+    const keys = new Set(data.events.filter(e => cat === 'all' || e.kind === cat).map(e => e.item));
+    keys.forEach(k => data.items[k]?.genres.forEach(g => { if (data.genres[g]) cnt[g] = (cnt[g] ?? 0) + 1; }));
     return Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a]);
   })();
-  const dirty = genres.size > 0 || onlyTickets || onlyWatch || !showEps || q !== '';
+  const hasGames = !!data?.events.some(e => e.kind === 'game');
+  const dirty = genres.size > 0 || plats.size > 0 || onlyWatch || !showEps || q !== '';
 
   let main: React.ReactNode;
   if (load.status === 'loading') main = <div className="empty"><span className="spinner" aria-hidden />{t('loading')}</div>;
@@ -315,7 +316,7 @@ export default function CalendarView() {
     <>
       <div className="bar"><div className="wrap">
         <div className="cats" role="group" aria-label={t('kind')}>
-          {(['all', 'cinema', 'series', 'online'] as Cat[]).map(k => (
+          {(['all', ...KINDS] as Cat[]).map(k => (
             <button key={k} className="chip" aria-pressed={cat === k} onClick={() => setCat(k)}>
               {k !== 'all' && <span className="sw" style={{ background: KIND_COLOR[k] }} />}{t(k)}
             </button>
@@ -346,10 +347,17 @@ export default function CalendarView() {
               <button key={g} className="chip" aria-pressed={genres.has(g)} onClick={() => setGenres(s => { const n = new Set(s); if (n.has(g)) n.delete(g); else n.add(g); return n; })}>{data!.genres[g]}</button>
             ))}</div>
           </div>
+          {hasGames && (cat === 'all' || cat === 'game') && (
+            <div>
+              <h3>{t('platforms')}</h3>
+              <div className="genres">{PLATFORMS.map(x => (
+                <button key={x} className="chip" aria-pressed={plats.has(x)} onClick={() => setPlats(s => { const n = new Set(s); if (n.has(x)) n.delete(x); else n.add(x); return n; })}>{t('pf_' + x)}</button>
+              ))}</div>
+            </div>
+          )}
           <div>
             <h3>{t('show')}</h3>
             <div className="toggles">
-              <label className="toggle"><input type="checkbox" checked={onlyTickets} onChange={e => setOnlyTickets(e.target.checked)} /> {t('only_t')}</label>
               <label className="toggle"><input type="checkbox" checked={onlyWatch} onChange={e => setOnlyWatch(e.target.checked)} /> {t('my_list')} ({watch.size})</label>
               <label className="toggle"><input type="checkbox" checked={showEps} onChange={e => setShowEps(e.target.checked)} /> {t('new_eps')}</label>
               <label className="toggle"><input type="checkbox" checked={showAnime} onChange={e => { setShowAnime(e.target.checked); store.set('premiero.anime', e.target.checked); }} /> {t('anime')}</label>

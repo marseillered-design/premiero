@@ -18,10 +18,7 @@ export async function GET(req: NextRequest) {
     const d = new Date(now.getFullYear(), now.getMonth() + n, 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   });
-  const urls = COUNTRY_CODES.flatMap(c => [
-    ...months.map(m => `${origin}/api/calendar?country=${c}&lang=${COUNTRIES[c].lang}&month=${m}`),
-    `${origin}/api/now-playing?country=${c}&lang=${COUNTRIES[c].lang}`,
-  ]);
+  const urls = COUNTRY_CODES.flatMap(c => months.map(m => `${origin}/api/calendar?country=${c}&lang=${COUNTRIES[c].lang}&month=${m}`));
 
   const results: { url: string; status: number }[] = [];
   let next = 0;

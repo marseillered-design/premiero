@@ -30,8 +30,9 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]/[cou
   const lang = await rootLang();
   const country = await rootCountry();
   if (!isLang(lang) || !isCountry(country)) notFound();
-  // постеры и кадры идут с image.tmdb.org: соединение открываем, пока грузится остальное
+  // постеры и кадры идут с image.tmdb.org и images.igdb.com: соединение открываем, пока грузится остальное
   preconnect('https://image.tmdb.org');
+  preconnect('https://images.igdb.com');
   return (
     <html lang={lang} className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT }} /></head>

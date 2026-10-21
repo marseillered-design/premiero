@@ -1,10 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { cinemasFor, firstSessionDay, sessionsFor, ticketState, type Session } from '@/lib/demo-cinemas';
 import { addDays, dkey, fromKey } from '@/lib/dates';
-import type { CalItem, Episode, Media } from '@/lib/types';
-import Checkout, { DateStrip, SessBtn } from './Checkout';
+import type { Episode, Media } from '@/lib/types';
 import { useEnv } from './AppProvider';
 import * as I from './icons';
 
@@ -12,24 +10,19 @@ export interface TitleCore {
   id: number; media: Media; title: string; poster: string | null; cert: string | null;
   popularity: number; theatrical: string | null; digital: string | null;
   nextEpisode: { date: string; season: number; episode: number } | null;
+  release?: string | null;   // у игр: дата выхода
 }
-const toItem = (c: TitleCore): CalItem => ({
-  key: `${c.media}-${c.id}`, id: c.id, media: c.media, title: c.title, poster: c.poster, genres: [],
-  popularity: c.popularity, rating: null, cert: c.cert, theatrical: c.theatrical, digital: c.digital,
-});
 
-/* ---------- кнопки под описанием ---------- */
-export function TitleActions({ core, tmdbUrl }: { core: TitleCore; tmdbUrl: string }) {
-  const { t, watch, toggleWatch, today, ready } = useEnv();
+/** Кнопки под описанием; `ext` — страница источника данных (TMDB или IGDB). */
+export function TitleActions({ core, ext }: { core: TitleCore; ext: { url: string; label: string } }) {
+  const { t, watch, toggleWatch } = useEnv();
   const key = `${core.media}-${core.id}`;
   const on = watch.has(key);
-  const st = ready && core.media === 'movie' ? ticketState(toItem(core), today) : 'none';
   return (
     <div className="hero-a">
-      {(st === 'on' || st === 'presale') && <a className="btn primary" href="#tickets">{st === 'on' ? t('buy') : t('buy_pre')}</a>}
       <button className="btn" aria-pressed={on} onClick={() => toggleWatch(key, core.title)}><I.Bell /> <span>{on ? t('in_list') : t('want')}</span></button>
       <AddToCalendar core={core} />
-      <a className="btn" href={tmdbUrl} target="_blank" rel="noreferrer">{t('tmdb_page')}</a>
+      <a className="btn" href={ext.url} target="_blank" rel="noreferrer">{ext.label}</a>
     </div>
   );
 }
@@ -43,6 +36,7 @@ function AddToCalendar({ core }: { core: TitleCore }) {
   const events: { label: string; text: string; date: string }[] = [];
   if (core.theatrical) events.push({ label: t('in_cinema_on'), text: t('ev_cinema', core.title), date: core.theatrical });
   if (core.digital) events.push({ label: t('online_on'), text: t('ev_online', core.title), date: core.digital });
+  if (core.release) events.push({ label: t('g_release'), text: t('ev_game', core.title), date: core.release });
   if (core.nextEpisode) events.push({ label: t('next_ep'), text: t('ev_episode', core.title, core.nextEpisode.season, core.nextEpisode.episode), date: core.nextEpisode.date });
   // прошедшие даты в календарь добавлять незачем
   const upcoming = ready ? events.filter(e => fromKey(e.date) >= today) : events;
@@ -115,37 +109,6 @@ export function Trailer({ id, title }: { id: string; title: string }) {
       )}
     </div>
   );
-}
-
-/* ---------- сеансы (демо) и покупка билета ---------- */
-export function Showtimes({ core }: { core: TitleCore }) {
-  const { t, f, today, ready, city, country, cityName, countryName } = useEnv();
-  const [date, setDate] = useState<string | null>(null);
-  const [checkout, setCheckout] = useState<Session | null>(null);
-  if (!ready) return <p className="note"><span className="spinner" aria-hidden /></p>;
-  const it = toItem(core);
-  const st = ticketState(it, today);
-  if (st === 'soon') return <p className="note">{t('soon_note', f.date(fromKey(it.theatrical!)))}</p>;
-  if (st === 'tba') return <p className="note">{t('tba_note', countryName(country))}</p>;
-  if (st === 'ended') return <p className="note">{t('ended_note')}</p>;
-
-  const from = firstSessionDay(it, today);
-  const sel = date && fromKey(date) >= from ? date : dkey(from);
-  const day = fromKey(sel);
-  const rows = cinemasFor(city).map(cin => ({ cin, ss: sessionsFor(it, cin, day, country, today) })).filter(r => r.ss.length);
-  return <>
-    <DateStrip from={from} days={7} sel={sel} onPick={setDate} />
-    {rows.length ? (
-      <div className="venues">{rows.map(({ cin, ss }) => (
-        <div className="venue" key={cin.id}>
-          <div><h4>{cin.name}</h4><p className="addr">{t('venue', cin.mall)}</p></div>
-          <div className="sess">{ss.map(s => <SessBtn key={s.id} s={s} onPick={setCheckout} />)}</div>
-        </div>
-      ))}</div>
-    ) : <p className="note">{t('no_sess', cityName(city))}</p>}
-    <p className="demo-note">{t('demo_sess')}</p>
-    {checkout && <Checkout session={checkout} item={it} onClose={() => setCheckout(null)} />}
-  </>;
 }
 
 /* ---------- график серий: «вышла» зависит от сегодняшней даты ---------- */

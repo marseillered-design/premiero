@@ -7,9 +7,9 @@ import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
 import { getTitle, hasToken } from '@/lib/tmdb';
-import type { Media, TitleDetail } from '@/lib/types';
+import type { TitleDetail, TmdbMedia as Media } from '@/lib/types';
 import Poster from './Poster';
-import { Episodes, Showtimes, TitleActions, Trailer, type TitleCore } from './TitleIslands';
+import { Episodes, TitleActions, Trailer, type TitleCore } from './TitleIslands';
 import * as I from './icons';
 
 type Params = Promise<{ lang: string; country: string; slug: string }>;
@@ -122,7 +122,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
             {d.people.length > 0 && <span>{t(media === 'tv' ? 'people_tv' : 'people_movie')}: <b>{d.people.join(', ')}</b></span>}
             {d.cast.length > 0 && <span>{t('cast')}: <b>{d.cast.join(', ')}</b></span>}
           </div>
-          <TitleActions core={core} tmdbUrl={d.tmdbUrl} />
+          <TitleActions core={core} ext={{ url: d.tmdbUrl, label: t('tmdb_page') }} />
         </div>
       </div>
       </div>
@@ -134,13 +134,6 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
           <h2>{t('trailer')}{d.season && media === 'tv' ? <small>{t('season')} {d.season.number}</small> : null}</h2>
           <Trailer id={d.trailer} title={d.title} />
           {d.trailerName && <p className="trailer-name">{d.trailerName}</p>}
-        </section>
-      )}
-
-      {media === 'movie' && (
-        <section className="sec" id="tickets">
-          <h2>{t('showtimes')}</h2>
-          <Showtimes core={core} />
         </section>
       )}
 

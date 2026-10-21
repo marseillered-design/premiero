@@ -1,7 +1,7 @@
 import { IMG } from '@/lib/regions';
-import { hash } from '@/lib/demo-cinemas';
 
 // Постер TMDB, а если его нет, типографическая заглушка с названием
+const hash = (str: string) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 const FALLBACK = [['#22324F', '#0C1220'], ['#43206A', '#12081F'], ['#2F5D50', '#12251F'], ['#3E0B10', '#0B0606'], ['#3D2E1E', '#1E1E1E']];
 
 const WIDTHS = [185, 342, 500, 780];
