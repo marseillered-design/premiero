@@ -138,10 +138,16 @@ function CurrentNav({ home, t }: { home: string; t: T }) {
   return <NavLinks home={home} t={t} pathname={usePathname()} />;
 }
 function NavLinks({ home, t, pathname }: { home: string; t: T; pathname: string }) {
-  const games = `${home}/games`;
+  // раздел подсвечивается и на страницах внутри него: /movie/… — «Фильмы», /tv/… — «Сериалы», /game/… — «Игры»
+  const links: [string, string, string | null][] = [
+    ['', 'nav_all', null], ['/movies', 'nav_movies', '/movie/'], ['/series', 'nav_series', '/tv/'], ['/games', 'nav_games', '/game/'],
+  ];
   return <>
-    <Link href={home} aria-current={pathname === home ? 'page' : undefined}>{t('nav_cal')}</Link>
-    <Link href={games} aria-current={pathname === games || pathname.includes('/game/') ? 'page' : undefined}>{t('nav_games')}</Link>
+    {links.map(([path, key, inner]) => {
+      const href = home + path;
+      const on = pathname === href || (!!inner && pathname.includes(inner));
+      return <Link key={key} href={href} aria-current={on ? 'page' : undefined}>{t(key)}</Link>;
+    })}
   </>;
 }
 /* День и ночь: data-theme на <html>; без выбора сайт следует системе. Скрипт в <head> ставит тему до отрисовки */
