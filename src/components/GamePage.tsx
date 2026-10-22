@@ -8,6 +8,7 @@ import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
 import { getGame, hasIgdb, GAME_GENRE_OFFSET } from '@/lib/igdb';
 import { gameGenreName } from '@/lib/game-genres';
+import { releaseSentence, whenOf } from '@/lib/release-text';
 import type { GameDetail } from '@/lib/types';
 import Poster from './Poster';
 import { TitleActions, Trailer, type TitleCore } from './TitleIslands';
@@ -106,6 +107,7 @@ async function GameContent({ params }: { params: Params }) {
           <div className="key-dates">
             <span><b>{t('g_release')}</b> {d.release ? day(d.release) : t('tba')}</span>
           </div>
+          <p className="rel-sentence">{releaseSentence(lang, { kind: 'game', title: d.title, release: whenOf(d.release, new Date().toISOString().slice(0, 10)), platforms })}</p>
           {d.summary && <p className="desc" lang="en">{d.summary}</p>}
           <div className="credits">
             {d.developers.length > 0 && <span>{t('g_dev')}: <b>{d.developers.join(', ')}</b></span>}

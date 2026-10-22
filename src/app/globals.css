@@ -576,3 +576,4 @@ a.tmdb-r:hover{border-color:#9147FF}
 .actor-ph{font-size:28px}
 .actor-name{font-size:13px;font-weight:600;line-height:1.2}
 .actor-char{font-size:11.5px;color:var(--muted);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rel-sentence{font-size:15px;font-weight:500;margin:0 0 10px;max-width:62ch}

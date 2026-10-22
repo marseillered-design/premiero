@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { COUNTRIES, IMG, LOCALE, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
+import { releaseSentence, whenOf } from '@/lib/release-text';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
 import { getTitle, hasToken } from '@/lib/tmdb';
@@ -61,6 +62,10 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
   const day = (k: string) => fullDate.format(fromKey(k));
   const compact = new Intl.NumberFormat(LOCALE[lang], { notation: 'compact', maximumFractionDigits: 1 });
   const cName = nameIn(COUNTRIES[country].name, lang);
+  const today = new Date().toISOString().slice(0, 10);
+  const sentence = media === 'tv'
+    ? releaseSentence(lang, { kind: 'tv', title: d.title, next: d.nextEpisode ? { ...whenOf(d.nextEpisode.date, today)!, s: d.nextEpisode.season, e: d.nextEpisode.episode } : null })
+    : releaseSentence(lang, { kind: 'movie', title: d.title, country: cName, cinema: whenOf(d.theatrical, today), online: whenOf(d.digital, today) });
   const core: TitleCore = {
     id: d.id, media, title: d.title, poster: d.poster, cert: d.cert, popularity: d.popularity,
     theatrical: d.theatrical, digital: d.digital, nextEpisode: d.nextEpisode,
@@ -117,6 +122,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
             {d.digital && <span><b>{t('online_on')}</b> {day(d.digital)}</span>}
             {d.nextEpisode && <span><b>{t('next_ep')} {d.nextEpisode.season}×{String(d.nextEpisode.episode).padStart(2, '0')}</b> {day(d.nextEpisode.date)}</span>}
           </div>
+          <p className="rel-sentence">{sentence}</p>
           {d.overview && <p className="desc">{d.overview}</p>}
           {d.people.length > 0 && (
             <div className="people">
