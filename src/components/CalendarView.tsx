@@ -147,8 +147,10 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
     const item = { key: it.key, media: it.media, id: it.id, title: it.title, poster: it.poster, date: ev.date };
     return <button className="watch" aria-pressed={on} aria-label={on ? t('unwant') : t('want')} title={t('want')} onClick={() => env.toggleWatch(item)}><I.Bell /></button>;
   };
+  // у онлайн-релизов и сериалов — «Смотреть», у игр — «Играть»; обе ведут на страницу релиза
   const actionBtn = (ev: CalEvent, it: CalItem) =>
-    ev.kind === 'online' || ev.kind === 'series' ? <Link className="buy ghost" href={href(it)}>{t('watch_btn')}</Link> : null;
+    ev.kind === 'online' || ev.kind === 'series' ? <Link className="buy ghost" href={href(it)}>{t('watch_btn')}</Link>
+      : ev.kind === 'game' ? <Link className="buy ghost" href={href(it)}>{t('play_btn')}</Link> : null;
   const meta = (ev: CalEvent, it: CalItem) => (
     <p className="card-m">
       {kindTag(ev.kind)}
