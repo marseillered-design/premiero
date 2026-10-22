@@ -55,6 +55,9 @@ export interface CalendarData {
   approxRegion: boolean;
 }
 
+/** Человек из титров TMDB; photo — путь к фото TMDB или null. */
+export interface Person { id: number; name: string; character?: string; photo: string | null }
+
 export interface Episode { n: number; name: string; date: string | null }
 
 export interface TitleDetail {
@@ -68,8 +71,8 @@ export interface TitleDetail {
   runtime: number | null;
   year: string | null;
   genres: string[];
-  people: string[];          // режиссёр фильма или авторы сериала
-  cast: string[];
+  people: Person[];          // режиссёр фильма или авторы сериала
+  cast: Person[];            // главные роли: имя, персонаж, фото
   trailer: string | null;    // ключ видео на YouTube
   trailerName: string | null; // название ролика в TMDB, например «… Season 2 Official Trailer»
   providers: Provider[];

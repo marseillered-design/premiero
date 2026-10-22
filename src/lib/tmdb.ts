@@ -202,7 +202,10 @@ async function getImdbRating(imdbId: string | null | undefined) {
 }
 
 /* ---------- title details ---------- */
-interface Credits { cast: { name: string }[]; crew: { name: string; job: string }[] }
+interface Credits { cast: { id: number; name: string; character?: string; profile_path: string | null }[]; crew: { id: number; name: string; job: string; profile_path: string | null }[] }
+const CAST_MAX = 12;
+const person = (c: { id: number; name: string; character?: string; profile_path: string | null }) =>
+  ({ id: c.id, name: c.name, character: c.character || undefined, photo: c.profile_path });
 interface Video { key: string; name: string; site: string; type: string; iso_639_1: string; official: boolean; published_at: string }
 interface Videos { results: Video[] }
 
@@ -225,7 +228,7 @@ interface MovieFull {
 interface TvFull {
   id: number; name: string; original_name: string; overview: string; poster_path: string | null; backdrop_path: string | null;
   episode_run_time: number[]; first_air_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
-  popularity: number; original_language: string; created_by: { name: string }[]; networks: { name: string }[];
+  popularity: number; original_language: string; created_by: { id: number; name: string; profile_path: string | null }[]; networks: { name: string }[];
   external_ids: { imdb_id: string | null };
   last_episode_to_air: EpisodeRef | null; next_episode_to_air: EpisodeRef | null;
   credits: Credits; videos: Videos; 'watch/providers': Providers; content_ratings: { results: { iso_3166_1: string; rating: string }[] };
@@ -259,8 +262,8 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
     return {
       id, media, title: m.title, original: m.original_title, overview: m.overview, poster: m.poster_path, backdrop: m.backdrop_path,
       runtime: m.runtime || null, year: m.release_date?.slice(0, 4) || null, genres: m.genres.map(g => g.name.toLowerCase()),
-      people: m.credits.crew.filter(c => c.job === 'Director').map(c => c.name).slice(0, 2),
-      cast: m.credits.cast.slice(0, 5).map(c => c.name), ...trailerOf(bestTrailer(m.videos.results, lang)), ...providersOf(m['watch/providers']),
+      people: m.credits.crew.filter(c => c.job === 'Director').slice(0, 2).map(person),
+      cast: m.credits.cast.slice(0, CAST_MAX).map(person), ...trailerOf(bestTrailer(m.videos.results, lang)), ...providersOf(m['watch/providers']),
       releases, cert: regional.map(r => r.certification).find(Boolean) || null, rating: ratingOf(m.vote_average, m.vote_count),
       network: null, season: null,
       theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(m.release_date),
@@ -298,7 +301,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
   return {
     id, media, title: t.name, original: t.original_name, overview: t.overview, poster: seasonPoster ?? t.poster_path, backdrop: t.backdrop_path,
     runtime: t.episode_run_time[0] ?? null, year: t.first_air_date?.slice(0, 4) || null, genres: t.genres.map(g => g.name.toLowerCase()),
-    people: t.created_by.map(c => c.name).slice(0, 3), cast: t.credits.cast.slice(0, 5).map(c => c.name),
+    people: t.created_by.slice(0, 3).map(person), cast: t.credits.cast.slice(0, CAST_MAX).map(person),
     ...trailerOf(trailer), ...providersOf(t['watch/providers']), releases: [],
     cert: t.content_ratings.results.find(r => r.iso_3166_1 === C.region)?.rating || null, rating: ratingOf(t.vote_average, t.vote_count),
     network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null,

@@ -74,9 +74,9 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     '@context': 'https://schema.org', '@type': media === 'tv' ? 'TVSeries' : 'Movie',
     name: d.title, alternateName: d.original !== d.title ? d.original : undefined, description: d.overview || undefined,
     image: IMG(d.poster, 'w780') ?? undefined, datePublished: d.theatrical ?? d.year ?? undefined,
-    director: media === 'movie' ? d.people.map(name => ({ '@type': 'Person', name })) : undefined,
-    creator: media === 'tv' ? d.people.map(name => ({ '@type': 'Person', name })) : undefined,
-    actor: d.cast.map(name => ({ '@type': 'Person', name })),
+    director: media === 'movie' ? d.people.map(p => ({ '@type': 'Person', name: p.name })) : undefined,
+    creator: media === 'tv' ? d.people.map(p => ({ '@type': 'Person', name: p.name })) : undefined,
+    actor: d.cast.slice(0, 5).map(p => ({ '@type': 'Person', name: p.name })),
     aggregateRating: d.rating ? { '@type': 'AggregateRating', ratingValue: d.rating, bestRating: 10 } : undefined,
     trailer: d.trailer ? { '@type': 'VideoObject', name: `${d.title}: ${t('trailer')}`, embedUrl: `https://www.youtube.com/embed/${d.trailer}`, thumbnailUrl: `https://i.ytimg.com/vi/${d.trailer}/hqdefault.jpg` } : undefined,
   };
@@ -118,10 +118,18 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
             {d.nextEpisode && <span><b>{t('next_ep')} {d.nextEpisode.season}×{String(d.nextEpisode.episode).padStart(2, '0')}</b> {day(d.nextEpisode.date)}</span>}
           </div>
           {d.overview && <p className="desc">{d.overview}</p>}
-          <div className="credits">
-            {d.people.length > 0 && <span>{t(media === 'tv' ? 'people_tv' : 'people_movie')}: <b>{d.people.join(', ')}</b></span>}
-            {d.cast.length > 0 && <span>{t('cast')}: <b>{d.cast.join(', ')}</b></span>}
-          </div>
+          {d.people.length > 0 && (
+            <div className="people">
+              <span className="people-l">{t(media === 'tv' ? 'people_tv' : 'people_movie')}</span>
+              {d.people.map(p => (
+                <span className="person-chip" key={p.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {p.photo ? <img src={IMG(p.photo, 'w185')!} alt="" width={28} height={28} loading="lazy" /> : <span className="person-ph" aria-hidden>{p.name.slice(0, 1)}</span>}
+                  {p.name}
+                </span>
+              ))}
+            </div>
+          )}
           <TitleActions core={core} ext={{ url: d.tmdbUrl, label: t('tmdb_page') }} />
         </div>
       </div>
@@ -129,6 +137,20 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     </div>
 
     <div className="wrap title-page">
+      {d.cast.length > 0 && (
+        <section className="sec">
+          <h2>{t('cast')}</h2>
+          <ul className="cast-scroll">{d.cast.map(p => (
+            <li className="actor" key={p.id}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {p.photo ? <img src={IMG(p.photo, 'w185')!} alt="" width={84} height={120} loading="lazy" decoding="async" /> : <span className="actor-ph" aria-hidden>{p.name.slice(0, 1)}</span>}
+              <span className="actor-name">{p.name}</span>
+              {p.character && <span className="actor-char">{p.character}</span>}
+            </li>
+          ))}</ul>
+        </section>
+      )}
+
       {d.trailer && (
         <section className="sec">
           <h2>{t('trailer')}{d.season && media === 'tv' ? <small>{t('season')} {d.season.number}</small> : null}</h2>
