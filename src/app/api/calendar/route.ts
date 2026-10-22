@@ -2,6 +2,8 @@ import type { NextRequest } from 'next/server';
 import { getReleases, hasAnySource } from '@/lib/releases';
 import { isCountry, isLang } from '@/lib/regions';
 import { CDN_CACHE } from '@/lib/http';
+import { hasKv } from '@/lib/kv';
+import { wantCounts } from '@/lib/account';
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
@@ -11,7 +13,10 @@ export async function GET(req: NextRequest) {
   }
   if (!hasAnySource()) return Response.json({ error: 'no_token' }, { status: 503 });
   try {
-    return Response.json(await getReleases(country, lang, month), { headers: CDN_CACHE });
+    const data = await getReleases(country, lang, month);
+    // счётчики «хотят посмотреть»; ответ кэшируется на час, этого хватает
+    const want = hasKv() ? await wantCounts(Object.keys(data.items)).catch(() => ({})) : {};
+    return Response.json({ ...data, want }, { headers: CDN_CACHE });
   } catch (e) {
     console.error('calendar', e);
     return Response.json({ error: 'tmdb' }, { status: 502 });

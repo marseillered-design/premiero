@@ -9,6 +9,8 @@ import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
 import { getGame, hasIgdb, GAME_GENRE_OFFSET } from '@/lib/igdb';
 import { gameGenreName } from '@/lib/game-genres';
+import { hasKv } from '@/lib/kv';
+import { wantCounts } from '@/lib/account';
 import { releaseSentence, whenOf } from '@/lib/release-text';
 import type { GameDetail } from '@/lib/types';
 import Poster from './Poster';
@@ -70,6 +72,7 @@ async function GameContent({ params }: { params: Params }) {
   const core: TitleCore = {
     id: d.id, media: 'game', title: d.title, poster: d.poster, cert: null, popularity: d.popularity,
     theatrical: null, digital: null, nextEpisode: null, release: d.release,
+    want: hasKv() ? (await wantCounts([`game-${d.id}`]).catch(() => ({} as Record<string, number>)))[`game-${d.id}`] : undefined,
   };
   const meta = [d.release?.slice(0, 4), genres.slice(0, 3).join(', '), d.modes.slice(0, 2).join(', ')].filter(Boolean) as string[];
 

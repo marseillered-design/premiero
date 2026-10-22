@@ -113,6 +113,22 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
     setPendingScroll(null);
   }, [pendingScroll, load.status, view]);
 
+  const rank = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!data) return m;
+    const group = (k: Kind) => (k === 'online' || k === 'cinema' ? 'movies' : k);
+    const byGroup: Record<string, CalItem[]> = {};
+    for (const ev of data.events) {
+      const it = data.items[ev.item];
+      if (!it) continue;
+      (byGroup[group(ev.kind)] ??= []).push(it);
+    }
+    for (const list of Object.values(byGroup)) {
+      [...new Map(list.map(i => [i.key, i])).values()].sort((a, b) => b.popularity - a.popularity).forEach((it, i) => { if (!m.has(it.key)) m.set(it.key, i); });
+    }
+    return m;
+  }, [data]);
+
   // Провайдеры месяца: сначала самые частые
   const providerList = useMemo(() => {
     if (!data) return [];
@@ -146,6 +162,14 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
   };
   const kindTag = (k: Kind) => <span className={`tag t-${k}`}>{t('ty_' + k)}</span>;
   const genreName = (id: number) => data?.genres[id] ?? '';
+  // метка как у releases.com: место релиза по популярности среди своего типа в этом месяце
+  const want = data?.want ?? {};
+  const antLabel = (ev: CalEvent, it: CalItem) => {
+    const r = rank.get(it.key);
+    if (r === undefined || r > 9) return null;
+    if (ev.date < dkey(today)) return <span className="ant ant-pop">{t('ant_pop')}</span>;
+    return r < 3 ? <span className="ant ant-top">{t('ant_top')}</span> : <span className="ant">{t('ant')}</span>;
+  };
   const watchBtn = (ev: CalEvent, it: CalItem) => {
     const on = watch.has(it.key);
     const item = { key: it.key, media: it.media, id: it.id, title: it.title, poster: it.poster, date: ev.date };
@@ -157,6 +181,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
       : ev.kind === 'game' ? <Link className="buy ghost" href={href(it)}>{t('play_btn')}</Link> : null;
   const meta = (ev: CalEvent, it: CalItem) => (
     <p className="card-m">
+      {antLabel(ev, it)}
       {kindTag(ev.kind)}
       <span>
         {ev.kind === 'series' ? [it.platform, epLabel(ev, it)].filter(Boolean).join(' · ')
@@ -174,7 +199,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
         <Link className="poster-btn" href={href(it)} tabIndex={-1} aria-hidden><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
         <h3 className="card-t"><Link href={href(it)}>{it.title}</Link></h3>
         {meta(ev, it)}
-        <div className="card-a">{watchBtn(ev, it)}{actionBtn(ev, it)}</div>
+        <div className="card-a">{watchBtn(ev, it)}{actionBtn(ev, it)}{want[it.key] >= 3 && <span className="want-n" title={t('want_n', want[it.key])}><I.Bell />{want[it.key]}</span>}</div>
       </article>
     );
   };

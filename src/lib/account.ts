@@ -41,13 +41,30 @@ export async function addItems(sub: string, items: WatchItem[]) {
   if (!items.length) return;
   const [count] = await kv(['HLEN', `w:${sub}`]);
   const room = Math.max(0, MAX_ITEMS - Number(count ?? 0));
-  const flat = items.slice(0, room).flatMap(i => [i.key, JSON.stringify(i)]);
-  if (flat.length) await kv(['HSET', `w:${sub}`, ...flat]);
+  const add = items.slice(0, room);
+  if (!add.length) return;
+  // HSETNX отвечает 1 только для новых записей: их и прибавляем к общему счётчику
+  const fresh = await kv(...add.map(i => ['HSETNX', `w:${sub}`, i.key, JSON.stringify(i)]));
+  const inc = add.filter((_, n) => Number(fresh[n]) === 1).map(i => ['HINCRBY', 'want', i.key, 1]);
+  if (inc.length) await kv(...inc);
 }
-export const removeItem = (sub: string, key: string) => kv(['HDEL', `w:${sub}`, key]);
+export async function removeItem(sub: string, key: string) {
+  const [gone] = await kv(['HDEL', `w:${sub}`, key]);
+  if (Number(gone) === 1) await kv(['HINCRBY', 'want', key, -1]);
+}
+/** Сколько аккаунтов отметили каждый из релизов. */
+export async function wantCounts(keys: string[]): Promise<Record<string, number>> {
+  if (!keys.length) return {};
+  const [vals] = await kv(['HMGET', 'want', ...keys]);
+  const out: Record<string, number> = {};
+  (Array.isArray(vals) ? vals : []).forEach((v, i) => { const n = Number(v); if (n > 0) out[keys[i]] = n; });
+  return out;
+}
 export const saveSubs = (sub: string, country: string, ids: number[]) => kv(['HSET', `s:${sub}`, country, JSON.stringify(ids)]);
 export async function deleteAccount(sub: string) {
-  const [token] = await kv(['HGET', `u:${sub}`, 'cal']);
+  const [token, keys] = await kv(['HGET', `u:${sub}`, 'cal'], ['HKEYS', `w:${sub}`]);
+  const listed = Array.isArray(keys) ? (keys as string[]) : [];
+  if (listed.length) await kv(...listed.map(k => ['HINCRBY', 'want', k, -1]));
   await kv(['DEL', `u:${sub}`, `w:${sub}`, `s:${sub}`, ...(token ? [`cal:${token}`] : [])]);
 }
 

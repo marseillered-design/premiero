@@ -9,6 +9,8 @@ import { releaseSentence, whenOf } from '@/lib/release-text';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
 import { getTitle, hasToken } from '@/lib/tmdb';
+import { hasKv } from '@/lib/kv';
+import { wantCounts } from '@/lib/account';
 import type { TitleDetail, TmdbMedia as Media } from '@/lib/types';
 import Poster from './Poster';
 import { Episodes, TitleActions, Trailer, type TitleCore } from './TitleIslands';
@@ -72,6 +74,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
   const core: TitleCore = {
     id: d.id, media, title: d.title, poster: d.poster, cert: d.cert, popularity: d.popularity,
     theatrical: d.theatrical, digital: d.digital, nextEpisode: d.nextEpisode,
+    want: hasKv() ? (await wantCounts([`${media}-${d.id}`]).catch(() => ({} as Record<string, number>)))[`${media}-${d.id}`] : undefined,
   };
   const kindKey = media === 'tv' ? 'ty_series' : d.theatrical ? 'ty_cinema' : 'ty_online';
   const kindCls = media === 'tv' ? 'series' : d.theatrical ? 'cinema' : 'online';

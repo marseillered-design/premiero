@@ -53,6 +53,7 @@ export interface CalendarData {
   genres: Record<number, string>;
   providers: Record<number, Provider>;
   approxRegion: boolean;
+  want?: Record<string, number>;  // сколько аккаунтов отметили релиз (только больше нуля)
 }
 
 /** Человек из титров TMDB; photo — путь к фото TMDB или null. */
