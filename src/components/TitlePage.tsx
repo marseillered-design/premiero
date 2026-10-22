@@ -14,6 +14,7 @@ import { wantCounts } from '@/lib/account';
 import type { TitleDetail, TmdbMedia as Media } from '@/lib/types';
 import Poster from './Poster';
 import { Episodes, TitleActions, Trailer, type TitleCore } from './TitleIslands';
+import { ReportFix } from './Reports';
 import * as I from './icons';
 
 type Params = Promise<{ lang: string; country: string; slug: string }>;
@@ -130,6 +131,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
             {d.nextEpisode && <span><b>{t('next_ep')} {d.nextEpisode.season}×{String(d.nextEpisode.episode).padStart(2, '0')}</b> {day(d.nextEpisode.date)}</span>}
           </div>
           <p className="rel-sentence">{sentence}</p>
+          <ReportFix itemKey={`${media}-${d.id}`} title={d.title} media={media} />
           {d.overview && <p className="desc">{d.overview}</p>}
           {d.people.length > 0 && (
             <div className="people">

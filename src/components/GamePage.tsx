@@ -15,6 +15,7 @@ import { releaseSentence, whenOf } from '@/lib/release-text';
 import type { GameDetail } from '@/lib/types';
 import Poster from './Poster';
 import { TitleActions, Trailer, type TitleCore } from './TitleIslands';
+import { ReportFix } from './Reports';
 import * as I from './icons';
 
 type Params = Promise<{ lang: string; country: string; slug: string }>;
@@ -115,6 +116,7 @@ async function GameContent({ params }: { params: Params }) {
             <span><b>{t('g_release')}</b> {d.release ? day(d.release) : t('tba')}</span>
           </div>
           <p className="rel-sentence">{releaseSentence(lang, { kind: 'game', title: d.title, release: whenOf(d.release, today), platforms })}</p>
+          <ReportFix itemKey={`game-${d.id}`} title={d.title} media="game" />
           {d.summary && <p className="desc" lang="en">{d.summary}</p>}
           <div className="credits">
             {d.developers.length > 0 && <span>{t('g_dev')}: <b>{d.developers.join(', ')}</b></span>}
