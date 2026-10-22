@@ -589,3 +589,11 @@ a.tmdb-r:hover{border-color:#9147FF}
 .facet-links a{display:inline-block;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:13px;text-decoration:none}
 .facet-links a:hover{border-color:var(--muted)}
 .facet-links a[aria-current]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+/* ---------- «Горячее на этой неделе» ---------- */
+.hot{margin:6px 0 26px}
+.hot-row{list-style:none;margin:0;padding:0 0 8px;display:grid;grid-auto-flow:column;grid-auto-columns:128px;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin}
+.hot-row li{scroll-snap-align:start;min-width:0}
+.hot-row a{display:flex;flex-direction:column;gap:6px;color:var(--fg);text-decoration:none}
+.hot-row a:hover .hot-t{color:var(--accent-text)}
+.hot-t{font-size:13.5px;font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hot-d{font-size:12px;color:var(--muted)}

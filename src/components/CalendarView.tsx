@@ -210,6 +210,37 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
     })} />;
   };
 
+  // «Горячее на этой неделе», как у releases.com: отдельный ряд для игр, фильмов и сериалов на общей странице
+  const HOT: [string, Kind[], string][] = [['hot_games', ['game'], '/games'], ['hot_movies', ['cinema', 'online'], '/movies'], ['hot_series', ['series'], '/series']];
+  const hotRows = () => {
+    if (section !== 'all') return null;
+    const from = dkey(addDays(today, -3)), to = dkey(addDays(today, 7));
+    return HOT.map(([key, ks, path]) => {
+      const seen = new Set<string>();
+      const list = events
+        .filter(e => e.date >= from && e.date <= to && ks.includes(e.kind))
+        .sort((a, b) => data!.items[b.item].popularity - data!.items[a.item].popularity)
+        .filter(e => !seen.has(e.item) && seen.add(e.item))
+        .slice(0, 10);
+      if (list.length < 3) return null;
+      return (
+        <section className="hot" key={key}>
+          <div className="feat-top"><h2 className="feat-h">{t(key)}</h2><Link className="feat-more" href={`/${lang}/${country}${path}`}>{t('all_link')} →</Link></div>
+          <ul className="hot-row">{list.map(e => {
+            const it = data!.items[e.item];
+            return (
+              <li key={e.item}><Link href={href(it)}>
+                <Poster path={it.poster} title={it.title} />
+                <span className="hot-t">{it.title}</span>
+                <span className="hot-d">{f.date(fromKey(e.date))}</span>
+              </Link></li>
+            );
+          })}</ul>
+        </section>
+      );
+    });
+  };
+
   /* ---------- views ---------- */
   const renderFeed = () => {
     if (!events.length) return empty;
@@ -223,6 +254,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
     return (
       <>
         {isCurMonth && !q && featured()}
+        {isCurMonth && !q && hotRows()}
         <nav className="daybar" aria-label={t('v_feed')}>
           {[...allDays].map(([k, n]) => {
             const d = fromKey(k), rel = diffDays(d, today);
