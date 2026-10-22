@@ -5,7 +5,7 @@ export type CountryCode =
   | 'ge' | 'am' | 'kz' | 'uz' | 'kg';
 export type Media = 'movie' | 'tv' | 'game';
 export type TmdbMedia = Exclude<Media, 'game'>;
-export type Kind = 'cinema' | 'online' | 'series' | 'game';
+export type Kind = 'cinema' | 'online' | 'disc' | 'series' | 'game';
 /** Семейства игровых платформ для фильтра. */
 export type Platform = 'pc' | 'ps' | 'xbox' | 'nintendo' | 'mobile';
 
@@ -25,6 +25,7 @@ export interface CalItem {
   cert: string | null;        // возрастной рейтинг в выбранной стране
   theatrical?: string | null; // дата выхода в кино в выбранной стране (YYYY-MM-DD)
   digital?: string | null;    // дата цифрового релиза
+  physical?: string | null;   // выход на Blu-ray/DVD
   platform?: string | null;   // канал или стриминг сериала
   season?: number;
   totalEps?: number;
@@ -85,6 +86,7 @@ export interface TitleDetail {
   season: { number: number; episodes: Episode[] } | null;
   theatrical: string | null; // дата в кино в выбранной стране
   digital: string | null;
+  physical: string | null;   // Blu-ray, 4K, DVD
   nextEpisode: { date: string; season: number; episode: number } | null;
   popularity: number;
   anime: boolean;

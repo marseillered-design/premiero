@@ -18,12 +18,12 @@ import SearchBox from './SearchBox';
 type View = 'feed' | 'month' | 'list';
 export type Cat = 'all' | Kind;
 type Load = { status: 'loading' | 'ok' | 'error' | 'no_token'; data?: CalendarData };
-const KINDS: Kind[] = ['cinema', 'series', 'online', 'game'];
+const KINDS: Kind[] = ['cinema', 'series', 'online', 'disc', 'game'];
 /** Разделы сайта и какие типы релизов в них входят. */
 export type Section = 'all' | 'movies' | 'series' | 'games';
-const SECTION_KINDS: Record<Section, Kind[]> = { all: KINDS, movies: ['cinema', 'online'], series: ['series'], games: ['game'] };
-const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, series: 2, game: 3 };
-const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)', game: 'var(--t-game)' };
+const SECTION_KINDS: Record<Section, Kind[]> = { all: KINDS, movies: ['cinema', 'online', 'disc'], series: ['series'], games: ['game'] };
+const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, disc: 2, series: 3, game: 4 };
+const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)', disc: 'var(--t-disc)', game: 'var(--t-game)' };
 const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
 /** Календарь релизов: весь или один раздел (фильмы, сериалы, игры). */
@@ -116,7 +116,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
   const rank = useMemo(() => {
     const m = new Map<string, number>();
     if (!data) return m;
-    const group = (k: Kind) => (k === 'online' || k === 'cinema' ? 'movies' : k);
+    const group = (k: Kind) => (k === 'online' || k === 'cinema' || k === 'disc' ? 'movies' : k);
     const byGroup: Record<string, CalItem[]> = {};
     for (const ev of data.events) {
       const it = data.items[ev.item];
@@ -204,7 +204,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
     );
   };
   const summary = (list: CalEvent[]) => {
-    const n: Record<Kind, Set<string>> = { cinema: new Set(), series: new Set(), online: new Set(), game: new Set() };
+    const n: Record<Kind, Set<string>> = { cinema: new Set(), series: new Set(), online: new Set(), disc: new Set(), game: new Set() };
     list.forEach(e => n[e.kind].add(e.item));
     return (
       <div className="summary">
@@ -353,7 +353,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
           <thead><tr><th>{t('th_date')}</th><th>{t('th_title')}</th><th>{t('th_type')}</th><th>{t('th_genre')}</th><th>{t('th_where')}</th><th /></tr></thead>
           <tbody>{events.map(e => {
             const it = data!.items[e.item], d = fromKey(e.date);
-            const where = e.kind === 'cinema' ? t('in_theaters') : e.kind === 'series' ? [it.platform, epLabel(e, it)].filter(Boolean).join(' · ') : e.kind === 'game' ? (e.plat ?? []).join(', ') : t('streaming');
+            const where = e.kind === 'cinema' ? t('in_theaters') : e.kind === 'series' ? [it.platform, epLabel(e, it)].filter(Boolean).join(' · ') : e.kind === 'game' ? (e.plat ?? []).join(', ') : e.kind === 'disc' ? t('ty_disc') : t('streaming');
             return (
               <tr key={e.item + e.kind + e.date}>
                 <td className="date">{f.date(d)}<small>{f.wd(d, true)} · {f.rel(d)}</small></td>

@@ -126,6 +126,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
           <div className="key-dates">
             {d.theatrical && <span><b>{t('in_cinema_on')}</b> {day(d.theatrical)}</span>}
             {d.digital && <span><b>{t('online_on')}</b> {day(d.digital)}</span>}
+            {d.physical && <span><b>{t('ty_disc')}</b> {day(d.physical)}</span>}
             {d.nextEpisode && <span><b>{t('next_ep')} {d.nextEpisode.season}×{String(d.nextEpisode.episode).padStart(2, '0')}</b> {day(d.nextEpisode.date)}</span>}
           </div>
           <p className="rel-sentence">{sentence}</p>

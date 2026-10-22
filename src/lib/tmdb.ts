@@ -95,7 +95,7 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
     region: C.region, language, with_release_type: type, 'release_date.gte': start, 'release_date.lte': end,
     sort_by: 'popularity.desc', include_adult: 'false', page,
   });
-  const pages = await Promise.all([discover('2|3', 1), discover('2|3', 2), discover('2|3', 3), discover('4', 1), discover('4', 2)].map(safe));
+  const pages = await Promise.all([discover('2|3', 1), discover('2|3', 2), discover('2|3', 3), discover('4', 1), discover('4', 2), discover('5', 1)].map(safe));
   const theatricalFound = pages[0]?.total_results ?? 0;
 
   // В странах с редкими региональными датами показываем мировые премьеры
@@ -114,25 +114,30 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   for (const r of worldwide) if (!movies.has(r.id)) movies.set(r.id, r);
   const approxIds = new Set(worldwide.map(r => r.id));
 
-  const list = [...movies.values()].slice(0, 80);
+  // диски идут последней страницей: добавляем их поверх лимита, иначе их вытесняют премьеры
+  const discIds = new Set((pages[5]?.results ?? []).map(r => r.id));
+  const main = [...movies.values()].filter(r => !discIds.has(r.id)).slice(0, 80);
+  const list = [...main, ...[...movies.values()].filter(r => discIds.has(r.id))];
   const extras = await mapLimit(list, 8, mv => safe(tmdb<MovieExtras>(`/movie/${mv.id}`, { append_to_response: 'release_dates,watch/providers' })));
   list.forEach((mv, i) => {
     const regional = extras[i]?.release_dates.results.find(r => r.iso_3166_1 === C.region)?.release_dates ?? [];
     let theatrical = minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date)));
     const digital = minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date)));
+    const physical = minDate(regional.filter(r => r.type === 5).map(r => day(r.release_date)));
     const approx = !theatrical && approxIds.has(mv.id);
     if (approx) theatrical = day(mv.release_date);
     const key = `movie-${mv.id}`;
     const item: CalItem = {
       key, id: mv.id, media: 'movie', title: mv.title, poster: mv.poster_path, backdrop: mv.backdrop_path, genres: mv.genre_ids,
       popularity: mv.popularity, rating: ratingOf(mv.vote_average, mv.vote_count),
-      cert: regional.map(r => r.certification).find(Boolean) || null, theatrical, digital,
+      cert: regional.map(r => r.certification).find(Boolean) || null, theatrical, digital, physical,
       anime: isAnime(mv.genre_ids, mv.original_language),
       providers: flatrate(extras[i]?.['watch/providers'], C.region, providers),
     };
     let used = false;
     if (inMonth(theatrical, month)) { events.push({ item: key, date: theatrical!, kind: 'cinema', approx }); used = true; }
     if (inMonth(digital, month)) { events.push({ item: key, date: digital!, kind: 'online' }); used = true; }
+    if (inMonth(physical, month)) { events.push({ item: key, date: physical!, kind: 'disc' }); used = true; }
     if (used) items[key] = item;
   });
 
@@ -268,6 +273,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
       network: null, season: null,
       theatrical: minDate(regional.filter(r => r.type === 2 || r.type === 3).map(r => day(r.release_date))) ?? day(m.release_date),
       digital: minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date))),
+      physical: minDate(regional.filter(r => r.type === 5).map(r => day(r.release_date))),
       nextEpisode: null, popularity: m.popularity, anime: isAnime(m.genres.map(g => g.id), m.original_language),
       imdbId: m.imdb_id || null, imdb: await getImdbRating(m.imdb_id),
       tmdbUrl: `https://www.themoviedb.org/movie/${id}`,
@@ -304,7 +310,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
     people: t.created_by.slice(0, 3).map(person), cast: t.credits.cast.slice(0, CAST_MAX).map(person),
     ...trailerOf(trailer), ...providersOf(t['watch/providers']), releases: [],
     cert: t.content_ratings.results.find(r => r.iso_3166_1 === C.region)?.rating || null, rating: ratingOf(t.vote_average, t.vote_count),
-    network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null,
+    network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null, physical: null,
     nextEpisode: nx?.air_date ? { date: nx.air_date, season: nx.season_number, episode: nx.episode_number } : null,
     popularity: t.popularity, anime: isAnime(t.genres.map(g => g.id), t.original_language),
     imdbId: t.external_ids?.imdb_id || null, imdb: await getImdbRating(t.external_ids?.imdb_id),
