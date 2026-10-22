@@ -7,6 +7,7 @@ import { COUNTRIES, IMG, SRCSET, nameIn } from '@/lib/regions';
 import { addDays, diffDays, dkey, fromKey, mkey } from '@/lib/dates';
 import { titlePath } from '@/lib/slug';
 import type { CalEvent, CalItem, CalendarData, Kind, Platform } from '@/lib/types';
+import type { FacetFilter } from '@/lib/facets';
 import Poster from './Poster';
 import { store, useEnv } from './AppProvider';
 import * as I from './icons';
@@ -26,15 +27,17 @@ const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'v
 const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
 /** Календарь релизов: весь или один раздел (фильмы, сериалы, игры). */
-export default function CalendarView({ section = 'all' }: { section?: Section }) {
+export default function CalendarView({ section = 'all', filter }: { section?: Section; filter?: FacetFilter }) {
   const kinds = SECTION_KINDS[section];
   const env = useEnv();
   const { t, f, lang, country, today, ready, watch, subs } = env;
   const [month, setMonth] = useState<Date | null>(null);
   const [view, setView] = useState<View>('feed');
   const [cat, setCat] = useState<Cat>('all');
-  const [plats, setPlats] = useState<Set<Platform>>(new Set());
-  const [genres, setGenres] = useState<Set<number>>(new Set());
+  const [plats, setPlats] = useState<Set<Platform>>(() => new Set(filter?.platform ? [filter.platform] : []));
+  const [genres, setGenres] = useState<Set<number>>(() => new Set(filter?.genres ?? []));
+  // стриминг страницы-календаря (например, «Сериалы Netflix»); снимается крестиком в панели
+  const [provs, setProvs] = useState<Set<number>>(() => new Set(filter?.providers ?? []));
   const [onlyWatch, setOnlyWatch] = useState(false);
   const [onlySubs, setOnlySubs] = useState(false);
   const [showEps, setShowEps] = useState(true);
@@ -94,12 +97,13 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
       if (!showEps && ev.kind === 'series' && !ev.premiere) return false;
       if (!showAnime && it.anime) return false;
       if (plats.size && ev.kind === 'game' && !(it.platforms ?? []).some(x => plats.has(x))) return false;
+      if (provs.size && !((ev.kind === 'online' || ev.kind === 'series') && (it.providers ?? []).some(x => provs.has(x)))) return false;
       // подписки на стриминги касаются только онлайн-релизов и сериалов
       if (subsActive && (ev.kind === 'online' || ev.kind === 'series') && !(it.providers ?? []).some(p => subs.has(p))) return false;
       if (needle && !it.title.toLowerCase().includes(needle)) return false;
       return true;
     }).sort((a, b) => a.date.localeCompare(b.date) || TYPE_ORDER[a.kind] - TYPE_ORDER[b.kind] || data.items[b.item].popularity - data.items[a.item].popularity);
-  }, [data, kinds, q, cat, genres, plats, onlyWatch, watch, showEps, showAnime, subsActive, subs]);
+  }, [data, kinds, q, cat, genres, plats, provs, onlyWatch, watch, showEps, showAnime, subsActive, subs]);
 
   useEffect(() => {
     if (!pendingScroll || load.status !== 'ok') return;
@@ -128,7 +132,7 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
     if (n === 0) { setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setShowPast(false); setPendingScroll(dkey(today)); }
     else { setMonth(m => new Date(m!.getFullYear(), m!.getMonth() + n, 1)); window.scrollTo({ top: 0 }); }
   };
-  const resetFilters = () => { setGenres(new Set()); setPlats(new Set()); setOnlyWatch(false); setShowEps(true); setQ(''); };
+  const resetFilters = () => { setGenres(new Set()); setPlats(new Set()); setProvs(new Set()); setOnlyWatch(false); setShowEps(true); setQ(''); };
   const jumpToDay = (k: string) => { setShowPast(true); setView('feed'); store.set('premiero.view', 'feed'); setPendingScroll(k); };
   const href = (it: CalItem) => titlePath(lang, country, it.media, it.id, it.title);
 
@@ -336,6 +340,9 @@ export default function CalendarView({ section = 'all' }: { section?: Section })
             </button>
           ))}
         </div>}
+        {provs.size > 0 && filter?.label && (
+          <button className="chip prov-chip" aria-pressed onClick={() => setProvs(new Set())} aria-label={`${filter.label}: ${t('reset')}`}>{filter.label} <I.Close /></button>
+        )}
         <GenreMenu ids={genreIds} names={data?.genres ?? {}} counts={genreCount} selected={genres} onChange={setGenres} />
         <SearchBox q={q} onChange={setQ} />
         <div className="month-nav">

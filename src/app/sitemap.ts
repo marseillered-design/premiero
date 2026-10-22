@@ -4,6 +4,7 @@ import { COUNTRIES, COUNTRY_CODES, LANG_CODES, isCountry } from '@/lib/regions';
 import { getReleases, hasAnySource } from '@/lib/releases';
 import { titlePath } from '@/lib/slug';
 import { SITE } from '@/lib/site';
+import { facetsFor, type FacetSection } from '@/lib/facets';
 
 /*
  * Карта сайта из нескольких файлов: /sitemap/pages.xml — календари всех стран на всех языках,
@@ -15,14 +16,16 @@ export async function generateSitemaps() {
 }
 
 const SECTIONS = ['', '/movies', '/series', '/games', '/upcoming'];
+const FACET_SECTIONS: FacetSection[] = ['movies', 'series', 'games'];
 
 export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
   const key = await id;
   if (key === 'pages') {
-    return COUNTRY_CODES.flatMap(country => SECTIONS.flatMap(section => LANG_CODES.map(lang => ({
+    const paths = (country: (typeof COUNTRY_CODES)[number]) => [...SECTIONS, ...FACET_SECTIONS.flatMap(sec => facetsFor(sec, country).map(f => `/${sec}/${f.slug}`))];
+    return COUNTRY_CODES.flatMap(country => paths(country).flatMap(section => LANG_CODES.map(lang => ({
       url: `${SITE}/${lang}/${country}${section}`,
       changeFrequency: 'daily' as const,
-      priority: section ? 0.8 : 1,
+      priority: !section ? 1 : section.split('/').length > 2 ? 0.7 : 0.8,
       alternates: { languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, `${SITE}/${l}/${country}${section}`])) },
     }))));
   }

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 import { COUNTRIES, IMG, LOCALE, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { releaseSentence, whenOf } from '@/lib/release-text';
@@ -62,6 +63,8 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
   const day = (k: string) => fullDate.format(fromKey(k));
   const compact = new Intl.NumberFormat(LOCALE[lang], { notation: 'compact', maximumFractionDigits: 1 });
   const cName = nameIn(COUNTRIES[country].name, lang);
+  // фраза о дате зависит от сегодняшнего дня, поэтому страница собирается по запросу (данные — из кэша)
+  await connection();
   const today = new Date().toISOString().slice(0, 10);
   const sentence = media === 'tv'
     ? releaseSentence(lang, { kind: 'tv', title: d.title, next: d.nextEpisode ? { ...whenOf(d.nextEpisode.date, today)!, s: d.nextEpisode.season, e: d.nextEpisode.episode } : null })

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import CalendarView, { type Section } from './CalendarView';
+import FacetLinks from './FacetLinks';
+import type { FacetFilter } from '@/lib/facets';
 import { COUNTRIES, LANG_CODES, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 
@@ -25,12 +27,13 @@ export async function calendarMetadata(section?: Exclude<Section, 'all'>): Promi
   };
 }
 
-export default async function CalendarPage({ section }: { section?: Section }) {
+export default async function CalendarPage({ section, filter, current }: { section?: Section; filter?: FacetFilter; current?: string }) {
   const lang = await rootLang(), country = await rootCountry();
   // Месяц зависит от часов посетителя, поэтому адрес собирает браузер. CalendarView подхватит этот запрос.
   const early = `(function(){try{var d=new Date(),m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),u='/api/calendar?country=${country}&lang=${lang}&month='+m;window.__premieroCal={url:u,res:fetch(u)}}catch(e){}})()`;
   return <>
     {isLang(lang) && isCountry(country) && <script dangerouslySetInnerHTML={{ __html: early }} />}
-    <CalendarView section={section} />
+    <CalendarView section={section} filter={filter} />
+    {isLang(lang) && isCountry(country) && <FacetLinks lang={lang} country={country} section={section ?? 'all'} current={current} />}
   </>;
 }

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 import { IMG, LOCALE, SRCSET, isCountry, isLang } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
@@ -59,6 +60,9 @@ async function GameContent({ params }: { params: Params }) {
     notFound();
   }
   const d = r.detail;
+  // фраза о дате зависит от сегодняшнего дня (данные — из кэша)
+  await connection();
+  const today = new Date().toISOString().slice(0, 10);
   const fullDate = new Intl.DateTimeFormat(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric' });
   const day = (k: string) => fullDate.format(fromKey(k));
   const genres = d.genres.map(g => gameGenreName(g - GAME_GENRE_OFFSET, lang)).filter(Boolean) as string[];
@@ -107,7 +111,7 @@ async function GameContent({ params }: { params: Params }) {
           <div className="key-dates">
             <span><b>{t('g_release')}</b> {d.release ? day(d.release) : t('tba')}</span>
           </div>
-          <p className="rel-sentence">{releaseSentence(lang, { kind: 'game', title: d.title, release: whenOf(d.release, new Date().toISOString().slice(0, 10)), platforms })}</p>
+          <p className="rel-sentence">{releaseSentence(lang, { kind: 'game', title: d.title, release: whenOf(d.release, today), platforms })}</p>
           {d.summary && <p className="desc" lang="en">{d.summary}</p>}
           <div className="credits">
             {d.developers.length > 0 && <span>{t('g_dev')}: <b>{d.developers.join(', ')}</b></span>}

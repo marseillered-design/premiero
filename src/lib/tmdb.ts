@@ -65,7 +65,7 @@ function flatrate(p: Providers | undefined, region: string, into: Record<number,
 interface Season { season_number: number; poster_path?: string | null; episodes: { episode_number: number; name: string; air_date: string | null }[] }
 
 /* ---------- genres ---------- */
-async function getGenres(lang: Lang): Promise<Record<number, string>> {
+export async function getGenres(lang: Lang): Promise<Record<number, string>> {
   'use cache';
   cacheLife('days');
   const language = LOCALE[lang];
