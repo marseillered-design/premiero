@@ -699,3 +699,13 @@ a.tmdb-r:hover{border-color:#9147FF}
 /* ---------- подвал: ссылка на MovieMood ---------- */
 .foot-mm{flex-basis:100%;margin:0;font-size:13.5px;color:var(--fg)}
 .foot-mm a{color:var(--accent-text);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+/* ---------- конец месяца: линия отрыва, как у билета ---------- */
+.eom{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 16px 12px;margin-top:20px}
+.eom-tear{position:relative;align-self:stretch;height:0;border-top:2px dashed var(--line);margin:0 12px 26px}
+.eom-tear::before,.eom-tear::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg);border:2px solid var(--line)}
+.eom-tear::before{left:-22px}
+.eom-tear::after{right:-22px}
+.eom-icon{color:var(--accent);margin-bottom:4px;transform:rotate(-8deg)}
+.eom-t{font-family:var(--display);font-weight:700;font-size:20px;margin:0;color:var(--fg)}
+.eom-s{margin:0 0 10px;color:var(--muted);max-width:42ch}
+.eom .btn svg{width:16px;height:16px}

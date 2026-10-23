@@ -228,6 +228,20 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
       </div>
     );
   };
+  // в конце ленты — не тупик, а переход дальше: следующий месяц одной кнопкой
+  const endOfMonth = () => {
+    if (!month) return null;
+    const next = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+    return (
+      <div className="eom">
+        <div className="eom-tear" aria-hidden />
+        <TicketIcon />
+        <p className="eom-t">{t('end_t')}</p>
+        <p className="eom-s">{t('end_s')}</p>
+        <button className="btn primary" onClick={() => shiftMonth(1)}>{f.monthTitle(next)} <I.Next /></button>
+      </div>
+    );
+  };
   const empty = <div className="empty"><b>{t('empty_t')}</b><span>{t('empty_s')}</span><button className="btn" onClick={resetFilters}>{t('reset')}</button></div>;
 
   // Главные премьеры ближайших дней: большие карточки с кадром из фильма
@@ -320,6 +334,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
             </section>
           );
         })}
+        {endOfMonth()}
       </>
     );
   };
@@ -380,6 +395,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
             );
           })}</tbody>
         </table></div>
+        {endOfMonth()}
       </>
     );
   };
@@ -553,3 +569,11 @@ function FilterMenu({ count, onReset, children }: { count: number; onReset: () =
 
 const wrapSheet = (mode: 'menu' | 'sheet', pop: React.ReactNode) =>
   mode === 'menu' ? pop : createPortal(<div className="gmenu-sheet">{pop}</div>, document.body);
+
+/** Билет из логотипа, маленький: значок в конце месяца. */
+const TicketIcon = () => (
+  <svg className="eom-icon" width={56} height={36} viewBox="14 22 68 52" aria-hidden>
+    <path d="M14 28a6 6 0 0 1 6-6h56a6 6 0 0 1 6 6v12a8 8 0 0 0 0 16v12a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V56a8 8 0 0 0 0-16z" fill="currentColor" />
+    <path d="M63 27v42" stroke="var(--bg)" strokeWidth={3.5} strokeDasharray="5 4" />
+  </svg>
+);
