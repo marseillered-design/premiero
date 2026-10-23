@@ -72,7 +72,7 @@ function render(m: Mail) {
 <div style="display:none;max-height:0;overflow:hidden">${esc(m.intro)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F1EA"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:14px;padding:22px 18px">
-  <tr><td style="padding:0 6px"><a href="${SITE}" style="font:800 22px Arial,sans-serif;color:#2A1116;text-decoration:none"><span style="display:inline-block;background:#E7B65C;color:#2A1116;border-radius:6px;padding:2px 7px;margin-right:6px">P</span>Premiero</a></td></tr>
+  <tr><td style="padding:0 6px"><a href="${SITE}" style="font:800 22px Arial,sans-serif;color:#2A1116;text-decoration:none"><img src="${SITE}/email-logo.png" width="32" height="32" alt="" style="display:inline-block;vertical-align:middle;width:32px;height:32px;border:0;border-radius:7px;margin-right:8px"><span style="vertical-align:middle">Premiero</span></a></td></tr>
   <tr><td style="padding:16px 6px 0;font:700 22px/1.3 Arial,sans-serif;color:#2A1116">${esc(m.heading)}</td></tr>
   <tr><td style="padding:12px 6px 0;font:15px/1.5 Arial,sans-serif;color:#2A1116">${esc(m.greeting)}<br>${esc(m.intro)}</td></tr>
   ${body}

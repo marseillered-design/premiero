@@ -12,7 +12,7 @@ import type { Lang } from '@/lib/types';
  */
 const page = (lang: Lang, title: string, body: string) => new Response(`<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} · Premiero</title></head>
 <body style="margin:0;background:#16090C;color:#F5EDE3;font:16px/1.5 Arial,sans-serif"><div style="max-width:460px;margin:12vh auto;padding:0 20px;text-align:center">
-<div style="font:800 22px Arial,sans-serif;margin-bottom:24px"><span style="background:#E7B65C;color:#2A1116;border-radius:6px;padding:2px 8px;margin-right:6px">P</span>Premiero</div>
+<div style="font:800 22px Arial,sans-serif;margin-bottom:24px"><img src="/email-logo.png" width="36" height="36" alt="" style="vertical-align:middle;border-radius:8px;margin-right:8px"><span style="vertical-align:middle">Premiero</span></div>
 <h1 style="font-size:22px;margin:0 0 14px">${title}</h1>${body}
 <p style="margin-top:28px"><a href="${SITE}/${lang}" style="color:#E7B65C">thepremiero.com</a></p></div></body></html>`, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
 
