@@ -679,3 +679,7 @@ a.tmdb-r:hover{border-color:#9147FF}
 .cal-links{gap:8px}
 .cal-links button{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font-weight:600;font-size:13px;text-decoration:none;cursor:pointer}
 .cal-links button:hover{border-color:var(--accent);color:var(--accent-text)}
+/* ---------- напоминания в Telegram на «Моём списке» ---------- */
+.tg-btn{background:#2AABEE;border-color:#2AABEE;color:#fff}
+.tg-btn svg{flex:none}
+.tg-on{color:var(--fg);font-weight:600}

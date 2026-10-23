@@ -1,8 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { feedOwner, loadAccount, saveItems } from '@/lib/account';
 import { hasKv } from '@/lib/kv';
-import { getTitle, hasToken } from '@/lib/tmdb';
-import { getGame, hasIgdb } from '@/lib/igdb';
+import { currentDate } from '@/lib/fresh';
 import { isCountry, isLang } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { titlePath } from '@/lib/slug';
@@ -16,17 +15,6 @@ import type { CountryCode, Lang, WatchItem } from '@/lib/types';
  */
 const CHECK = 40;            // сколько ближайших релизов сверять за один запрос
 const DAY = 86400000;
-
-async function currentDate(it: WatchItem, lang: Lang, country: CountryCode): Promise<string | null | undefined> {
-  try {
-    if (it.media === 'game') return hasIgdb() ? (await getGame(it.id, country))?.release : undefined;
-    if (!hasToken()) return undefined;
-    const d = await getTitle(it.media, it.id, lang, country);
-    if (!d) return undefined;
-    // у сериала — следующая серия, у фильма — кино, иначе онлайн-релиз
-    return it.media === 'tv' ? d.nextEpisode?.date ?? it.date : d.theatrical ?? d.digital;
-  } catch { return undefined; }
-}
 
 const esc = (s: string) => s.replace(/[\\;,]/g, m => '\\' + m).replace(/\r?\n/g, '\\n');
 const ymd = (k: string) => k.replaceAll('-', '');

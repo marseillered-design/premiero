@@ -1,6 +1,7 @@
 import { kv, pairs } from './kv';
 import type { User } from './auth';
 import type { WatchItem } from './types';
+import { unlinkSub } from './telegram';
 
 /*
  * Данные аккаунта в Redis:
@@ -65,6 +66,7 @@ export async function deleteAccount(sub: string) {
   const [token, keys] = await kv(['HGET', `u:${sub}`, 'cal'], ['HKEYS', `w:${sub}`]);
   const listed = Array.isArray(keys) ? (keys as string[]) : [];
   if (listed.length) await kv(...listed.map(k => ['HINCRBY', 'want', k, -1]));
+  await unlinkSub(sub);
   await kv(['DEL', `u:${sub}`, `w:${sub}`, `s:${sub}`, ...(token ? [`cal:${token}`] : [])]);
 }
 
