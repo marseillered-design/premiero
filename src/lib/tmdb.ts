@@ -183,29 +183,6 @@ export async function getCalendar(country: CountryCode, lang: Lang, month: strin
   return { month, country, lang, items, events, genres, providers, approxRegion };
 }
 
-/* ---------- IMDb rating via OMDb (нужен OMDB_API_KEY, бесплатно до 1000 запросов в день) ---------- */
-async function fetchImdbRating(imdbId: string): Promise<{ rating: number; votes: number } | null> {
-  'use cache';
-  // рейтинг IMDb меняется медленно, а у бесплатного ключа OMDb 1000 запросов в сутки
-  cacheLife('weeks');
-  const res = await fetch(`https://www.omdbapi.com/?i=${encodeURIComponent(imdbId)}&apikey=${process.env.OMDB_API_KEY}`);
-  // ошибку ключа или лимита бросаем, чтобы она не попала в суточный кэш
-  if (!res.ok) throw new Error(`OMDb ${res.status}`);
-  const j = await res.json() as { Response?: string; imdbRating?: string; imdbVotes?: string };
-  const rating = Number(j.imdbRating);
-  if (j.Response !== 'True' || !Number.isFinite(rating) || rating <= 0) return null;
-  return { rating, votes: Number((j.imdbVotes ?? '0').replace(/[^\d]/g, '')) || 0 };
-}
-let omdbPausedUntil = 0; // после ответа «лимит исчерпан» час не обращаемся к OMDb
-async function getImdbRating(imdbId: string | null | undefined) {
-  if (!imdbId || !process.env.OMDB_API_KEY || Date.now() < omdbPausedUntil) return null;
-  try { return await fetchImdbRating(imdbId); }
-  catch (e) {
-    if (/OMDb 401|OMDb 429/.test(String(e))) omdbPausedUntil = Date.now() + 3600_000;
-    return null;
-  }
-}
-
 /* ---------- title details ---------- */
 interface Credits { cast: { id: number; name: string; character?: string; profile_path: string | null }[]; crew: { id: number; name: string; job: string; profile_path: string | null }[] }
 const CAST_MAX = 12;
@@ -291,7 +268,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
       digital: minDate(regional.filter(r => r.type === 4).map(r => day(r.release_date))),
       physical: minDate(regional.filter(r => r.type === 5).map(r => day(r.release_date))),
       nextEpisode: null, popularity: m.popularity, anime: isAnime(m.genres.map(g => g.id), m.original_language),
-      imdbId: m.imdb_id || null, imdb: await getImdbRating(m.imdb_id),
+      imdbId: m.imdb_id || null,
       tmdbUrl: `https://www.themoviedb.org/movie/${id}`,
     };
   }
@@ -329,7 +306,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
     network: t.networks[0]?.name ?? null, season, theatrical: null, digital: null, physical: null,
     nextEpisode: nx?.air_date ? { date: nx.air_date, season: nx.season_number, episode: nx.episode_number } : null,
     popularity: t.popularity, anime: isAnime(t.genres.map(g => g.id), t.original_language),
-    imdbId: t.external_ids?.imdb_id || null, imdb: await getImdbRating(t.external_ids?.imdb_id),
+    imdbId: t.external_ids?.imdb_id || null,
     tmdbUrl: `https://www.themoviedb.org/tv/${id}`,
   };
 }

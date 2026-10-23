@@ -68,7 +68,6 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
   const d = r.detail;
   const fullDate = new Intl.DateTimeFormat(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric' });
   const day = (k: string) => fullDate.format(fromKey(k));
-  const compact = new Intl.NumberFormat(LOCALE[lang], { notation: 'compact', maximumFractionDigits: 1 });
   const cName = nameIn(COUNTRIES[country].name, lang);
   // фраза о дате зависит от сегодняшнего дня, поэтому страница собирается по запросу (данные — из кэша)
   await connection();
@@ -123,12 +122,8 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
           {(d.imdbId || d.rating) && (
             <div className="ratings">
               {d.imdbId && (
-                <a className="imdb" href={`https://www.imdb.com/title/${d.imdbId}/`} target="_blank" rel="noreferrer"
-                  >
-                  <span className="imdb-logo" aria-hidden={!!d.imdb}>IMDb</span>
-                  {d.imdb && <><b aria-hidden>{d.imdb.rating.toFixed(1)}</b><small aria-hidden>/10 · {compact.format(d.imdb.votes)}</small>
-                    <span className="sr">{t('imdb_l', d.imdb.rating.toFixed(1), compact.format(d.imdb.votes))}</span></>}
-                </a>
+                // ссылка на страницу IMDb: её id даёт TMDB; оценку IMDb (через OMDb) больше не показываем
+                <a className="imdb" href={`https://www.imdb.com/title/${d.imdbId}/`} target="_blank" rel="noreferrer"><span className="imdb-logo">IMDb</span></a>
               )}
               {d.rating ? <span className="tmdb-r" aria-label={t('tmdb_l', d.rating.toFixed(1))}><span className="tmdb-logo">TMDB</span><b>{d.rating.toFixed(1)}</b><small>/10</small></span> : null}
             </div>

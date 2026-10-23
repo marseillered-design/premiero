@@ -92,7 +92,6 @@ export interface TitleDetail {
   popularity: number;
   anime: boolean;
   imdbId: string | null;
-  imdb: { rating: number; votes: number } | null;
   tmdbUrl: string;
 }
 
