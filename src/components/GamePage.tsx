@@ -94,7 +94,7 @@ async function GameContent({ params }: { params: Params }) {
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
     <div className={`t-hero${backdrop ? '' : ' no-bd'}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      {backdrop && <img className="t-hero-bg" src={backdrop} alt="" fetchPriority="high" />}
+      {backdrop && <img className="t-hero-bg" src={backdrop} srcSet={SRCSET(d.backdrop, 'backdrop')} sizes="100vw" alt="" fetchPriority="high" />}
       <div className="wrap t-hero-in">
       <nav className="crumbs"><Link href={`${calendarPath(lang, country)}/games`}><I.Prev /> {t('to_games')}</Link></nav>
 

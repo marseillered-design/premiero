@@ -1,10 +1,15 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
+import { headers } from 'next/headers';
 import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import CalendarView, { type Section } from './CalendarView';
 import FacetLinks from './FacetLinks';
 import type { FacetFilter } from '@/lib/facets';
 import { COUNTRIES, LANG_CODES, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
+import { SITE } from '@/lib/site';
+import type { CalendarData, CountryCode, Lang } from '@/lib/types';
 
 const META: Record<Exclude<Section, 'all'>, [string, string]> = {
   movies: ['meta_movies_title', 'meta_movies_desc'], series: ['meta_series_title', 'meta_series_desc'], games: ['meta_games_title', 'meta_games_desc'],
@@ -27,13 +32,51 @@ export async function calendarMetadata(section?: Exclude<Section, 'all'>): Promi
   };
 }
 
+// Часовой пояс страны: «сегодня» на сервере должно совпасть с календарём у посетителя
+const TZ: Record<CountryCode, string> = {
+  ua: 'Europe/Kyiv', pl: 'Europe/Warsaw', de: 'Europe/Berlin', gb: 'Europe/London', fr: 'Europe/Paris', es: 'Europe/Madrid',
+  it: 'Europe/Rome', nl: 'Europe/Amsterdam', cz: 'Europe/Prague', ro: 'Europe/Bucharest', lt: 'Europe/Vilnius', lv: 'Europe/Riga',
+  ee: 'Europe/Tallinn', md: 'Europe/Chisinau', by: 'Europe/Minsk', us: 'America/New_York', mx: 'America/Mexico_City',
+  ge: 'Asia/Tbilisi', am: 'Asia/Yerevan', kz: 'Asia/Almaty', uz: 'Asia/Tashkent', kg: 'Asia/Bishkek',
+};
+const todayIn = (country: CountryCode) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ[country] ?? 'UTC' }).format(new Date());
+
+/**
+ * Месяц для первого экрана. Берём тот же ответ /api/calendar, что и браузер: он лежит в CDN,
+ * так что это быстро даже на «холодном» сервере. Не успели за 2,5 с — календарь догрузится в браузере.
+ */
+async function monthFor(country: CountryCode, lang: Lang, today: string): Promise<CalendarData | null> {
+  const h = await headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  if (!host) return null;
+  const proto = /^(localhost|127\.0\.0\.1)(:|$)/.test(host) ? 'http' : 'https';
+  try {
+    const res = await fetch(`${proto}://${host}/api/calendar?country=${country}&lang=${lang}&month=${today.slice(0, 7)}`, { signal: AbortSignal.timeout(2500) });
+    return res.ok ? ((await res.json()) as CalendarData) : null;
+  } catch { return null; }
+}
+
+async function ServerMonth({ section, filter, lang, country }: { section?: Section; filter?: FacetFilter; lang: Lang; country: CountryCode }) {
+  await connection();
+  const today = todayIn(country);
+  const data = await monthFor(country, lang, today);
+  return <CalendarView section={section} filter={filter} initial={data ? { today, data } : undefined} />;
+}
+
 export default async function CalendarPage({ section, filter, current }: { section?: Section; filter?: FacetFilter; current?: string }) {
   const lang = await rootLang(), country = await rootCountry();
-  // Месяц зависит от часов посетителя, поэтому адрес собирает браузер. CalendarView подхватит этот запрос.
-  const early = `(function(){try{var d=new Date(),m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),u='/api/calendar?country=${country}&lang=${lang}&month='+m;window.__premieroCal={url:u,res:fetch(u)}}catch(e){}})()`;
+  if (!isLang(lang) || !isCountry(country)) return <CalendarView section={section} filter={filter} />;
+  const t = translator(lang);
+  const c = nameIn(COUNTRIES[country].name, lang);
   return <>
-    {isLang(lang) && isCountry(country) && <script dangerouslySetInnerHTML={{ __html: early }} />}
-    <CalendarView section={section} filter={filter} />
-    {isLang(lang) && isCountry(country) && <FacetLinks lang={lang} country={country} section={section ?? 'all'} current={current} />}
+    {/* заголовок страницы для поисковиков; у календарей-подборок он свой, видимый */}
+    {/* название сайта для выдачи Google (иначе там может стоять просто адрес) */}
+    {!section && !current && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebSite', name: 'Premiero', alternateName: 'thepremiero.com', url: SITE + '/' }) }} />}
+    {!current && <h1 className="sr">{t(section && section !== 'all' ? META[section][0] : 'meta_cal_title', c)}</h1>}
+    {/* пока сервер собирает месяц, показываем пустой календарь с панелью — та же разметка, без сдвигов */}
+    <Suspense fallback={<CalendarView section={section} filter={filter} />}>
+      <ServerMonth section={section} filter={filter} lang={lang} country={country} />
+    </Suspense>
+    <FacetLinks lang={lang} country={country} section={section ?? 'all'} current={current} />
   </>;
 }

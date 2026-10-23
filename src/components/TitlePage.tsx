@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { COUNTRIES, IMG, LOCALE, isCountry, isLang, nameIn } from '@/lib/regions';
+import { COUNTRIES, IMG, LOCALE, SRCSET, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { releaseSentence, whenOf } from '@/lib/release-text';
 import { fromKey } from '@/lib/dates';
@@ -100,7 +100,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     {/* Кинематографичная шапка: кадр из фильма во всю ширину, поверх постер и главное */}
     <div className={`t-hero${backdrop ? '' : ' no-bd'}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      {backdrop && <img className="t-hero-bg" src={backdrop} alt="" fetchPriority="high" />}
+      {backdrop && <img className="t-hero-bg" src={backdrop} srcSet={SRCSET(d.backdrop, 'backdrop')} sizes="100vw" alt="" fetchPriority="high" />}
       <div className="wrap t-hero-in">
       <nav className="crumbs"><Link href={calendarPath(lang, country)}><I.Prev /> {t('to_cal')}</Link></nav>
 

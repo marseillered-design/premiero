@@ -25,6 +25,9 @@ export async function generateStaticParams() {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: { default: 'Premiero', template: '%s · Premiero' },
+  // картинка для превью ссылок; у страниц фильмов, сериалов и игр — свой кадр
+  openGraph: { siteName: 'Premiero', type: 'website', images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Premiero' }] },
+  twitter: { card: 'summary_large_image', images: ['/og.png'] },
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/[lang]/[country]'>) {

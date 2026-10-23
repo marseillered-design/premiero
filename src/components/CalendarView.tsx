@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { COUNTRIES, IMG, SRCSET, nameIn } from '@/lib/regions';
-import { addDays, diffDays, dkey, fromKey, mkey } from '@/lib/dates';
+import { addDays, dateFmt, diffDays, dkey, fromKey, mkey } from '@/lib/dates';
 import { titlePath } from '@/lib/slug';
 import type { CalEvent, CalItem, CalendarData, Kind, Platform } from '@/lib/types';
 import type { FacetFilter } from '@/lib/facets';
@@ -27,12 +27,26 @@ const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'v
 const GENRES_TOP = 12; // в панели фильтров сначала самые частые жанры месяца
 const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
-/** Календарь релизов: весь или один раздел (фильмы, сериалы, игры). */
-export default function CalendarView({ section = 'all', filter }: { section?: Section; filter?: FacetFilter }) {
+/** Месяц, отрисованный на сервере: сегодняшняя дата в стране посетителя и релизы этого месяца. */
+export interface InitialMonth { today: string; data: CalendarData }
+
+/**
+ * Календарь релизов: весь или один раздел (фильмы, сериалы, игры).
+ * С `initial` первый экран рисуется на сервере (постеры есть уже в HTML), после загрузки
+ * берётся дата с часов посетителя; без него календарь сам запрашивает месяц.
+ */
+export default function CalendarView({ section = 'all', filter, initial }: { section?: Section; filter?: FacetFilter; initial?: InitialMonth }) {
   const kinds = SECTION_KINDS[section];
   const env = useEnv();
-  const { t, f, lang, country, today, ready, watch, subs } = env;
-  const [month, setMonth] = useState<Date | null>(null);
+  const { t, lang, country, ready, watch, subs } = env;
+  // до загрузки в браузере дата приходит с сервера, иначе первый экран нечем было бы нарисовать
+  const serverToday = initial && !ready ? fromKey(initial.today) : null;
+  const today = serverToday ?? env.today;
+  const serverFmt = useMemo(() => (initial ? dateFmt(lang, fromKey(initial.today)) : null), [initial, lang]);
+  const f = serverToday && serverFmt ? serverFmt : env.f;
+  const [month, setMonth] = useState<Date | null>(() => (initial ? fromKey(initial.today.slice(0, 7) + '-01') : null));
+  // месяц, уже пришедший с сервера: повторно его не запрашиваем
+  const have = useRef(initial ? `${country}/${lang}/${initial.today.slice(0, 7)}` : null);
   const [view, setView] = useState<View>('feed');
   const [cat, setCat] = useState<Cat>('all');
   const [plats, setPlats] = useState<Set<Platform>>(() => new Set(filter?.platform ? [filter.platform] : []));
@@ -47,7 +61,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
   const [showPast, setShowPast] = useState(false);
   const [subsOpen, setSubsOpen] = useState(false);
   const [allGenres, setAllGenres] = useState(false);
-  const [load, setLoad] = useState<Load>({ status: 'loading' });
+  const [load, setLoad] = useState<Load>(() => (initial ? { status: 'ok', data: initial.data } : { status: 'loading' }));
   const [pendingScroll, setPendingScroll] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,22 +71,20 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
     setView(v === 'month' || v === 'list' ? v : 'feed');
     setShowAnime(store.get<boolean>('premiero.anime', false));
     setOnlySubs(store.get<boolean>('premiero.subsOnly', false));
-    setMonth(m => m ?? new Date(today.getFullYear(), today.getMonth(), 1));
+    // если у посетителя уже другой месяц, чем на сервере (полночь в другом часовом поясе), переключаемся
+    const own = new Date(today.getFullYear(), today.getMonth(), 1);
+    setMonth(m => (!m || (initial && mkey(m) === initial.today.slice(0, 7)) ? own : m));
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [ready, today]);
+  }, [ready, today, initial]);
 
   const monthKey = month ? mkey(month) : null;
   useEffect(() => {
     if (!monthKey) return;
+    if (have.current === `${country}/${lang}/${monthKey}`) { have.current = null; return; }
+    have.current = null;
     const ac = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoad({ status: 'loading' });
-    const url = `/api/calendar?country=${country}&lang=${lang}&month=${monthKey}`;
-    // запрос, начатый ещё из HTML (см. page.tsx), используем один раз
-    const w = window as { __premieroCal?: { url: string; res: Promise<Response> } };
-    const early = w.__premieroCal?.url === url ? w.__premieroCal.res : null;
-    delete w.__premieroCal;
-    (early ?? fetch(url, { signal: ac.signal }))
+    fetch(`/api/calendar?country=${country}&lang=${lang}&month=${monthKey}`, { signal: ac.signal })
       .then(async r => {
         const j = await r.json();
         if (ac.signal.aborted) return;
@@ -257,7 +269,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
             const it = data!.items[e.item];
             return (
               <li key={e.item}><Link href={href(it)}>
-                <Poster path={it.poster} title={it.title} />
+                <Poster path={it.poster} title={it.title} sizes="128px" />
                 <span className="hot-t">{it.title}</span>
                 <span className="hot-d">{f.date(fromKey(e.date))}</span>
               </Link></li>
