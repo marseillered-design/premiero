@@ -165,6 +165,57 @@ const es = (p: P): Dict => ({
   nf_t: 'Página no encontrada', nf_s: 'Puede que el título se haya eliminado de TMDB o que la dirección tenga un error.',
 });
 
+const fr = (p: P): Dict => ({
+  tagline: 'calendrier des sorties : films, séries et jeux', featured: 'Les sorties phares de la semaine', feat_slide: (i: number, n: number) => `Sortie ${i} sur ${n}`, theme: 'Thème clair / sombre', nav: 'Rubriques', search: 'Film, série ou jeu', search_l: 'Rechercher par titre',
+  country: 'Pays', change_country: 'Changer de pays', lang: 'Langue', rg_europe: 'Europe', rg_americas: 'Amériques', rg_asia: 'Caucase et Asie centrale',
+  all: 'Tout', cinema: 'Au cinéma', series: 'Séries', online: 'En ligne', kind: 'Type de sortie',
+  ty_cinema: 'Au cinéma', ty_series: 'Série', ty_online: 'En ligne', ty_disc: 'Blu-ray/DVD', disc: 'Blu-ray/DVD', s_disc: (n: number) => `${p(n, { one: 'sortie', other: 'sorties' })} en Blu-ray/DVD`,
+  today: 'Aujourd’hui', prev: 'Mois précédent', next: 'Mois suivant', view: 'Affichage', v_feed: 'Fil par jour', v_month: 'Grille du mois', v_list: 'Liste',
+  filters: 'Filtres', all_genres: (n: number) => `Tous les genres (${n})`, genres: 'Genres', show: 'Afficher', my_list: 'Ma liste', new_eps: 'Nouveaux épisodes', anime: 'Anime', reset: 'Effacer les filtres',
+  subs: 'Mes abonnements', subs_only: 'Seulement mes abonnements', subs_pick: 'Cochez les services auxquels vous êtes abonné. Les sorties en ligne et les séries des autres services seront masquées.', subs_none: 'TMDB n’a pas encore de données de streaming pour ce pays.', subs_n: (n: number) => `${n} ${p(n, { one: 'sélectionné', other: 'sélectionnés' })}`, subs_edit: 'Choisir les services', done: 'Terminé', clear: 'Effacer',
+  side_note: (c: string) => `Les dates de sortie sont celles de ce pays : ${c}.`,
+  approx: (c: string) => `TMDB a peu de dates locales pour ce pays (${c}) : les films sont affichés à leur date de sortie mondiale.`,
+  s_cinema: (n: number) => `${p(n, { one: 'sortie', other: 'sorties' })} au cinéma`, s_series: (n: number) => p(n, { one: 'série', other: 'séries' }), s_online: 'en ligne',
+  releases_n: (n: number) => `${n} ${p(n, { one: 'sortie', other: 'sorties' })}`,
+  show_past: (n: number) => `Afficher le début du mois · ${n} de plus`,
+  empty_t: 'Rien trouvé ce mois-ci', empty_s: 'Essayez un autre mois ou retirez quelques filtres.',
+  loading: 'Chargement des sorties…', err_t: 'Impossible de charger les données TMDB', err_s: 'Réessayez d’actualiser la page dans une minute.',
+  notoken_t: 'Clé TMDB requise', notoken_s: 'Ajoutez TMDB_TOKEN dans .env.local à la racine du projet et redémarrez le serveur.',
+  th_date: 'Date', th_title: 'Titre', th_type: 'Type', th_genre: 'Genre', th_where: 'Où regarder',
+  in_theaters: 'au cinéma', streaming: 'streaming',
+  watch_btn: 'Regarder', play_btn: 'Jouer', want: 'Je veux voir', want_game: 'Je veux jouer', unwant: 'Retirer de « Je veux voir »', in_list: 'Dans ma liste',
+  added: (x: string) => `« ${x} » ajouté à votre liste. Nous vous le rappellerons le jour de la sortie.`, removed: (x: string) => `« ${x} » retiré de votre liste`, open: (x: string) => `Ouvrir « ${x} »`,
+  season: 'saison', eps_range: (a: number, b: number) => `épisodes ${a}–${b}`, ep_one: (a: number) => `Épisode ${a}`, premiere: 'première', finale: 'final', season_finale: 'final de saison', out: 'sorti', world: 'sortie mondiale',
+  min: 'min', people_movie: 'Réalisation', people_tv: 'Création', cast: 'Distribution', trailer: 'Bande-annonce', play_trailer: 'Lire la bande-annonce', tmdb_page: 'Page TMDB', imdb_l: (r: string, v: string) => `IMDb : ${r} sur 10, ${v} votes`, tmdb_l: (r: string) => `TMDB : ${r} sur 10`, to_cal: 'Retour au calendrier',
+  add_cal: 'Ajouter au calendrier', gcal: 'Google Agenda', ics: 'Apple, Outlook (.ics)',
+  ev_cinema: (x: string) => `${x} : sortie au cinéma`, ev_online: (x: string) => `${x} : sortie en ligne`, ev_episode: (x: string, s: number, e: number) => `${x} : épisode ${s}×${e}`,
+  next_ep: 'Prochain épisode', in_cinema_on: 'Au cinéma', online_on: 'En ligne',
+  where: 'Où regarder', no_prov: 'TMDB n’a pas de données de streaming pour ce pays.', all_prov: 'Toutes les options',
+  rel_dates: 'Dates de sortie au cinéma', by_country: 'par pays', tba: 'Date à venir',
+  ep_sched: 'Calendrier des épisodes',
+  close: 'Fermer',
+  attr: 'Données sur les films et séries fournies par TMDB.',
+  game: 'Jeux', ty_game: 'Jeu', ty_movie: 'Film', search_all: 'Trouvé dans toute la base', search_none: 'Aucun résultat', s_game: (n: number) => p(n, { one: 'jeu', other: 'jeux' }), nav_all: 'Tout', up_link: 'Les plus attendus', rp_btn: 'Date erronée ?', rp_title: 'Indiquez-nous la bonne date : nous la vérifierons et la corrigerons.', rp_date: 'Bonne date', rp_note: 'Commentaire ou source', rp_note_ph: 'Par exemple, un lien vers l’annonce officielle', rp_send: 'Envoyer', rp_cancel: 'Annuler', rp_thanks: 'Merci ! Nous allons vérifier rapidement.', rp_fail: 'Envoi impossible. Réessayez plus tard.', rp_limit: 'Trop de messages. Réessayez dans une heure.', sb_link: 'Proposer une sortie', sb_title: 'Proposer une sortie', sb_intro: 'Un film, une série ou un jeu manque au calendrier ? Dites-le-nous et nous l’ajouterons.', sb_kind: 'Type', sb_name: 'Titre', sb_date: 'Date de sortie', sb_src: 'Lien vers une source', rv_title: 'Signalements', rv_none: 'Aucun nouveau signalement.', rv_denied: 'Cette page est réservée au propriétaire du site.', rv_fix: 'Correction', rv_new: 'Nouvelle sortie', rv_done: 'Traité, retirer', hot_games: 'Jeux de la semaine', ant_top: 'Très attendu', ant: 'Attendu', ant_pop: 'Populaire', want_n: (n: number) => `${n} ${p(n, { one: 'personne veut', other: 'personnes veulent' })} le voir`, hot_movies: 'Films de la semaine', hot_series: 'Séries de la semaine', all_link: 'Tout', fh_movies: (x: string) => `Films : ${x} — calendrier des sorties`, fh_series: (x: string) => `Séries : ${x} — calendrier des sorties`, fh_games: (x: string) => `Jeux : ${x} — calendrier des sorties`, fh_intro: (x: string, c: string) => `Toutes les sorties « ${x} » du mois, avec les dates pour ce pays : ${c}. Changez de mois, filtrez et ajoutez à votre liste.`, fh_desc: (h: string, c: string) => `${h} (${c}) : dates de sortie, bandes-annonces, notes et où regarder.`, fh_more: 'Calendriers', fh_back: 'Toutes les sorties de la rubrique', up_h: (c: string) => `Les sorties les plus attendues, ${c}`, up_intro: 'Les films, nouvelles saisons de séries et jeux les plus attendus des trois prochains mois.', up_next3: '3 prochains mois', meta_up_title: (c: string) => `Films, séries et jeux les plus attendus, ${c}`, meta_up_desc: (c: string) => `Les sorties les plus attendues des prochains mois (${c}) : films, nouvelles saisons de séries et jeux, avec leurs dates.`, nav_movies: 'Films', nav_series: 'Séries', nav_games: 'Jeux', platforms: 'Plateformes',
+  pf_pc: 'PC', pf_ps: 'PlayStation', pf_xbox: 'Xbox', pf_nintendo: 'Nintendo', pf_mobile: 'Mobile',
+  g_release: 'Sortie', ev_game: (x: string) => `${x} : sortie du jeu`, to_games: 'Retour au calendrier des jeux', igdb_page: 'Page IGDB', igdb_l: (r: string) => `IGDB : ${r} sur 10`,
+  g_dev: 'Développeur', g_pub: 'Éditeur', g_dates: 'Dates de sortie', g_by_platform: 'par plateforme', g_where: 'Où l’acheter', g_no_stores: 'IGDB n’a pas encore de liens vers des boutiques pour ce jeu.', g_shots: 'Captures d’écran',
+  noigdb_t: 'Clés IGDB requises', noigdb_s: 'Ajoutez IGDB_CLIENT_ID et IGDB_CLIENT_SECRET dans .env.local et redémarrez le serveur.',
+  attr_games: 'Données sur les jeux fournies par IGDB.com.',
+  sign_in: 'Se connecter', sign_out: 'Se déconnecter', account: 'Compte', my_page: 'Ma liste', privacy: 'Confidentialité',
+  tg_h: 'Rappels sur Telegram', tg_text: 'Le bot vous écrit le matin de la sortie pour tout ce qui figure dans Ma liste, et aussi la veille.', tg_connect: 'Connecter Telegram', tg_on: 'Connecté : les rappels arrivent sur Telegram', tg_off_btn: 'Désactiver', tg_wait: 'Appuyez sur « Start » dans Telegram, cette page se mettra à jour toute seule.', tg_linked: 'C’est fait ! Je vous écrirai le matin de chaque sortie de votre liste Premiero.\n\n/list — prochaines sorties\n/stop — désactiver les rappels', tg_bad: 'Ce lien a expiré. Ouvrez Ma liste sur le site et appuyez de nouveau sur « Connecter Telegram ».', tg_hello: (u: string) => `Bonjour ! Je vous rappelle les sorties de films, séries et jeux de votre liste Premiero.\n\nPour me connecter, identifiez-vous sur le site et appuyez sur « Connecter Telegram » dans Ma liste : ${u}`, tg_off: 'Rappels désactivés. Vous pouvez les réactiver dans Ma liste sur le site.', tg_today: 'Sort aujourd’hui', tg_tomorrow: 'Sort demain', tg_soon: 'Prochaines sorties de votre liste', tg_empty: 'Rien de votre liste ne sort dans les deux prochains mois.', tg_help: 'Commandes :\n/list — prochaines sorties\n/stop — désactiver les rappels',
+  mm_q: 'Vous ne savez pas quoi regarder ce soir ?', mm_a: 'des films et séries selon votre humeur.',
+  del_account: 'Supprimer le compte', acc_settings: 'Paramètres du compte', cal_h: 'Ma liste dans votre agenda', cal_text: 'Toutes les sorties que vous avez marquées apparaîtront dans votre agenda Google, Apple ou Outlook et se déplaceront toutes seules si une date change.', cal_get: 'Obtenir le lien', cal_google: 'Ajouter à Google Agenda', cal_apple: 'Apple / Outlook', cal_copy: 'Copier le lien', cal_copied: 'Lien copié', cal_new: 'Nouveau lien', cal_new_hint: 'Créer un nouveau lien ? L’ancien cessera de fonctionner.', cal_name: 'Premiero — Ma liste', del_explain: 'Votre compte, votre liste et les services de streaming choisis seront supprimés définitivement. Impossible de les récupérer.', del_confirm: 'Supprimer votre compte avec votre liste et vos abonnements ? C’est irréversible.', deleted: 'Compte supprimé',
+  login_failed: 'Échec de la connexion. Réessayez.', sync_hint: 'Connectez-vous avec Google pour retrouver votre liste sur tous vos appareils.',
+  my_empty_t: 'Votre liste est vide', my_empty_s: 'Appuyez sur la cloche d’un film, d’une série ou d’un jeu et il apparaîtra ici.', my_soon: 'Bientôt', my_out: 'Déjà sorti',
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : date de sortie, plateformes, bande-annonce`,
+  meta_movies_title: (c: string) => `Calendrier des sorties de films, ${c}`, meta_movies_desc: (c: string) => `Dates de sortie des films au cinéma et en ligne (${c}). Bandes-annonces, notes et où regarder.`,
+  meta_series_title: (c: string) => `Calendrier des séries, ${c}`, meta_series_desc: (c: string) => `Dates de sortie des nouveaux épisodes et saisons (${c}). Bandes-annonces, calendrier des épisodes et où regarder.`,
+  meta_games_title: (c: string) => `Calendrier des sorties de jeux vidéo, ${c}`, meta_games_desc: (c: string) => `Dates de sortie des nouveaux jeux sur PC, PlayStation, Xbox et Nintendo Switch (${c}). Bandes-annonces, plateformes et où acheter.`,
+  meta_cal_title: (c: string) => `Calendrier des sorties : films, séries et jeux, ${c}`, meta_cal_desc: (c: string) => `Dates de sortie au cinéma, en ligne, nouveaux épisodes et jeux vidéo (${c}). Bandes-annonces, plateformes et où regarder.`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : date de sortie, bande-annonce, où regarder`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : calendrier des épisodes, bande-annonce, où regarder`,
+  nf_t: 'Page introuvable', nf_s: 'Le titre a peut-être été retiré de TMDB, ou l’adresse contient une faute.',
+});
+
 const plDict = (p: P): Dict => ({
   tagline: 'kalendarz premier filmów, seriali i gier', featured: 'Najważniejsze premiery tygodnia', feat_slide: (i: number, n: number) => `Premiera ${i} z ${n}`, theme: 'Motyw dzienny / nocny', nav: 'Sekcje', search: 'Film, serial lub gra', search_l: 'Szukaj po tytule',
   country: 'Kraj', change_country: 'Zmień kraj', lang: 'Język', rg_europe: 'Europa', rg_americas: 'Ameryka', rg_asia: 'Kaukaz i Azja Środkowa',
@@ -318,7 +369,7 @@ const ru = (p: P): Dict => ({
   nf_t: 'Страница не найдена', nf_s: 'Возможно, фильм удалили из TMDB или в адресе ошибка.',
 });
 
-const BUILD: Record<Lang, (p: P) => Dict> = { uk, en, es, pl: plDict, de, ru };
+const BUILD: Record<Lang, (p: P) => Dict> = { uk, en, es, fr, pl: plDict, de, ru };
 
 const cache: Partial<Record<Lang, Dict>> = {};
 

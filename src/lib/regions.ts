@@ -1,7 +1,7 @@
 import type { CountryCode, Lang } from './types';
 
-export const LANGS: Record<Lang, string> = { uk: 'Українська', en: 'English', es: 'Español', pl: 'Polski', de: 'Deutsch', ru: 'Русский' };
-export const LOCALE: Record<Lang, string> = { uk: 'uk-UA', en: 'en-US', es: 'es-MX', pl: 'pl-PL', de: 'de-DE', ru: 'ru-RU' };
+export const LANGS: Record<Lang, string> = { uk: 'Українська', en: 'English', es: 'Español', fr: 'Français', pl: 'Polski', de: 'Deutsch', ru: 'Русский' };
+export const LOCALE: Record<Lang, string> = { uk: 'uk-UA', en: 'en-US', es: 'es-MX', fr: 'fr-FR', pl: 'pl-PL', de: 'de-DE', ru: 'ru-RU' };
 export const LANG_CODES = Object.keys(LANGS) as Lang[];
 
 /** Названия на нескольких языках; недостающие берутся из английского. */
@@ -18,28 +18,28 @@ export interface Country {
 }
 
 export const COUNTRIES: Record<CountryCode, Country> = {
-  ua: { name: { en: 'Ukraine', uk: 'Україна', es: 'Ucrania', pl: 'Ukraina', de: 'Ukraine', ru: 'Украина' }, group: 'europe', region: 'UA', lang: 'uk', streaming: true },
-  pl: { name: { en: 'Poland', uk: 'Польща', es: 'Polonia', pl: 'Polska', de: 'Polen', ru: 'Польша' }, group: 'europe', region: 'PL', lang: 'pl', streaming: true },
-  de: { name: { en: 'Germany', uk: 'Німеччина', es: 'Alemania', pl: 'Niemcy', de: 'Deutschland', ru: 'Германия' }, group: 'europe', region: 'DE', lang: 'de', streaming: true },
-  gb: { name: { en: 'United Kingdom', uk: 'Велика Британія', es: 'Reino Unido', pl: 'Wielka Brytania', de: 'Vereinigtes Königreich', ru: 'Великобритания' }, group: 'europe', region: 'GB', lang: 'en', streaming: true },
-  fr: { name: { en: 'France', uk: 'Франція', es: 'Francia', pl: 'Francja', de: 'Frankreich', ru: 'Франция' }, group: 'europe', region: 'FR', lang: 'en', streaming: true },
-  es: { name: { en: 'Spain', uk: 'Іспанія', es: 'España', pl: 'Hiszpania', de: 'Spanien', ru: 'Испания' }, group: 'europe', region: 'ES', lang: 'es', streaming: true },
-  it: { name: { en: 'Italy', uk: 'Італія', es: 'Italia', pl: 'Włochy', de: 'Italien', ru: 'Италия' }, group: 'europe', region: 'IT', lang: 'en', streaming: true },
-  nl: { name: { en: 'Netherlands', uk: 'Нідерланди', es: 'Países Bajos', pl: 'Holandia', de: 'Niederlande', ru: 'Нидерланды' }, group: 'europe', region: 'NL', lang: 'en', streaming: true },
-  cz: { name: { en: 'Czechia', uk: 'Чехія', es: 'Chequia', pl: 'Czechy', de: 'Tschechien', ru: 'Чехия' }, group: 'europe', region: 'CZ', lang: 'en', streaming: true },
-  ro: { name: { en: 'Romania', uk: 'Румунія', es: 'Rumania', pl: 'Rumunia', de: 'Rumänien', ru: 'Румыния' }, group: 'europe', region: 'RO', lang: 'en', streaming: true },
-  lt: { name: { en: 'Lithuania', uk: 'Литва', es: 'Lituania', pl: 'Litwa', de: 'Litauen', ru: 'Литва' }, group: 'europe', region: 'LT', lang: 'en', streaming: true },
-  lv: { name: { en: 'Latvia', uk: 'Латвія', es: 'Letonia', pl: 'Łotwa', de: 'Lettland', ru: 'Латвия' }, group: 'europe', region: 'LV', lang: 'en', streaming: true },
-  ee: { name: { en: 'Estonia', uk: 'Естонія', pl: 'Estonia', de: 'Estland', ru: 'Эстония' }, group: 'europe', region: 'EE', lang: 'en', streaming: true },
-  md: { name: { en: 'Moldova', uk: 'Молдова', es: 'Moldavia', pl: 'Mołdawia', de: 'Moldau', ru: 'Молдова' }, group: 'europe', region: 'MD', lang: 'en', streaming: false },
-  by: { name: { en: 'Belarus', uk: 'Білорусь', es: 'Bielorrusia', pl: 'Białoruś', de: 'Belarus', ru: 'Беларусь' }, group: 'europe', region: 'BY', lang: 'ru', streaming: false },
-  us: { name: { en: 'United States', uk: 'США', es: 'Estados Unidos', pl: 'Stany Zjednoczone', de: 'Vereinigte Staaten', ru: 'США' }, group: 'americas', region: 'US', lang: 'en', streaming: true },
-  mx: { name: { en: 'Mexico', uk: 'Мексика', es: 'México', pl: 'Meksyk', de: 'Mexiko', ru: 'Мексика' }, group: 'americas', region: 'MX', lang: 'es', streaming: true },
-  ge: { name: { en: 'Georgia', uk: 'Грузія', es: 'Georgia', pl: 'Gruzja', de: 'Georgien', ru: 'Грузия' }, group: 'asia', region: 'GE', lang: 'en', streaming: false },
-  am: { name: { en: 'Armenia', uk: 'Вірменія', pl: 'Armenia', de: 'Armenien', ru: 'Армения' }, group: 'asia', region: 'AM', lang: 'ru', streaming: false },
-  kz: { name: { en: 'Kazakhstan', uk: 'Казахстан', es: 'Kazajistán', pl: 'Kazachstan', de: 'Kasachstan', ru: 'Казахстан' }, group: 'asia', region: 'KZ', lang: 'ru', streaming: false },
-  uz: { name: { en: 'Uzbekistan', uk: 'Узбекистан', es: 'Uzbekistán', pl: 'Uzbekistan', de: 'Usbekistan', ru: 'Узбекистан' }, group: 'asia', region: 'UZ', lang: 'ru', streaming: false },
-  kg: { name: { en: 'Kyrgyzstan', uk: 'Киргизстан', es: 'Kirguistán', pl: 'Kirgistan', de: 'Kirgisistan', ru: 'Кыргызстан' }, group: 'asia', region: 'KG', lang: 'ru', streaming: false },
+  ua: { name: { en: 'Ukraine', fr: 'Ukraine', uk: 'Україна', es: 'Ucrania', pl: 'Ukraina', de: 'Ukraine', ru: 'Украина' }, group: 'europe', region: 'UA', lang: 'uk', streaming: true },
+  pl: { name: { en: 'Poland', fr: 'Pologne', uk: 'Польща', es: 'Polonia', pl: 'Polska', de: 'Polen', ru: 'Польша' }, group: 'europe', region: 'PL', lang: 'pl', streaming: true },
+  de: { name: { en: 'Germany', fr: 'Allemagne', uk: 'Німеччина', es: 'Alemania', pl: 'Niemcy', de: 'Deutschland', ru: 'Германия' }, group: 'europe', region: 'DE', lang: 'de', streaming: true },
+  gb: { name: { en: 'United Kingdom', fr: 'Royaume-Uni', uk: 'Велика Британія', es: 'Reino Unido', pl: 'Wielka Brytania', de: 'Vereinigtes Königreich', ru: 'Великобритания' }, group: 'europe', region: 'GB', lang: 'en', streaming: true },
+  fr: { name: { en: 'France', fr: 'France', uk: 'Франція', es: 'Francia', pl: 'Francja', de: 'Frankreich', ru: 'Франция' }, group: 'europe', region: 'FR', lang: 'fr', streaming: true },
+  es: { name: { en: 'Spain', fr: 'Espagne', uk: 'Іспанія', es: 'España', pl: 'Hiszpania', de: 'Spanien', ru: 'Испания' }, group: 'europe', region: 'ES', lang: 'es', streaming: true },
+  it: { name: { en: 'Italy', fr: 'Italie', uk: 'Італія', es: 'Italia', pl: 'Włochy', de: 'Italien', ru: 'Италия' }, group: 'europe', region: 'IT', lang: 'en', streaming: true },
+  nl: { name: { en: 'Netherlands', fr: 'Pays-Bas', uk: 'Нідерланди', es: 'Países Bajos', pl: 'Holandia', de: 'Niederlande', ru: 'Нидерланды' }, group: 'europe', region: 'NL', lang: 'en', streaming: true },
+  cz: { name: { en: 'Czechia', fr: 'Tchéquie', uk: 'Чехія', es: 'Chequia', pl: 'Czechy', de: 'Tschechien', ru: 'Чехия' }, group: 'europe', region: 'CZ', lang: 'en', streaming: true },
+  ro: { name: { en: 'Romania', fr: 'Roumanie', uk: 'Румунія', es: 'Rumania', pl: 'Rumunia', de: 'Rumänien', ru: 'Румыния' }, group: 'europe', region: 'RO', lang: 'en', streaming: true },
+  lt: { name: { en: 'Lithuania', fr: 'Lituanie', uk: 'Литва', es: 'Lituania', pl: 'Litwa', de: 'Litauen', ru: 'Литва' }, group: 'europe', region: 'LT', lang: 'en', streaming: true },
+  lv: { name: { en: 'Latvia', fr: 'Lettonie', uk: 'Латвія', es: 'Letonia', pl: 'Łotwa', de: 'Lettland', ru: 'Латвия' }, group: 'europe', region: 'LV', lang: 'en', streaming: true },
+  ee: { name: { en: 'Estonia', fr: 'Estonie', uk: 'Естонія', pl: 'Estonia', de: 'Estland', ru: 'Эстония' }, group: 'europe', region: 'EE', lang: 'en', streaming: true },
+  md: { name: { en: 'Moldova', fr: 'Moldavie', uk: 'Молдова', es: 'Moldavia', pl: 'Mołdawia', de: 'Moldau', ru: 'Молдова' }, group: 'europe', region: 'MD', lang: 'en', streaming: false },
+  by: { name: { en: 'Belarus', fr: 'Biélorussie', uk: 'Білорусь', es: 'Bielorrusia', pl: 'Białoruś', de: 'Belarus', ru: 'Беларусь' }, group: 'europe', region: 'BY', lang: 'ru', streaming: false },
+  us: { name: { en: 'United States', fr: 'États-Unis', uk: 'США', es: 'Estados Unidos', pl: 'Stany Zjednoczone', de: 'Vereinigte Staaten', ru: 'США' }, group: 'americas', region: 'US', lang: 'en', streaming: true },
+  mx: { name: { en: 'Mexico', fr: 'Mexique', uk: 'Мексика', es: 'México', pl: 'Meksyk', de: 'Mexiko', ru: 'Мексика' }, group: 'americas', region: 'MX', lang: 'es', streaming: true },
+  ge: { name: { en: 'Georgia', fr: 'Géorgie', uk: 'Грузія', es: 'Georgia', pl: 'Gruzja', de: 'Georgien', ru: 'Грузия' }, group: 'asia', region: 'GE', lang: 'en', streaming: false },
+  am: { name: { en: 'Armenia', fr: 'Arménie', uk: 'Вірменія', pl: 'Armenia', de: 'Armenien', ru: 'Армения' }, group: 'asia', region: 'AM', lang: 'ru', streaming: false },
+  kz: { name: { en: 'Kazakhstan', fr: 'Kazakhstan', uk: 'Казахстан', es: 'Kazajistán', pl: 'Kazachstan', de: 'Kasachstan', ru: 'Казахстан' }, group: 'asia', region: 'KZ', lang: 'ru', streaming: false },
+  uz: { name: { en: 'Uzbekistan', fr: 'Ouzbékistan', uk: 'Узбекистан', es: 'Uzbekistán', pl: 'Uzbekistan', de: 'Usbekistan', ru: 'Узбекистан' }, group: 'asia', region: 'UZ', lang: 'ru', streaming: false },
+  kg: { name: { en: 'Kyrgyzstan', fr: 'Kirghizistan', uk: 'Киргизстан', es: 'Kirguistán', pl: 'Kirgistan', de: 'Kirgisistan', ru: 'Кыргызстан' }, group: 'asia', region: 'KG', lang: 'ru', streaming: false },
 };
 
 export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];

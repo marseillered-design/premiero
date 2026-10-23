@@ -2,7 +2,7 @@ import { LOCALE } from './regions';
 import type { Lang } from './types';
 
 /*
- * Фраза о дате выхода для страницы релиза — как у releases.com, только на шести языках:
+ * Фраза о дате выхода для страницы релиза — как у releases.com, только на семи языках:
  * «Фильм „X“ выходит в кино в четверг, 29 октября 2026 г.». Поисковики любят такие ответы
  * на запрос «дата выхода X», а посетителю сразу понятно главное.
  */
@@ -49,6 +49,15 @@ const W: Record<Lang, Words> = {
     tvNone: t => `Aún no hay nuevos episodios de ${t} programados.`,
     game: (t, d, p, f) => f ? `${t} sale el ${d}${p ? ` para ${p}` : ''}.` : `${t} salió el ${d}${p ? ` para ${p}` : ''}.`,
     gameTba: t => `La fecha de lanzamiento de ${t} aún no se ha anunciado.`,
+  },
+  fr: {
+    movieCinema: (t, d, f) => f ? `« ${t} » sort au cinéma le ${d}.` : `« ${t} » est sorti au cinéma le ${d}.`,
+    movieOnline: (d, f) => f ? `La sortie en ligne est prévue le ${d}.` : `La sortie en ligne a eu lieu le ${d}.`,
+    movieTba: (t, c) => `La date de sortie de « ${t} » (${c}) n’a pas encore été annoncée.`,
+    tvNext: (t, s, e, d, f) => f ? `Le prochain épisode de « ${t} » (${s}×${e}) sort le ${d}.` : `Le dernier épisode de « ${t} » (${s}×${e}) est sorti le ${d}.`,
+    tvNone: t => `Aucun nouvel épisode de « ${t} » n’est encore prévu.`,
+    game: (t, d, p, f) => f ? `« ${t} » sort le ${d}${p ? ` sur ${p}` : ''}.` : `« ${t} » est sorti le ${d}${p ? ` sur ${p}` : ''}.`,
+    gameTba: t => `La date de sortie de « ${t} » n’a pas encore été annoncée.`,
   },
   pl: {
     movieCinema: (t, d, f) => f ? `Film „${t}” wchodzi do kin ${d}.` : `Film „${t}” wszedł do kin ${d}.`,

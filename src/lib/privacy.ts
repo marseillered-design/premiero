@@ -38,6 +38,17 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'De dónde vienen los datos de estrenos', p: ['Los datos de películas y series vienen de TMDB y los de videojuegos de IGDB.com. No les damos ningún dato personal.'] },
     ],
   },
+  fr: {
+    title: 'Confidentialité', updated: 'Mis à jour', intro: 'Premiero collecte le moins de données possible. Voici exactement lesquelles et pourquoi.',
+    sections: [
+      { h: 'Sans connexion', p: ['Votre liste « Je veux voir » et les services de streaming choisis sont enregistrés uniquement dans votre navigateur. Nous ne les voyons pas.'] },
+      { h: 'Si vous vous connectez avec Google', p: ['Google nous transmet votre nom, votre adresse e-mail, votre photo de profil et l’identifiant de votre compte. Nous ne voyons ni ne conservons jamais votre mot de passe Google.', 'Nous enregistrons votre liste et les services de streaming choisis pour qu’ils soient disponibles sur tous vos appareils.'] },
+      { h: 'Où sont stockées les données', p: ['Le site est hébergé par Vercel et les données des comptes sont stockées dans une base Upstash. Nous ne vendons pas vos données et ne les partageons avec aucune autre entreprise.'] },
+      { h: 'Cookies', p: ['Après la connexion, nous déposons un cookie pour nous souvenir que vous êtes connecté. Un autre cookie mémorise votre langue et votre pays. Il n’y a aucun cookie publicitaire.', 'Nous comptons les visites avec Vercel Web Analytics, qui n’utilise ni cookies ni données permettant de vous identifier.'] },
+      { h: 'Comment supprimer vos données', p: ['Ouvrez « Ma liste », dépliez « Paramètres du compte » en bas de la page et choisissez « Supprimer le compte ». Votre profil, votre liste et vos abonnements sont supprimés immédiatement et définitivement.'] },
+      { h: 'D’où viennent les données sur les sorties', p: ['Les données sur les films et les séries viennent de TMDB, celles sur les jeux d’IGDB.com. Nous ne leur transmettons aucune donnée personnelle.'] },
+    ],
+  },
   pl: {
     title: 'Prywatność', updated: 'Aktualizacja', intro: 'Premiero zbiera jak najmniej danych. Oto dokładnie jakie i po co.',
     sections: [

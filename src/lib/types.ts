@@ -1,4 +1,4 @@
-export type Lang = 'uk' | 'en' | 'es' | 'pl' | 'de' | 'ru';
+export type Lang = 'uk' | 'en' | 'es' | 'fr' | 'pl' | 'de' | 'ru';
 export type CountryCode =
   | 'ua' | 'pl' | 'de' | 'gb' | 'fr' | 'es' | 'it' | 'nl' | 'cz' | 'ro' | 'lt' | 'lv' | 'ee' | 'md' | 'by'
   | 'us' | 'mx'
