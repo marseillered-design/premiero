@@ -7,6 +7,7 @@ import { translator } from '@/lib/i18n';
 import { findFacet, type Facet, type FacetFilter, type FacetSection } from '@/lib/facets';
 import { facetLabel } from './FacetLinks';
 import CalendarPage from './CalendarPage';
+import { breadcrumbs, ldJson } from '@/lib/structured';
 import * as I from './icons';
 import type { Lang } from '@/lib/types';
 
@@ -57,7 +58,11 @@ async function FacetContent({ section, params }: { section: FacetSection; params
   const { lang, country, f, label } = r;
   const t = translator(lang);
   const c = nameIn(COUNTRIES[country].name, lang);
+  const home = `/${lang}/${country}`;
+  const SEC: Record<FacetSection, string> = { movies: 'nav_movies', series: 'nav_series', games: 'nav_games' };
+  const crumbs = breadcrumbs([['Premiero', home], [t(SEC[section]), `${home}/${section}`], [cap(t(HEAD[section], label), lang), `${home}/${section}/${f.slug}`]]);
   return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(crumbs) }} />
     <header className="wrap facet-head">
       <nav className="crumbs"><Link href={`/${lang}/${country}/${section}`}><I.Prev /> {t('fh_back')}</Link></nav>
       <h1>{cap(t(HEAD[section], label), lang)}</h1>

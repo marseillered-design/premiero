@@ -3,11 +3,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { COUNTRIES, IMG, LOCALE, SRCSET, isCountry, isLang, nameIn } from '@/lib/regions';
+import { COUNTRIES, IMG, LANG_CODES, LOCALE, SRCSET, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { releaseSentence, whenOf } from '@/lib/release-text';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
+import { breadcrumbs, ldJson } from '@/lib/structured';
 import { getTitle, hasToken } from '@/lib/tmdb';
 import { hasKv } from '@/lib/kv';
 import { wantCounts } from '@/lib/account';
@@ -38,7 +39,10 @@ export async function titleMetadata(media: Media, params: Params): Promise<Metad
   return {
     title: { absolute: `${title} · Premiero` },
     description,
-    alternates: { canonical: titlePath(lang, country, media, d.id, d.title) },
+    alternates: {
+      canonical: titlePath(lang, country, media, d.id, d.title),
+      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, titlePath(l, country, media, d.id, d.titles[l] ?? d.title)])),
+    },
     openGraph: { title, description, type: media === 'tv' ? 'video.tv_show' : 'video.movie', images: image ? [{ url: image }] : [] },
     twitter: { card: 'summary_large_image', title, description, images: image ? [image] : [] },
   };
@@ -89,14 +93,19 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     director: media === 'movie' ? d.people.map(p => ({ '@type': 'Person', name: p.name })) : undefined,
     creator: media === 'tv' ? d.people.map(p => ({ '@type': 'Person', name: p.name })) : undefined,
     actor: d.cast.slice(0, 5).map(p => ({ '@type': 'Person', name: p.name })),
-    aggregateRating: d.rating ? { '@type': 'AggregateRating', ratingValue: d.rating, bestRating: 10 } : undefined,
-    trailer: d.trailer ? { '@type': 'VideoObject', name: `${d.title}: ${t('trailer')}`, embedUrl: `https://www.youtube.com/embed/${d.trailer}`, thumbnailUrl: `https://i.ytimg.com/vi/${d.trailer}/hqdefault.jpg` } : undefined,
   };
+  const home = calendarPath(lang, country);
+  const crumbs = breadcrumbs([
+    ['Premiero', home],
+    [t(media === 'tv' ? 'nav_series' : 'nav_movies'), `${home}/${media === 'tv' ? 'series' : 'movies'}`],
+    [d.title, titlePath(lang, country, media, d.id, d.title)],
+  ]);
 
   const backdrop = IMG(d.backdrop, 'w1280');
   return (
     <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(ld) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(crumbs) }} />
     {/* Кинематографичная шапка: кадр из фильма во всю ширину, поверх постер и главное */}
     <div className={`t-hero${backdrop ? '' : ' no-bd'}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}

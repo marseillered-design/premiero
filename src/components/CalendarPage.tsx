@@ -9,6 +9,8 @@ import type { FacetFilter } from '@/lib/facets';
 import { COUNTRIES, LANG_CODES, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
+import { titlePath } from '@/lib/slug';
+import { ldJson } from '@/lib/structured';
 import type { CalendarData, CountryCode, Lang } from '@/lib/types';
 
 const META: Record<Exclude<Section, 'all'>, [string, string]> = {
@@ -56,11 +58,25 @@ async function monthFor(country: CountryCode, lang: Lang, today: string): Promis
   } catch { return null; }
 }
 
+const MEDIA: Record<Section, string[]> = { all: ['movie', 'tv', 'game'], movies: ['movie'], series: ['tv'], games: ['game'] };
+
+/** Самые популярные релизы месяца списком ссылок: по нему Google может показать карусель. */
+function itemList(data: CalendarData, section: Section = 'all', lang: Lang, country: CountryCode) {
+  const items = Object.values(data.items).filter(i => MEDIA[section].includes(i.media)).sort((a, b) => b.popularity - a.popularity).slice(0, 20);
+  return {
+    '@context': 'https://schema.org', '@type': 'ItemList',
+    itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + titlePath(lang, country, it.media, it.id, it.title) })),
+  };
+}
+
 async function ServerMonth({ section, filter, lang, country }: { section?: Section; filter?: FacetFilter; lang: Lang; country: CountryCode }) {
   await connection();
   const today = todayIn(country);
   const data = await monthFor(country, lang, today);
-  return <CalendarView section={section} filter={filter} initial={data ? { today, data } : undefined} />;
+  return <>
+    {data && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(itemList(data, section, lang, country)) }} />}
+    <CalendarView section={section} filter={filter} initial={data ? { today, data } : undefined} />
+  </>;
 }
 
 export default async function CalendarPage({ section, filter, current }: { section?: Section; filter?: FacetFilter; current?: string }) {

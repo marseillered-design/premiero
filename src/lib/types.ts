@@ -63,6 +63,7 @@ export interface Person { id: number; name: string; character?: string; photo: s
 export interface Episode { n: number; name: string; date: string | null }
 
 export interface TitleDetail {
+  titles: Record<Lang, string>;   // название на каждом языке сайта — для адресов языковых версий
   id: number;
   media: TmdbMedia;
   title: string;

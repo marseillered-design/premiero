@@ -3,10 +3,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { IMG, LOCALE, SRCSET, isCountry, isLang } from '@/lib/regions';
+import { IMG, LANG_CODES, LOCALE, SRCSET, isCountry, isLang } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
+import { breadcrumbs, ldJson } from '@/lib/structured';
 import { getGame, hasIgdb, GAME_GENRE_OFFSET } from '@/lib/igdb';
 import { gameGenreName } from '@/lib/game-genres';
 import { hasKv } from '@/lib/kv';
@@ -39,7 +40,11 @@ export async function gameMetadata(params: Params): Promise<Metadata> {
   return {
     title: { absolute: `${title} · Premiero` },
     description,
-    alternates: { canonical: titlePath(lang, country, 'game', d.id, d.title) },
+    alternates: {
+      canonical: titlePath(lang, country, 'game', d.id, d.title),
+      // у игр одно название на всех языках
+      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, titlePath(l, country, 'game', d.id, d.title)])),
+    },
     openGraph: { title, description, type: 'website', images: image ? [{ url: image }] : [] },
     twitter: { card: 'summary_large_image', title, description, images: image ? [image] : [] },
   };
@@ -84,14 +89,15 @@ async function GameContent({ params }: { params: Params }) {
     datePublished: d.release ?? undefined, gamePlatform: platforms.length ? platforms : undefined, genre: genres.length ? genres : undefined,
     author: d.developers.length ? d.developers.map(name => ({ '@type': 'Organization', name })) : undefined,
     publisher: d.publishers.length ? d.publishers.map(name => ({ '@type': 'Organization', name })) : undefined,
-    aggregateRating: d.rating ? { '@type': 'AggregateRating', ratingValue: d.rating, bestRating: 10, ratingCount: d.ratingCount } : undefined,
-    trailer: d.trailer ? { '@type': 'VideoObject', name: `${d.title}: ${t('trailer')}`, embedUrl: `https://www.youtube.com/embed/${d.trailer}`, thumbnailUrl: `https://i.ytimg.com/vi/${d.trailer}/hqdefault.jpg` } : undefined,
   };
+  const home = calendarPath(lang, country);
+  const crumbs = breadcrumbs([['Premiero', home], [t('nav_games'), `${home}/games`], [d.title, titlePath(lang, country, 'game', d.id, d.title)]]);
 
   const backdrop = IMG(d.backdrop, 'w1280');
   return (
     <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(ld) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(crumbs) }} />
     <div className={`t-hero${backdrop ? '' : ' no-bd'}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {backdrop && <img className="t-hero-bg" src={backdrop} srcSet={SRCSET(d.backdrop, 'backdrop')} sizes="100vw" alt="" fetchPriority="high" />}

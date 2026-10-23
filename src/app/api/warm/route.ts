@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { COUNTRIES, COUNTRY_CODES } from '@/lib/regions';
+import { sitemapUrls, submitNew } from '@/lib/indexnow';
 
 export const maxDuration = 300;
 
@@ -30,5 +31,9 @@ export async function GET(req: NextRequest) {
     }
   }));
   const failed = results.filter(r => r.status !== 200);
-  return Response.json({ warmed: results.length - failed.length, failed });
+  // после прогрева карты сайта свежие: новые адреса отправляем в IndexNow (только с рабочего сайта)
+  const indexnow = process.env.VERCEL_ENV === 'production'
+    ? await sitemapUrls(origin).then(submitNew).catch(e => ({ error: String(e) }))
+    : 'skipped';
+  return Response.json({ warmed: results.length - failed.length, failed, indexnow });
 }

@@ -1,5 +1,5 @@
 import { cacheLife } from 'next/cache';
-import { COUNTRIES, COUNTRY_CODES, LOCALE } from './regions';
+import { COUNTRIES, COUNTRY_CODES, LOCALE, LANG_CODES } from './regions';
 import type { CalendarData, CalEvent, CalItem, CountryCode, Episode, Lang, Provider, TitleDetail, TmdbMedia } from './types';
 
 const BASE = 'https://api.themoviedb.org/3';
@@ -224,13 +224,29 @@ function bestTrailer(list: Video[], lang: string): Video | null {
   return yt.sort((a, b) => score(b) - score(a) || b.published_at.localeCompare(a.published_at))[0] ?? null;
 }
 interface EpisodeRef { air_date: string | null; season_number: number; episode_number: number }
-interface MovieFull {
+interface Translations { translations: { translations: { iso_639_1: string; iso_3166_1: string; data: { title?: string; name?: string } }[] } }
+/**
+ * Название на каждом языке сайта, как его отдаёт TMDB на странице этого языка:
+ * перевод для языка и региона, иначе перевод для языка, иначе оригинальное название.
+ */
+function titlesOf(tr: Translations['translations'] | undefined, original: string): Record<Lang, string> {
+  const list = tr?.translations ?? [];
+  const name = (x: (typeof list)[number]) => (x.data.title || x.data.name || '').trim();
+  return Object.fromEntries(LANG_CODES.map(l => {
+    const [lng, reg] = LOCALE[l].split('-');
+    const exact = list.find(x => x.iso_639_1 === lng && x.iso_3166_1 === reg && name(x));
+    const any = list.find(x => x.iso_639_1 === lng && name(x));
+    return [l, exact ? name(exact) : any ? name(any) : original];
+  })) as Record<Lang, string>;
+}
+
+interface MovieFull extends Translations {
   id: number; title: string; original_title: string; overview: string; poster_path: string | null; backdrop_path: string | null;
   runtime: number | null; release_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
   popularity: number; original_language: string; imdb_id: string | null;
   credits: Credits; videos: Videos; release_dates: ReleaseDates; 'watch/providers': Providers;
 }
-interface TvFull {
+interface TvFull extends Translations {
   id: number; name: string; original_name: string; overview: string; poster_path: string | null; backdrop_path: string | null;
   episode_run_time: number[]; first_air_date: string; genres: { id: number; name: string }[]; vote_average: number; vote_count: number;
   popularity: number; original_language: string; created_by: { id: number; name: string; profile_path: string | null }[]; networks: { name: string }[];
@@ -257,7 +273,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
   };
 
   if (media === 'movie') {
-    const m = await safe(tmdb<MovieFull>(`/movie/${id}`, { language, append_to_response: 'credits,videos,release_dates,watch/providers', include_video_language: videoLangs }));
+    const m = await safe(tmdb<MovieFull>(`/movie/${id}`, { language, append_to_response: 'credits,videos,release_dates,watch/providers,translations', include_video_language: videoLangs }));
     if (!m) return null;
     const releases = COUNTRY_CODES.map(code => {
       const rd = m.release_dates.results.find(r => r.iso_3166_1 === COUNTRIES[code].region)?.release_dates ?? [];
@@ -265,7 +281,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
     });
     const regional = m.release_dates.results.find(r => r.iso_3166_1 === C.region)?.release_dates ?? [];
     return {
-      id, media, title: m.title, original: m.original_title, overview: m.overview, poster: m.poster_path, backdrop: m.backdrop_path,
+      id, media, title: m.title, titles: { ...titlesOf(m.translations, m.original_title), [lang]: m.title }, original: m.original_title, overview: m.overview, poster: m.poster_path, backdrop: m.backdrop_path,
       runtime: m.runtime || null, year: m.release_date?.slice(0, 4) || null, genres: m.genres.map(g => g.name.toLowerCase()),
       people: m.credits.crew.filter(c => c.job === 'Director').slice(0, 2).map(person),
       cast: m.credits.cast.slice(0, CAST_MAX).map(person), ...trailerOf(bestTrailer(m.videos.results, lang)), ...providersOf(m['watch/providers']),
@@ -280,7 +296,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
     };
   }
 
-  const t = await safe(tmdb<TvFull>(`/tv/${id}`, { language, append_to_response: 'credits,videos,watch/providers,content_ratings,external_ids', include_video_language: videoLangs }));
+  const t = await safe(tmdb<TvFull>(`/tv/${id}`, { language, append_to_response: 'credits,videos,watch/providers,content_ratings,external_ids,translations', include_video_language: videoLangs }));
   if (!t) return null;
   // показываем сезон, который выходит сейчас или вышел последним
   const seasonNo = t.next_episode_to_air?.season_number || t.last_episode_to_air?.season_number || null;
@@ -305,7 +321,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
   }
   const nx = t.next_episode_to_air;
   return {
-    id, media, title: t.name, original: t.original_name, overview: t.overview, poster: seasonPoster ?? t.poster_path, backdrop: t.backdrop_path,
+    id, media, title: t.name, titles: { ...titlesOf(t.translations, t.original_name), [lang]: t.name }, original: t.original_name, overview: t.overview, poster: seasonPoster ?? t.poster_path, backdrop: t.backdrop_path,
     runtime: t.episode_run_time[0] ?? null, year: t.first_air_date?.slice(0, 4) || null, genres: t.genres.map(g => g.name.toLowerCase()),
     people: t.created_by.slice(0, 3).map(person), cast: t.credits.cast.slice(0, CAST_MAX).map(person),
     ...trailerOf(trailer), ...providersOf(t['watch/providers']), releases: [],
