@@ -673,3 +673,9 @@ a.tmdb-r:hover{border-color:#9147FF}
   .top .nav{grid-column:1 / -1;grid-row:2;justify-self:stretch}
   .top .nav a{flex:1;justify-content:center}
 }
+/* меню «Добавить в календарь»: шапка страницы больше не обрезает его снизу, пункты — кнопки */
+.t-hero{overflow:visible;overflow-x:clip;z-index:2}
+.cal-pop{z-index:20;min-width:300px}
+.cal-links{gap:8px}
+.cal-links button{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font-weight:600;font-size:13px;text-decoration:none;cursor:pointer}
+.cal-links button:hover{border-color:var(--accent);color:var(--accent-text)}

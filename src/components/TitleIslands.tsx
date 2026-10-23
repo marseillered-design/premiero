@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { addDays, dkey, fromKey } from '@/lib/dates';
 import type { Episode, Media } from '@/lib/types';
 import { useEnv } from './AppProvider';
@@ -49,6 +49,15 @@ function AddToCalendar({ core }: { core: TitleCore }) {
   if (core.nextEpisode) events.push({ label: t('next_ep'), text: t('ev_episode', core.title, core.nextEpisode.season, core.nextEpisode.episode), date: core.nextEpisode.date });
   // прошедшие даты в календарь добавлять незачем
   const upcoming = ready ? events.filter(e => fromKey(e.date) >= today) : events;
+  const menu = useRef<HTMLDetailsElement>(null);
+  // меню закрывается кликом мимо него и клавишей Esc
+  useEffect(() => {
+    const away = (e: PointerEvent) => { if (menu.current?.open && !menu.current.contains(e.target as Node)) menu.current.open = false; };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && menu.current) menu.current.open = false; };
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
+  }, []);
   if (!upcoming.length) return null;
 
   // адрес страницы известен только в браузере, поэтому ссылку собираем в момент клика
@@ -73,7 +82,7 @@ function AddToCalendar({ core }: { core: TitleCore }) {
   };
 
   return (
-    <details className="cal-menu">
+    <details className="cal-menu" ref={menu}>
       <summary className="btn"><CalIcon /> {t('add_cal')}</summary>
       <div className="cal-pop">
         {upcoming.map(e => (
