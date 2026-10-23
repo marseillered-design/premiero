@@ -127,4 +127,6 @@ export interface WatchItem {
   title: string;
   poster: string | null;
   date: string | null;       // ближайшая дата выхода на момент добавления
+  ep?: string | null;        // у сериала: номер ближайшей серии, «2×05» (заполняет сервер)
+  chk?: string;              // когда сервер последний раз сверял дату, YYYY-MM-DD
 }

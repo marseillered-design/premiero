@@ -1,5 +1,5 @@
 import { loadAccount, saveItems } from './account';
-import { currentDate } from './fresh';
+import { currentInfo } from './fresh';
 import { translator } from './i18n';
 import { LOCALE, isCountry, isLang } from './regions';
 import { titlePath } from './slug';
@@ -9,6 +9,7 @@ import type { CountryCode, Lang, WatchItem } from './types';
 
 const DAY = 86400000;
 const CHECK = 30; // сколько ближайших релизов сверять с TMDB/IGDB за раз
+const STALE = 15; // и сколько давно не проверенных сериалов и релизов без даты
 export const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 const plus = (k: string, n: number) => dayKey(new Date(Date.parse(k + 'T00:00:00Z') + n * DAY));
 const icon = (m: WatchItem['media']) => (m === 'game' ? '🎮' : m === 'tv' ? '📺' : '🎬');
@@ -18,20 +19,38 @@ export const userRegion = (u: Pick<TgUser, 'lang' | 'country'>) => ({
   country: (isCountry(u.country) ? u.country : 'us') as CountryCode,
 });
 
-/** Релизы из списка с датами в окне [from; to], даты сверены с источником (релизы переносят). */
+/**
+ * Релизы из списка с датами в окне [from; to], даты сверены с источником (релизы переносят).
+ * Заодно раз в неделю сверяем сериалы с далёкой датой (вдруг объявили новый сезон)
+ * и релизы без даты (вдруг её назначили) — иначе в окно они бы так и не попали.
+ */
 async function itemsBetween(sub: string, lang: Lang, country: CountryCode, from: string, to: string) {
   const { watch } = await loadAccount(sub);
-  const near = Object.values(watch).filter(i => i.date && i.date >= plus(from, -3) && i.date <= plus(to, 3))
+  const all = Object.values(watch);
+  const near = all.filter(i => i.date && i.date >= plus(from, -3) && i.date <= plus(to, 3))
     .sort((a, b) => a.date!.localeCompare(b.date!)).slice(0, CHECK);
-  const fresh = await Promise.all(near.map(i => currentDate(i, lang, country)));
-  const moved: WatchItem[] = [];
-  near.forEach((it, n) => { const d = fresh[n]; if (d !== undefined && d !== it.date) { it.date = d; moved.push(it); } });
-  if (moved.length) await saveItems(sub, moved).catch(() => {});
-  return near.filter(i => i.date && i.date >= from && i.date <= to).sort((a, b) => a.date!.localeCompare(b.date!));
+  const weekAgo = plus(from, -7);
+  const stale = all.filter(i => !near.includes(i) && (i.media === 'tv' || !i.date) && (!i.chk || i.chk <= weekAgo))
+    .sort((a, b) => (a.chk ?? '').localeCompare(b.chk ?? '')).slice(0, STALE);
+  const check = [...near, ...stale];
+  const fresh = await Promise.all(check.map(i => currentInfo(i, lang, country)));
+  const changed: WatchItem[] = [];
+  check.forEach((it, n) => {
+    const f = fresh[n];
+    if (!f) return;
+    const before = JSON.stringify([it.date, it.ep ?? null, it.chk]);
+    it.date = f.date;
+    it.ep = f.ep;
+    if (stale.includes(it)) it.chk = from;
+    if (JSON.stringify([it.date, it.ep ?? null, it.chk]) !== before) changed.push(it);
+  });
+  if (changed.length) await saveItems(sub, changed).catch(() => {});
+  return check.filter(i => i.date && i.date >= from && i.date <= to).sort((a, b) => a.date!.localeCompare(b.date!));
 }
 
+// у сериала после названия — номер серии: «Закон і порядок · 27×05»
 const line = (it: WatchItem, lang: Lang, country: CountryCode) =>
-  `${icon(it.media)} <a href="${SITE}${titlePath(lang, country, it.media, it.id, it.title)}">${esc(it.title)}</a>`;
+  `${icon(it.media)} <a href="${SITE}${titlePath(lang, country, it.media, it.id, it.title)}">${esc(it.title)}</a>${it.media === 'tv' && it.ep ? ` · ${it.ep}` : ''}`;
 
 /** Постер для Telegram: он скачивает картинку сам и понимает только JPEG/PNG (IGDB по умолчанию у нас WebP). */
 export function posterUrl(path: string | null) {
