@@ -6,6 +6,7 @@ import { titlePath } from '@/lib/slug';
 import Poster from './Poster';
 import CalendarLink from './CalendarLink';
 import TelegramLink from './TelegramLink';
+import MailLink from './MailLink';
 import { useEnv } from './AppProvider';
 import * as I from './icons';
 
@@ -41,6 +42,7 @@ export default function MyList() {
           {past.length > 0 && <section className="sec"><h2>{t('my_out')}</h2><div className="grid">{past.map(row)}</div></section>}
         </>}
       {account.user && <TelegramLink />}
+      {account.user && <MailLink />}
       {account.user && <CalendarLink />}
       {/* удаление аккаунта спрятано сюда, чтобы его не нажали случайно в меню */}
       {account.user && (

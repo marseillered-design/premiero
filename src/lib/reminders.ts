@@ -14,7 +14,7 @@ export const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 const plus = (k: string, n: number) => dayKey(new Date(Date.parse(k + 'T00:00:00Z') + n * DAY));
 const icon = (m: WatchItem['media']) => (m === 'game' ? '🎮' : m === 'tv' ? '📺' : '🎬');
 
-export const userRegion = (u: Pick<TgUser, 'lang' | 'country'>) => ({
+export const userRegion = (u: { lang: string; country: string }) => ({
   lang: (isLang(u.lang) ? u.lang : 'en') as Lang,
   country: (isCountry(u.country) ? u.country : 'us') as CountryCode,
 });
@@ -52,13 +52,19 @@ async function itemsBetween(sub: string, lang: Lang, country: CountryCode, from:
 const line = (it: WatchItem, lang: Lang, country: CountryCode) =>
   `${icon(it.media)} <a href="${SITE}${titlePath(lang, country, it.media, it.id, it.title)}">${esc(it.title)}</a>${it.media === 'tv' && it.ep ? ` · ${it.ep}` : ''}`;
 
-/** Постер для Telegram: он скачивает картинку сам и понимает только JPEG/PNG (IGDB по умолчанию у нас WebP). */
-export function posterUrl(path: string | null) {
+/** Постер для Telegram и писем: их программы понимают только JPEG/PNG (IGDB по умолчанию у нас WebP). */
+export function posterUrl(path: string | null, small = false) {
   if (!path) return null;
-  if (!path.startsWith('igdb:')) return `https://image.tmdb.org/t/p/w500${path}`;
+  if (!path.startsWith('igdb:')) return `https://image.tmdb.org/t/p/${small ? 'w342' : 'w500'}${path}`;
   const [, type, id] = path.split(':');
   return `https://images.igdb.com/igdb/image/upload/t_${type === 'cover' ? 'cover_big' : 'screenshot_med'}/${id}.jpg`;
 }
+
+/** Релизы из списка за [from; to] со сверенными датами — для писем. */
+export function listBetween(sub: string, lang: Lang, country: CountryCode, from: string, to: string) {
+  return itemsBetween(sub, lang, country, from, to);
+}
+export const addDaysKey = (k: string, n: number) => plus(k, n);
 
 /** Утреннее сообщение: что выходит сегодня и завтра, с постерами. null — сообщать нечего. */
 export async function morningDigest(u: TgUser, today: string): Promise<{ text: string; posters: string[] } | null> {

@@ -709,3 +709,5 @@ a.tmdb-r:hover{border-color:#9147FF}
 .eom-t{font-family:var(--display);font-weight:700;font-size:20px;margin:0;color:var(--fg)}
 .eom-s{margin:0 0 10px;color:var(--muted);max-width:42ch}
 .eom .btn svg{width:16px;height:16px}
+/* ---------- письма на почту в «Моём списке» ---------- */
+.ml-sub .toggles{display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:10px}
