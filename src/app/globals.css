@@ -696,3 +696,6 @@ a.tmdb-r:hover{border-color:#9147FF}
 .t-hero .btn{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(22,9,12,.55)}
 .t-hero .key-dates span,.t-hero .imdb,.t-hero .tmdb-r{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(22,9,12,.5)}
 .t-hero .btn:hover{background:rgba(255,255,255,.14)}
+/* ---------- подвал: ссылка на MovieMood ---------- */
+.foot-mm{flex-basis:100%;margin:0;font-size:13.5px;color:var(--fg)}
+.foot-mm a{color:var(--accent-text);font-weight:600;text-decoration:underline;text-underline-offset:3px}

@@ -169,6 +169,7 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
       <div className="page">{children}</div>
 
       <footer className="foot"><div className="wrap">
+        <p className="foot-mm">{t('mm_q')} <a href="https://www.themoviemood.com/" target="_blank" rel="noopener">MovieMood</a> — {t('mm_a')}</p>
         {/* Страну сайт определяет по IP; поменять её можно здесь (даты выхода и стриминги зависят от страны) */}
         <Suspense fallback={null}><CountryPicker t={t} lang={lang} country={country} onPick={c => go(lang, c)} /></Suspense>
         <Link href={`${home}/submit`}>{t('sb_link')}</Link>
