@@ -664,3 +664,12 @@ a.tmdb-r:hover{border-color:#9147FF}
   .feat-top .feat-h,.feat-h{font-size:19px;line-height:1.2}
   .top .nav a{padding:0 8px}
 }
+/* шапка: крайние колонки по ширине содержимого, вкладки по центру оставшегося места — так они не наезжают на логотип */
+.top .wrap{grid-template-columns:auto minmax(0,1fr) auto}
+/* подпись под логотипом прячем, пока ей не хватает места рядом с вкладками разделов */
+@media (max-width:1180px){ .brand small{display:none} }
+@media (max-width:960px){
+  .top .wrap{grid-template-columns:1fr auto}
+  .top .nav{grid-column:1 / -1;grid-row:2;justify-self:stretch}
+  .top .nav a{flex:1;justify-content:center}
+}
