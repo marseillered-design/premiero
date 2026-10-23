@@ -1,6 +1,6 @@
 import { connection, type NextRequest } from 'next/server';
 import { hasKv } from '@/lib/kv';
-import { ensureWebhook, firstSendToday, hasTelegram, send, tgUser, tgUsers, unlinkSub } from '@/lib/telegram';
+import { ensureWebhook, firstSendToday, hasTelegram, sendWithPosters, tgUser, tgUsers, unlinkSub } from '@/lib/telegram';
 import { dayKey, morningDigest } from '@/lib/reminders';
 
 export const maxDuration = 300;
@@ -27,9 +27,9 @@ export async function GET(req: NextRequest) {
       try {
         const u = await tgUser(sub);
         if (!u) { await unlinkSub(sub); continue; }
-        const text = await morningDigest(u, today);
-        if (!text || !(await firstSendToday(sub, today))) continue;
-        await send(u.chat, text);
+        const digest = await morningDigest(u, today);
+        if (!digest || !(await firstSendToday(sub, today))) continue;
+        await sendWithPosters(u.chat, digest.text, digest.posters);
         sent++;
       } catch (e) {
         // 403 — пользователь заблокировал бота: больше ему не пишем

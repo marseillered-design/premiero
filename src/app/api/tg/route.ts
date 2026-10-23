@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { hasKv } from '@/lib/kv';
 import { translator } from '@/lib/i18n';
 import { LANG_CODES } from '@/lib/regions';
-import { hasTelegram, linkChat, send, subOfChat, tgUser, unlinkSub, webhookSecret } from '@/lib/telegram';
+import { hasTelegram, linkChat, send, sendWithPosters, subOfChat, tgUser, unlinkSub, webhookSecret } from '@/lib/telegram';
 import { dayKey, upcomingList, userRegion } from '@/lib/reminders';
 import { SITE } from '@/lib/site';
 import type { Lang } from '@/lib/types';
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       const sub = await subOfChat(chat);
       const u = sub ? await tgUser(sub) : null;
       if (!u) await send(chat, translator(guess)('tg_hello', `${SITE}/${guess}/my`));
-      else if (cmd === '/list') await send(chat, await upcomingList(u, dayKey(new Date())));
+      else if (cmd === '/list') { const l = await upcomingList(u, dayKey(new Date())); await sendWithPosters(chat, l.text, l.posters); }
       else await send(chat, translator(userRegion(u).lang)('tg_help'));
     }
   } catch (e) {

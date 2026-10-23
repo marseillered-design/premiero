@@ -29,6 +29,29 @@ export async function tg<R = unknown>(method: string, body: Record<string, unkno
 export const send = (chat: number | string, html: string) =>
   tg('sendMessage', { chat_id: chat, text: html, parse_mode: 'HTML', link_preview_options: { is_disabled: true } });
 
+const CAPTION_MAX = 1024; // Telegram не принимает подписи к фото длиннее
+
+/**
+ * Сообщение с постерами: один постер — фото с подписью, несколько — альбом с подписью у первого.
+ * Если Telegram не смог скачать картинку или текст не влезает в подпись, шлём просто текст.
+ */
+export async function sendWithPosters(chat: number | string, html: string, posters: string[]) {
+  const photos = posters.slice(0, 10);
+  if (photos.length && html.length <= CAPTION_MAX) {
+    try {
+      if (photos.length === 1) return await tg('sendPhoto', { chat_id: chat, photo: photos[0], caption: html, parse_mode: 'HTML' });
+      return await tg('sendMediaGroup', {
+        chat_id: chat,
+        media: photos.map((url, i) => ({ type: 'photo', media: url, ...(i === 0 ? { caption: html, parse_mode: 'HTML' } : {}) })),
+      });
+    } catch (e) {
+      // заблокированный бот — не повод слать текст ещё раз
+      if (/403|blocked|deactivated|chat not found/i.test(String(e))) throw e;
+    }
+  }
+  return send(chat, html);
+}
+
 /** Имя бота для ссылки t.me/<имя>: спрашиваем у Telegram один раз и запоминаем. */
 let botName: string | null = null;
 export async function botUsername() {
