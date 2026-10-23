@@ -21,7 +21,7 @@ export async function sitemapUrls(origin: string): Promise<string[]> {
 
 /** Отправить в IndexNow только адреса, которых ещё не отправляли. */
 export async function submitNew(urls: string[]) {
-  if (!hasKv() || !urls.length) return { fresh: 0, sent: 0 };
+  if (!hasKv() || !urls.length) return { fresh: 0, sent: 0, errors: [] as string[] };
   const fresh: string[] = [];
   for (let i = 0; i < urls.length; i += CHUNK) {
     const part = urls.slice(i, i + CHUNK);
@@ -30,6 +30,7 @@ export async function submitNew(urls: string[]) {
   }
   const host = new URL(SITE).host;
   let sent = 0;
+  const errors: string[] = [];
   for (let i = 0; i < fresh.length; i += PER_POST) {
     const urlList = fresh.slice(i, i + PER_POST);
     const res = await fetch('https://api.indexnow.org/indexnow', {
@@ -37,8 +38,14 @@ export async function submitNew(urls: string[]) {
       body: JSON.stringify({ host, key: INDEXNOW_KEY, keyLocation: `${SITE}/${INDEXNOW_KEY}.txt`, urlList }),
     });
     // не принял — забываем эти адреса, чтобы попробовать завтра снова
-    if (res.status >= 300) { await kv(['SREM', 'ix:sent', ...urlList]); console.error('indexnow', res.status, await res.text().catch(() => '')); continue; }
+    if (res.status >= 300) {
+      const why = `${res.status} ${(await res.text().catch(() => '')).slice(0, 200)}`;
+      errors.push(why);
+      console.error('indexnow', why);
+      await kv(['SREM', 'ix:sent', ...urlList]);
+      continue;
+    }
     sent += urlList.length;
   }
-  return { fresh: fresh.length, sent };
+  return { fresh: fresh.length, sent, errors };
 }
