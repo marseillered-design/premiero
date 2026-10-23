@@ -25,13 +25,14 @@ function cardOf(it: Pick<WatchItem, 'media' | 'id' | 'title' | 'poster'> & { ep?
 
 function render(lang: Lang, heading: string, sections: Section[], why: string, unsub: string) {
   const t = translator(lang);
+  // у обложек IGDB и постеров TMDB разные пропорции: у всех одна высота, чтобы ряды и подписи шли ровно
   const rows = (cards: Card[]) => {
     const out: string[] = [];
     for (let i = 0; i < cards.length; i += 3) {
       const row = cards.slice(i, i + 3);
       out.push(`<tr>${row.map(c => `<td width="33%" valign="top" style="padding:0 6px 18px">
         <a href="${c.url}" style="text-decoration:none;color:#2A1116">
-          ${c.poster ? `<img src="${c.poster}" width="160" alt="" style="display:block;width:100%;max-width:160px;height:auto;border-radius:8px;border:0">` : ''}
+          ${c.poster ? `<img src="${c.poster}" width="160" height="240" alt="" style="display:block;width:160px;max-width:100%;height:240px;object-fit:cover;border-radius:8px;border:0;background:#EFE6DC">` : `<div style="width:160px;max-width:100%;height:240px;border-radius:8px;background:#EFE6DC"></div>`}
           <div style="font:600 14px/1.3 Arial,sans-serif;margin-top:8px">${esc(c.title)}</div>
           <div style="font:12px/1.4 Arial,sans-serif;color:#7A6058;margin-top:2px">${esc(c.meta)}</div>
         </a></td>`).join('')}${'<td width="33%"></td>'.repeat(3 - row.length)}</tr>`);
