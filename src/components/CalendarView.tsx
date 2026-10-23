@@ -472,8 +472,8 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
       <div className="wrap layout">
         <main aria-live="polite">
           {main}
-          <p className="side-note">{data?.approxRegion ? t('approx', cName) : t('side_note', cName)}{' '}
-            <a href="#country" onClick={() => setTimeout(() => document.getElementById('country')?.focus(), 300)}>{t('change_country')}</a></p>
+          {/* страну меняют в подвале; здесь — только предупреждение, когда у TMDB мало местных дат */}
+          {data?.approxRegion && <p className="side-note">{t('approx', cName)}</p>}
         </main>
       </div>
 
