@@ -9,10 +9,20 @@ type State = { enabled: boolean; email?: string; remind: boolean; weekly: boolea
 export default function MailLink() {
   const { t, lang, country, toast } = useEnv();
   const [s, setS] = useState<State | null>(null);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     fetch('/api/me/mail').then(r => r.json()).then((d: State) => setS({ enabled: !!d.enabled, email: d.email, remind: !!d.remind, weekly: !!d.weekly })).catch(() => {});
   }, []);
   if (!s?.enabled) return null;
+
+  // пример письма прямо сейчас, чтобы не ждать понедельника
+  const sample = () => {
+    setBusy(true);
+    fetch('/api/me/mail/sample', { method: 'POST' })
+      .then(r => toast(t(r.ok ? 'ml_sample_ok' : r.status === 429 ? 'rp_limit' : 'rp_fail', s.email ?? '')))
+      .catch(() => toast(t('rp_fail')))
+      .finally(() => setBusy(false));
+  };
 
   const save = (next: Pick<State, 'remind' | 'weekly'>) => {
     const prev = s;
@@ -29,6 +39,7 @@ export default function MailLink() {
         <label className="toggle"><input type="checkbox" checked={s.remind} onChange={e => save({ remind: e.target.checked, weekly: s.weekly })} /> {t('ml_remind')}</label>
         <label className="toggle"><input type="checkbox" checked={s.weekly} onChange={e => save({ remind: s.remind, weekly: e.target.checked })} /> {t('ml_weekly')}</label>
       </div>
+      {(s.remind || s.weekly) && <button className="reset ml-sample" disabled={busy} onClick={sample}>{t('ml_sample')}</button>}
     </section>
   );
 }

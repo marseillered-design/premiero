@@ -711,3 +711,4 @@ a.tmdb-r:hover{border-color:#9147FF}
 .eom .btn svg{width:16px;height:16px}
 /* ---------- письма на почту в «Моём списке» ---------- */
 .ml-sub .toggles{display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:10px}
+.ml-sample{margin-top:12px}
