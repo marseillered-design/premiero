@@ -16,12 +16,20 @@ export interface TitleCore {
 
 /** Кнопки под описанием; `ext` — страница источника данных (TMDB или IGDB). */
 export function TitleActions({ core, ext }: { core: TitleCore; ext: { url: string; label: string } }) {
-  const { t, watch, toggleWatch } = useEnv();
+  const { t, watch, toggleWatch, account } = useEnv();
   const key = `${core.media}-${core.id}`;
   const on = watch.has(key);
+  // число пришло с сервера при загрузке; нажатия сразу меняют его на экране
+  // (на сервере считаются только списки вошедших пользователей)
+  const [delta, setDelta] = useState(0);
+  const want = Math.max(0, (core.want ?? 0) + delta);
+  const toggle = () => {
+    if (account.user) setDelta(d => d + (on ? -1 : 1));
+    toggleWatch({ key, media: core.media, id: core.id, title: core.title, poster: core.poster, date: core.release ?? core.theatrical ?? core.digital ?? core.nextEpisode?.date ?? null });
+  };
   return (
     <div className="hero-a">
-      <button className="btn" aria-pressed={on} onClick={() => toggleWatch({ key, media: core.media, id: core.id, title: core.title, poster: core.poster, date: core.release ?? core.theatrical ?? core.digital ?? core.nextEpisode?.date ?? null })}><I.Bell /> <span>{on ? t('in_list') : t(core.media === 'game' ? 'want_game' : 'want')}</span>{core.want ? <span className="want-count">{core.want}</span> : null}</button>
+      <button className="btn" aria-pressed={on} onClick={toggle}><I.Bell /> <span>{on ? t('in_list') : t(core.media === 'game' ? 'want_game' : 'want')}</span>{want ? <span className="want-count" title={t('want_n', want)}>{want}</span> : null}</button>
       <AddToCalendar core={core} />
       <a className="btn" href={ext.url} target="_blank" rel="noreferrer">{ext.label}</a>
     </div>
