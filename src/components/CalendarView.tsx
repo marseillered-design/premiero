@@ -24,6 +24,7 @@ export type Section = 'all' | 'movies' | 'series' | 'games';
 const SECTION_KINDS: Record<Section, Kind[]> = { all: KINDS, movies: ['cinema', 'online', 'disc'], series: ['series'], games: ['game'] };
 const TYPE_ORDER: Record<Kind, number> = { cinema: 0, online: 1, disc: 2, series: 3, game: 4 };
 const KIND_COLOR: Record<Kind, string> = { cinema: 'var(--t-cinema)', series: 'var(--t-series)', online: 'var(--t-online)', disc: 'var(--t-disc)', game: 'var(--t-game)' };
+const GENRES_TOP = 12; // в панели фильтров сначала самые частые жанры месяца
 const PLATFORMS: Platform[] = ['pc', 'ps', 'xbox', 'nintendo', 'mobile'];
 
 /** Календарь релизов: весь или один раздел (фильмы, сериалы, игры). */
@@ -45,6 +46,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
   const [q, setQ] = useState('');
   const [showPast, setShowPast] = useState(false);
   const [subsOpen, setSubsOpen] = useState(false);
+  const [allGenres, setAllGenres] = useState(false);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [pendingScroll, setPendingScroll] = useState<string | null>(null);
 
@@ -148,7 +150,7 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
     if (n === 0) { setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setShowPast(false); setPendingScroll(dkey(today)); }
     else { setMonth(m => new Date(m!.getFullYear(), m!.getMonth() + n, 1)); window.scrollTo({ top: 0 }); }
   };
-  const resetFilters = () => { setGenres(new Set()); setPlats(new Set()); setProvs(new Set()); setOnlyWatch(false); setShowEps(true); setQ(''); };
+  const resetFilters = () => { setCat('all'); setGenres(new Set()); setPlats(new Set()); setProvs(new Set()); setOnlyWatch(false); setShowEps(true); setOnlySubs(false); store.set('premiero.subsOnly', false); setQ(''); };
   const jumpToDay = (k: string) => { setShowPast(true); setView('feed'); store.set('premiero.view', 'feed'); setPendingScroll(k); };
   const href = (it: CalItem) => titlePath(lang, country, it.media, it.id, it.title);
 
@@ -379,7 +381,17 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
   const shown = cat === 'all' ? kinds : [cat];
   const showsScreen = shown.some(k => k !== 'game');
   const showsStreaming = shown.includes('online') || shown.includes('series');
-  const dirty = genres.size > 0 || plats.size > 0 || onlyWatch || !showEps || q !== '';
+  // сколько фильтров включено — число на кнопке «Фильтры»
+  const active = (cat !== 'all' ? 1 : 0) + genres.size + plats.size + (onlyWatch ? 1 : 0)
+    + (!showEps && shown.includes('series') ? 1 : 0) + (onlySubs && subs.size && showsStreaming ? 1 : 0);
+  const toggleIn = <V,>(set: (f: (s: Set<V>) => Set<V>) => void, v: V) => set(s => { const n = new Set(s); if (n.has(v)) n.delete(v); else n.add(v); return n; });
+  const views = (
+    <div className="views" role="group" aria-label={t('view')}>
+      {([['feed', 'v_feed', I.Feed], ['month', 'v_month', I.Month], ['list', 'v_list', I.List]] as const).map(([v, k, Icon]) => (
+        <button key={v} aria-pressed={view === v} aria-label={t(k)} title={t(k)} onClick={() => { setView(v); store.set('premiero.view', v); }}><Icon /></button>
+      ))}
+    </div>
+  );
 
   let main: React.ReactNode;
   if (!month || load.status === 'loading') main = <div className="empty"><span className="spinner" aria-hidden />{t('loading')}</div>;
@@ -390,63 +402,67 @@ export default function CalendarView({ section = 'all', filter }: { section?: Se
   return (
     <>
       <div className="bar"><div className="wrap">
-        {kinds.length > 1 && <div className="cats" role="group" aria-label={t('kind')}>
-          {(['all', ...kinds] as Cat[]).map(k => (
-            <button key={k} className="chip" aria-pressed={cat === k} onClick={() => setCat(k)}>
-              {k !== 'all' && <span className="sw" style={{ background: KIND_COLOR[k] }} />}{t(k)}
-            </button>
-          ))}
-        </div>}
-        {provs.size > 0 && filter?.label && (
-          <button className="chip prov-chip" aria-pressed onClick={() => setProvs(new Set())} aria-label={`${filter.label}: ${t('reset')}`}>{filter.label} <I.Close /></button>
-        )}
-        <GenreMenu ids={genreIds} names={data?.genres ?? {}} counts={genreCount} selected={genres} onChange={setGenres} />
-        <SearchBox q={q} onChange={setQ} />
-        <div className="month-nav">
-          <button className="icon-btn" aria-label={t('prev')} onClick={() => shiftMonth(-1)}><I.Prev /></button>
-          <h2>{month ? f.monthTitle(month) : ' '}</h2>
-          <button className="icon-btn" aria-label={t('next')} onClick={() => shiftMonth(1)}><I.Next /></button>
-          <button className="today-btn" onClick={() => shiftMonth(0)}>{t('today')}</button>
-        </div>
-        <div className="views" role="group" aria-label={t('view')}>
-          {([['feed', 'v_feed', I.Feed], ['month', 'v_month', I.Month], ['list', 'v_list', I.List]] as const).map(([v, k, Icon]) => (
-            <button key={v} aria-pressed={view === v} aria-label={t(k)} title={t(k)} onClick={() => { setView(v); store.set('premiero.view', v); }}><Icon /></button>
-          ))}
-        </div>
-      </div></div>
-
-      <div className="wrap layout">
-        <aside className="side">
-          {kinds.includes('game') && (cat === 'all' || cat === 'game') && (
-            <div>
-              <h3>{t('platforms')}</h3>
-              <div className="genres">{PLATFORMS.map(x => (
-                <button key={x} className="chip" aria-pressed={plats.has(x)} onClick={() => setPlats(s => { const n = new Set(s); if (n.has(x)) n.delete(x); else n.add(x); return n; })}>{t('pf_' + x)}</button>
-              ))}</div>
-            </div>
-          )}
-          <div>
+        <FilterMenu count={active} onReset={resetFilters}>
+          {kinds.length > 1 && <section>
+            <h3>{t('kind')}</h3>
+            <div className="fm-chips">{(['all', ...kinds] as Cat[]).map(k => (
+              <button key={k} className="chip" aria-pressed={cat === k} onClick={() => setCat(k)}>
+                {k !== 'all' && <span className="sw" style={{ background: KIND_COLOR[k] }} />}{t(k)}
+              </button>
+            ))}</div>
+          </section>}
+          {genreIds.length > 0 && <section>
+            <h3>{t('genres')}</h3>
+            <div className="gmenu-grid">{(allGenres ? genreIds : genreIds.filter((g, i) => i < GENRES_TOP || genres.has(g))).map(g => (
+              <button key={g} className="gmenu-item" aria-pressed={genres.has(g)} onClick={() => toggleIn(setGenres, g)}>
+                <span>{data?.genres[g]}</span><small>{genreCount[g]}</small>
+              </button>
+            ))}</div>
+            {!allGenres && genreIds.length > GENRES_TOP && <button className="reset fm-more" onClick={() => setAllGenres(true)}>{t('all_genres', genreIds.length)}</button>}
+          </section>}
+          {kinds.includes('game') && (cat === 'all' || cat === 'game') && <section>
+            <h3>{t('platforms')}</h3>
+            <div className="fm-chips">{PLATFORMS.map(x => (
+              <button key={x} className="chip" aria-pressed={plats.has(x)} onClick={() => toggleIn(setPlats, x)}>{t('pf_' + x)}</button>
+            ))}</div>
+          </section>}
+          <section>
             <h3>{t('show')}</h3>
             <div className="toggles">
               <label className="toggle"><input type="checkbox" checked={onlyWatch} onChange={e => setOnlyWatch(e.target.checked)} /> {t('my_list')} ({watch.size})</label>
               {shown.includes('series') && <label className="toggle"><input type="checkbox" checked={showEps} onChange={e => setShowEps(e.target.checked)} /> {t('new_eps')}</label>}
-              {showsScreen && <>
-                <label className="toggle"><input type="checkbox" checked={showAnime} onChange={e => { setShowAnime(e.target.checked); store.set('premiero.anime', e.target.checked); }} /> {t('anime')}</label>
-              </>}
+              {showsScreen && <label className="toggle"><input type="checkbox" checked={showAnime} onChange={e => { setShowAnime(e.target.checked); store.set('premiero.anime', e.target.checked); }} /> {t('anime')}</label>}
             </div>
-          </div>
-          <div hidden={!showsStreaming}>
+          </section>
+          {showsStreaming && <section>
             <h3>{t('subs')}</h3>
             <div className="toggles">
               <label className="toggle"><input type="checkbox" checked={onlySubs} disabled={!subs.size} onChange={e => { setOnlySubs(e.target.checked); store.set('premiero.subsOnly', e.target.checked); }} /> {t('subs_only')}{subs.size ? ` (${subs.size})` : ''}</label>
               <button className="reset" onClick={() => setSubsOpen(true)}>{subs.size ? t('subs_n', subs.size) + ' · ' : ''}{t('subs_edit')}</button>
             </div>
-          </div>
-          {dirty && <button className="reset" onClick={resetFilters}>{t('reset')}</button>}
+          </section>}
+          {/* на телефоне переключатель вида живёт здесь, в панели ему не хватает места */}
+          <section className="fm-views"><h3>{t('view')}</h3>{views}</section>
+        </FilterMenu>
+        {provs.size > 0 && filter?.label && (
+          <button className="chip prov-chip" aria-pressed onClick={() => setProvs(new Set())} aria-label={`${filter.label}: ${t('reset')}`}>{filter.label} <I.Close /></button>
+        )}
+        <SearchBox q={q} onChange={setQ} />
+        <div className="month-nav">
+          <button className="icon-btn" aria-label={t('prev')} onClick={() => shiftMonth(-1)}><I.Prev /></button>
+          <h2>{month ? f.monthTitle(month) : ' '}</h2>
+          <button className="icon-btn" aria-label={t('next')} onClick={() => shiftMonth(1)}><I.Next /></button>
+          <button className="today-btn" onClick={() => shiftMonth(0)}>{t('today')}</button>
+        </div>
+        <div className="bar-views">{views}</div>
+      </div></div>
+
+      <div className="wrap layout">
+        <main aria-live="polite">
+          {main}
           <p className="side-note">{data?.approxRegion ? t('approx', cName) : t('side_note', cName)}{' '}
             <a href="#country" onClick={() => setTimeout(() => document.getElementById('country')?.focus(), 300)}>{t('change_country')}</a></p>
-        </aside>
-        <main aria-live="polite">{main}</main>
+        </main>
       </div>
 
       {subsOpen && <SubsDialog providers={providerList} onClose={() => setSubsOpen(false)} onSaved={s => { if (s.size) { setOnlySubs(true); store.set('premiero.subsOnly', true); } }} />}
@@ -484,43 +500,38 @@ function SubsDialog({ providers, onClose, onSaved }: { providers: { id: number; 
 }
 
 /**
- * «Жанры» в панели сверху, как у JustWatch: кнопка с числом выбранных и выпадающий список
- * с количеством релизов месяца. На телефоне список выезжает снизу на всю ширину.
+ * «Фильтры»: одна кнопка с числом включённых фильтров вместо ряда переключателей.
+ * На компьютере панель выпадает под кнопкой, на телефоне выезжает снизу.
  */
-function GenreMenu({ ids, names, counts, selected, onChange }: {
-  ids: number[]; names: Record<number, string>; counts: Record<number, number>;
-  selected: Set<number>; onChange: (s: Set<number>) => void;
-}) {
+function FilterMenu({ count, onReset, children }: { count: number; onReset: () => void; children: React.ReactNode }) {
   const { t } = useEnv();
-  // на телефоне — лист снизу поверх страницы (вне липкой панели, иначе он окажется внутри неё)
   const [open, setOpen] = useState<false | 'menu' | 'sheet'>(false);
   const box = useRef<HTMLDivElement>(null);
   const pop = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const away = (e: PointerEvent) => { const n = e.target as Node; if (!box.current?.contains(n) && !pop.current?.contains(n)) setOpen(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const away = (e: PointerEvent) => {
+      const n = e.target as Node;
+      // окно выбора стримингов открывается поверх панели — клик в нём не закрывает её
+      if (!box.current?.contains(n) && !pop.current?.contains(n) && !(n instanceof Element && n.closest('dialog'))) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) setOpen(false); };
     document.addEventListener('pointerdown', away);
     document.addEventListener('keydown', esc);
     return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
   }, [open]);
-  const toggle = (g: number) => { const n = new Set(selected); if (n.has(g)) n.delete(g); else n.add(g); onChange(n); };
   return (
-    <div className="gmenu" ref={box}>
-      <button className="chip gmenu-btn" disabled={!ids.length} aria-expanded={!!open} aria-haspopup="true" aria-pressed={selected.size > 0} onClick={() => setOpen(v => (v ? false : matchMedia('(max-width: 640px)').matches ? 'sheet' : 'menu'))}>
-        {t('genres')}{selected.size ? <b className="gmenu-n">{selected.size}</b> : null}<I.Chevron />
+    <div className="gmenu fmenu" ref={box}>
+      <button className="chip gmenu-btn" aria-expanded={!!open} aria-haspopup="true" aria-pressed={count > 0} onClick={() => setOpen(v => (v ? false : matchMedia('(max-width: 640px)').matches ? 'sheet' : 'menu'))}>
+        <I.Sliders />{t('filters')}{count ? <b className="gmenu-n">{count}</b> : null}
       </button>
       {open && wrapSheet(open,
-        <div className="gmenu-pop" ref={pop} role="group" aria-label={t('genres')}>
+        <div className="gmenu-pop fm-pop" ref={pop} role="group" aria-label={t('filters')}>
           <div className="gmenu-head">
-            <b>{t('genres')}</b>
-            {selected.size > 0 && <button className="reset" onClick={() => onChange(new Set())}>{t('clear')}</button>}
+            <b>{t('filters')}</b>
+            {count > 0 && <button className="reset" onClick={onReset}>{t('reset')}</button>}
           </div>
-          <div className="gmenu-grid">{ids.map(g => (
-            <button key={g} className="gmenu-item" aria-pressed={selected.has(g)} onClick={() => toggle(g)}>
-              <span>{names[g]}</span><small>{counts[g]}</small>
-            </button>
-          ))}</div>
+          {children}
           <button className="btn primary gmenu-done" onClick={() => setOpen(false)}>{t('done')}</button>
         </div>,
       )}
