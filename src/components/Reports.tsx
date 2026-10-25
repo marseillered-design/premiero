@@ -128,7 +128,7 @@ export function ReportsList() {
             <span className="tag">{t(r.media === 'movie' ? 'ty_movie' : r.media === 'tv' ? 'ty_series' : 'ty_game')}</span>
             <span>{new Date(r.at).toLocaleString()}</span>
           </p>
-          <h3 className="card-t">{r.page ? <Link href={r.page}>{r.title}</Link> : r.title}</h3>
+          <h3 className="card-t">{r.page ? <Link prefetch={false} href={r.page}>{r.title}</Link> : r.title}</h3>
           {r.date && <p><b>{t('rp_date')}</b> {f.date(new Date(`${r.date}T12:00:00`))}</p>}
           {r.link && <p><a href={r.link} target="_blank" rel="noreferrer nofollow">{r.link}</a></p>}
           {r.note && <p className="rv-note">{r.note}</p>}

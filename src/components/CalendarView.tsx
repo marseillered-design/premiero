@@ -191,8 +191,8 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
   };
   // у онлайн-релизов и сериалов — «Смотреть», у игр — «Играть»; обе ведут на страницу релиза
   const actionBtn = (ev: CalEvent, it: CalItem) =>
-    ev.kind === 'online' || ev.kind === 'series' ? <Link className="buy ghost" href={href(it)}>{t('watch_btn')}</Link>
-      : ev.kind === 'game' ? <Link className="buy ghost" href={href(it)}>{t('play_btn')}</Link> : null;
+    ev.kind === 'online' || ev.kind === 'series' ? <Link prefetch={false} className="buy ghost" href={href(it)}>{t('watch_btn')}</Link>
+      : ev.kind === 'game' ? <Link prefetch={false} className="buy ghost" href={href(it)}>{t('play_btn')}</Link> : null;
   const meta = (ev: CalEvent, it: CalItem) => (
     <p className="card-m">
       {antLabel(ev, it)}
@@ -210,8 +210,8 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
     const it = data!.items[ev.item];
     return (
       <article className="card" key={ev.item + ev.kind + ev.date}>
-        <Link className="poster-btn" href={href(it)} tabIndex={-1} aria-hidden><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
-        <h3 className="card-t"><Link href={href(it)}>{it.title}</Link></h3>
+        <Link prefetch={false} className="poster-btn" href={href(it)} tabIndex={-1} aria-hidden><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
+        <h3 className="card-t"><Link prefetch={false} href={href(it)}>{it.title}</Link></h3>
         {meta(ev, it)}
         <div className="card-a">{watchBtn(ev, it)}{actionBtn(ev, it)}{want[it.key] >= 3 && <span className="want-n" title={t('want_n', want[it.key])}><I.Bell />{want[it.key]}</span>}</div>
       </article>
@@ -278,11 +278,11 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
       if (list.length < 3) return null;
       return (
         <section className="hot" key={key}>
-          <div className="feat-top"><h2 className="feat-h">{t(key)}</h2><Link className="feat-more" href={`/${lang}/${country}${path}`}>{t('all_link')} →</Link></div>
+          <div className="feat-top"><h2 className="feat-h">{t(key)}</h2><Link prefetch={false} className="feat-more" href={`/${lang}/${country}${path}`}>{t('all_link')} →</Link></div>
           <ul className="hot-row">{list.map(e => {
             const it = data!.items[e.item];
             return (
-              <li key={e.item}><Link href={href(it)}>
+              <li key={e.item}><Link prefetch={false} href={href(it)}>
                 <Poster path={it.poster} title={it.title} sizes="128px" />
                 <span className="hot-t">{it.title}</span>
                 <span className="hot-d">{f.date(fromKey(e.date))}</span>
@@ -360,7 +360,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
                 {list.length > 0 && <>
                   <ul>{list.slice(0, 3).map(e => {
                     const it = data!.items[e.item];
-                    return <li key={e.item + e.kind}><Link className={`m-ev t-${e.kind}`} title={it.title} href={href(it)}><Poster path={it.poster} title={it.title} mini /><span className="m-t">{it.title}</span></Link></li>;
+                    return <li key={e.item + e.kind}><Link prefetch={false} className={`m-ev t-${e.kind}`} title={it.title} href={href(it)}><Poster path={it.poster} title={it.title} mini /><span className="m-t">{it.title}</span></Link></li>;
                   })}</ul>
                   {list.length > 3 && <button className="more" onClick={() => jumpToDay(k)}>+{list.length - 3}</button>}
                   <span className="dots" aria-hidden>{list.slice(0, 6).map(e => <i key={e.item + e.kind} className={`t-${e.kind}`} />)}</span>
@@ -386,7 +386,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
             return (
               <tr key={e.item + e.kind + e.date}>
                 <td className="date">{f.date(d)}<small>{f.wd(d, true)} · {f.rel(d)}</small></td>
-                <td><Link className="l-title" href={href(it)}><Poster path={it.poster} title={it.title} mini />{it.title}</Link></td>
+                <td><Link prefetch={false} className="l-title" href={href(it)}><Poster path={it.poster} title={it.title} mini />{it.title}</Link></td>
                 <td>{kindTag(e.kind)}</td>
                 <td className="muted">{it.genres.map(genreName).filter(Boolean).slice(0, 3).join(', ')}</td>
                 <td className="muted">{where}</td>

@@ -61,11 +61,11 @@ async function Upcoming() {
             const href = titlePath(lang, country, it.media, it.id, it.title);
             return (
               <li className="card" key={it.key}>
-                <Link className="poster-btn" href={href} tabIndex={-1} aria-hidden>
+                <Link prefetch={false} className="poster-btn" href={href} tabIndex={-1} aria-hidden>
                   <span className="up-rank">{i + 1}</span>
                   <Poster path={it.poster} title={it.title} cert={it.cert} />
                 </Link>
-                <h3 className="card-t"><Link href={href}>{it.title}</Link></h3>
+                <h3 className="card-t"><Link prefetch={false} href={href}>{it.title}</Link></h3>
                 <p className="card-m"><span className={`tag t-${kindTag(kind)}`}>{t('ty_' + kindTag(kind))}</span><span>{fmt.format(fromKey(date))}</span></p>
               </li>
             );

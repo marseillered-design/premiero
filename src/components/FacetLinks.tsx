@@ -37,7 +37,7 @@ export default async function FacetLinks({ lang, country, section, current }: { 
         <div key={sec}>
           {sections.length > 1 && <h3>{t(LABELS[sec])}</h3>}
           <ul>{links.map(({ f, label }) => (
-            <li key={f.slug}><Link href={`/${lang}/${country}/${sec}/${f.slug}`} aria-current={current === `${sec}/${f.slug}` ? 'page' : undefined}>{label}</Link></li>
+            <li key={f.slug}><Link prefetch={false} href={`/${lang}/${country}/${sec}/${f.slug}`} aria-current={current === `${sec}/${f.slug}` ? 'page' : undefined}>{label}</Link></li>
           ))}</ul>
         </div>
       ))}

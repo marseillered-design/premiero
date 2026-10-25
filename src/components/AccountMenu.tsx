@@ -27,8 +27,8 @@ export default function AccountMenu({ home }: { home: string }) {
       </summary>
       <div className="acc-pop">
         <p className="acc-who"><b>{u.name}</b><span>{u.email}</span></p>
-        <Link href={`${home}/my`} onClick={close}>{t('my_page')}</Link>
-        <Link href={`${home}/privacy`} onClick={close}>{t('privacy')}</Link>
+        <Link prefetch={false} href={`${home}/my`} onClick={close}>{t('my_page')}</Link>
+        <Link prefetch={false} href={`${home}/privacy`} onClick={close}>{t('privacy')}</Link>
         <button onClick={() => { close(); signOut(); }}>{t('sign_out')}</button>
       </div>
     </details>

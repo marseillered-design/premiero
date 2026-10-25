@@ -110,7 +110,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {backdrop && <img className="t-hero-bg" src={backdrop} srcSet={SRCSET(d.backdrop, 'backdrop')} sizes="100vw" alt="" fetchPriority="high" />}
       <div className="wrap t-hero-in">
-      <nav className="crumbs"><Link href={calendarPath(lang, country)}><I.Prev /> {t('to_cal')}</Link></nav>
+      <nav className="crumbs"><Link prefetch={false} href={calendarPath(lang, country)}><I.Prev /> {t('to_cal')}</Link></nav>
 
       <div className="hero">
         <Poster path={d.poster} title={d.title} cert={d.cert} size="w500" sizes="(max-width: 640px) 160px, (max-width: 960px) 200px, 280px" eager />
@@ -197,7 +197,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
         <section className="sec">
           <h2>{t('rel_dates')} <small>{t('by_country')}</small></h2>
           <div className="rel-table">{d.releases.map(x => (
-            <Link key={x.country} href={titlePath(lang, x.country, media, d.id, d.title)} className={`rel-c${x.country === country ? ' cur' : ''}`}>
+            <Link prefetch={false} key={x.country} href={titlePath(lang, x.country, media, d.id, d.title)} className={`rel-c${x.country === country ? ' cur' : ''}`}>
               {nameIn(COUNTRIES[x.country].name, lang)}<b>{x.date ? day(x.date) : <span className="na">{t('tba')}</span>}</b>
             </Link>
           ))}</div>

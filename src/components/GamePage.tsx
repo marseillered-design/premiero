@@ -102,7 +102,7 @@ async function GameContent({ params }: { params: Params }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {backdrop && <img className="t-hero-bg" src={backdrop} srcSet={SRCSET(d.backdrop, 'backdrop')} sizes="100vw" alt="" fetchPriority="high" />}
       <div className="wrap t-hero-in">
-      <nav className="crumbs"><Link href={`${calendarPath(lang, country)}/games`}><I.Prev /> {t('to_games')}</Link></nav>
+      <nav className="crumbs"><Link prefetch={false} href={`${calendarPath(lang, country)}/games`}><I.Prev /> {t('to_games')}</Link></nav>
 
       <div className="hero">
         <Poster path={d.poster} title={d.title} size="w500" eager />

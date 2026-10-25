@@ -64,7 +64,7 @@ async function FacetContent({ section, params }: { section: FacetSection; params
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(crumbs) }} />
     <header className="wrap facet-head">
-      <nav className="crumbs"><Link href={`/${lang}/${country}/${section}`}><I.Prev /> {t('fh_back')}</Link></nav>
+      <nav className="crumbs"><Link prefetch={false} href={`/${lang}/${country}/${section}`}><I.Prev /> {t('fh_back')}</Link></nav>
       <h1>{cap(t(HEAD[section], label), lang)}</h1>
       <p>{t('fh_intro', label, c)}</p>
     </header>

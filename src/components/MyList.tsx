@@ -23,8 +23,8 @@ export default function MyList() {
     const href = titlePath(lang, country, i.media, i.id, i.title);
     return (
       <article className="card" key={i.key}>
-        <Link className="poster-btn" href={href} tabIndex={-1} aria-hidden><Poster path={i.poster} title={i.title} /></Link>
-        <h3 className="card-t"><Link href={href}>{i.title}</Link></h3>
+        <Link prefetch={false} className="poster-btn" href={href} tabIndex={-1} aria-hidden><Poster path={i.poster} title={i.title} /></Link>
+        <h3 className="card-t"><Link prefetch={false} href={href}>{i.title}</Link></h3>
         <p className="card-m"><span className={`tag t-${kind(i.media)}`}>{t('ty_' + kind(i.media))}</span><span>{i.date ? `${f.date(fromKey(i.date))} · ${f.rel(fromKey(i.date))}` : t('tba')}</span></p>
         <div className="card-a"><button className="watch" aria-pressed aria-label={t('unwant')} title={t('unwant')} onClick={() => toggleWatch(i)}><I.Bell /></button></div>
       </article>

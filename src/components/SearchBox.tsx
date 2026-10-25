@@ -51,7 +51,7 @@ export default function SearchBox({ q, onChange }: { q: string; onChange: (v: st
         <div className="search-pop" id="search-hits">
           <p className="search-h">{shown.length ? t('search_all') : t('search_none')}</p>
           {shown.map(h => (
-            <Link key={h.key} className="search-hit" href={titlePath(lang, country, h.media, h.id, h.title)} onClick={() => setOpen(false)}>
+            <Link prefetch={false} key={h.key} className="search-hit" href={titlePath(lang, country, h.media, h.id, h.title)} onClick={() => setOpen(false)}>
               <Poster path={h.poster} title={h.title} mini />
               <span className="search-t">{h.title}</span>
               <span className={`tag t-${kind(h.media)}`}>{t(h.media === 'movie' ? 'ty_movie' : 'ty_' + kind(h.media))}</span>

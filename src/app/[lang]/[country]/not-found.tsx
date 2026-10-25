@@ -12,7 +12,7 @@ export default async function NotFound() {
       <div className="empty">
         <b>{t('nf_t')}</b>
         <span>{t('nf_s')}</span>
-        <Link className="btn" href={`/${lang}/${isCountry(c) ? c : 'us'}`}>{t('to_cal')}</Link>
+        <Link prefetch={false} className="btn" href={`/${lang}/${isCountry(c) ? c : 'us'}`}>{t('to_cal')}</Link>
       </div>
     </div>
   );

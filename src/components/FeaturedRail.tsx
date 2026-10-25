@@ -84,11 +84,11 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
       onFocus={() => setHold(true)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHold(false); }}>
       <div className="feat-top">
         <h2 className="feat-h">{t('featured')}</h2>
-        <Link className="feat-more" href={`/${lang}/${country}/upcoming`}>{t('up_link')} →</Link>
+        <Link prefetch={false} className="feat-more" href={`/${lang}/${country}/upcoming`}>{t('up_link')} →</Link>
       </div>
       <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'} onPointerDown={stop} onWheel={e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }}>
         {slides.map((s, i) => (
-          <Link key={s.key} className={`feat t-${s.kind}`} href={s.href}>
+          <Link prefetch={false} key={s.key} className={`feat t-${s.kind}`} href={s.href}>
             {/* кадры грузим по мере показа: видимые сразу, следующий — заранее, остальные — когда до них дойдёт лента */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {(all || i <= Math.max(2, index + 1)) && <img src={s.image} srcSet={s.srcSet} sizes="(max-width: 640px) 86vw, 420px" alt="" loading={i < 2 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : undefined} />}
