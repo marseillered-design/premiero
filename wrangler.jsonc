@@ -1,0 +1,27 @@
+// Premiero on Cloudflare Workers (OpenNext).
+// Build and deploy: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "premiero",
+  // OpenNext's worker plus the scheduled tasks (custom-worker.js)
+  "main": "custom-worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // OpenNext calls the Worker itself for some cache work; the name must match "name"
+    { "binding": "WORKER_SELF_REFERENCE", "service": "premiero" }
+  ],
+  // the cron jobs of vercel.json, in UTC
+  "triggers": { "crons": ["0 4 * * *", "0 7 * * *"] },
+  // the code reads these Vercel names: the site's address and "this is production"
+  "vars": {
+    "VERCEL_PROJECT_PRODUCTION_URL": "thepremiero.com",
+    "VERCEL_ENV": "production"
+  },
+  "workers_dev": true,
+  "observability": { "enabled": true }
+}
