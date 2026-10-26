@@ -23,5 +23,10 @@
     "VERCEL_ENV": "production"
   },
   "workers_dev": true,
+  // the site and its www address (custom-worker.js sends www to the bare domain)
+  "routes": [
+    { "pattern": "thepremiero.com", "custom_domain": true },
+    { "pattern": "www.thepremiero.com", "custom_domain": true }
+  ],
   "observability": { "enabled": true }
 }

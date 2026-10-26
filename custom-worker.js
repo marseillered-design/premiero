@@ -10,8 +10,23 @@ const CRONS = {
   '0 7 * * *': '/api/tg/remind',
 };
 
+// Краулеры, которые собирают сайты для обучения нейросетей (как правило в Vercel Firewall и
+// список в robots.ts): посетителей не приводят, а запросов делали больше всех людей вместе.
+// Поисковики и ИИ-поиск (Googlebot, Bingbot, OAI-SearchBot) проходят.
+const AI_TRAINING = /GPTBot|ClaudeBot|anthropic-ai|CCBot|Bytespider|meta-externalagent|Amazonbot|cohere-ai|Diffbot|img2dataset/i;
+
 export default {
-  fetch: handler.fetch,
+  fetch(request, env, ctx) {
+    if (AI_TRAINING.test(request.headers.get('user-agent') || '')) {
+      return new Response('Forbidden', { status: 403 });
+    }
+    // сайт живёт на thepremiero.com без www, как было на Vercel
+    const url = new URL(request.url);
+    if (url.hostname === 'www.thepremiero.com') {
+      return Response.redirect(`https://thepremiero.com${url.pathname}${url.search}`, 308);
+    }
+    return handler.fetch(request, env, ctx);
+  },
 
   async scheduled(controller, env, ctx) {
     const path = CRONS[controller.cron];
