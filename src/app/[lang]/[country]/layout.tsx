@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import { Golos_Text, JetBrains_Mono, Unbounded } from 'next/font/google';
 import { preconnect } from 'react-dom';
+import Script from 'next/script';
 import AppProvider from '@/components/AppProvider';
 import { COUNTRY_CODES, LANG_CODES, isCountry, isLang } from '@/lib/regions';
 import { THEME_INIT } from '@/lib/theme';
@@ -40,8 +41,10 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]/[cou
     <html lang={lang} className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT }} /></head>
       <body>
-        {/* Vercel Web Analytics ушла вместе с Vercel: посетителей считает Cloudflare */}
         <AppProvider lang={lang} country={country}>{children}</AppProvider>
+        {/* Посетителей считает Cloudflare Web Analytics (Cloudflare → Analytics & Logs → Web Analytics):
+            без куки и без сбора личных данных */}
+        <Script src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: '2d6a16cbba874be6876a52dff5a8fdcc' })} strategy="afterInteractive" />
       </body>
     </html>
   );
