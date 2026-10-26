@@ -2,10 +2,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { FLOW_COOKIE, finishFlow, sessionCookie } from '@/lib/auth';
 import { hasKv } from '@/lib/kv';
 import { saveProfile } from '@/lib/account';
+import { publicOrigin } from '@/lib/site';
 
 export async function GET(req: NextRequest) {
   const done = await finishFlow(req);
-  const back = new URL(done.next, req.url);
+  const back = new URL(done.next, publicOrigin(req));
   if ('failed' in done) {
     console.error('sign-in failed:', done.failed);
     back.searchParams.set('login', 'failed');

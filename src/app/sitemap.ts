@@ -29,11 +29,12 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
       alternates: { languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, `${SITE}/${l}/${country}${section}`])) },
     }))));
   }
-  if (!isCountry(key) || !hasAnySource()) return [];
-
   // Строится по запросу, а не при сборке: иначе сборка ходила бы в TMDB и IGDB за всеми странами.
   // Сами данные берутся из кэша календаря, который каждую ночь прогревает /api/warm.
+  // connection() — до проверки ключей: на Google Cloud ключи есть только у работающего сервера,
+  // а не при сборке, и пустая карта иначе застыла бы в сборке.
   await connection();
+  if (!isCountry(key) || !hasAnySource()) return [];
   const lang = COUNTRIES[key].lang;
   const now = new Date();
   const months = [0, 1].map(n => {

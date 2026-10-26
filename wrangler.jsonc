@@ -1,29 +1,17 @@
-// Premiero on Cloudflare Workers (OpenNext).
-// Build and deploy: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
+// thepremiero.com on Cloudflare: edge-worker.js in front of the Next.js server on Google Cloud Run.
+// Deploy: npx wrangler deploy
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "premiero",
-  // OpenNext's worker plus the scheduled tasks (custom-worker.js)
-  "main": "custom-worker.js",
+  "main": "edge-worker.js",
   "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-  "services": [
-    // OpenNext calls the Worker itself for some cache work; the name must match "name"
-    { "binding": "WORKER_SELF_REFERENCE", "service": "premiero" }
-  ],
-  // the cron jobs of vercel.json, in UTC
-  "triggers": { "crons": ["0 4 * * *", "0 7 * * *"] },
-  // the code reads these Vercel names: the site's address and "this is production"
+  // the Next.js server (Google Cloud Run)
   "vars": {
-    "VERCEL_PROJECT_PRODUCTION_URL": "thepremiero.com",
-    "VERCEL_ENV": "production"
+    "ORIGIN": "https://premiero-832444804335.us-central1.run.app"
   },
+  // the cron jobs of vercel.json, in UTC; they call the server with CRON_SECRET (a Worker secret)
+  "triggers": { "crons": ["0 4 * * *", "0 7 * * *"] },
   "workers_dev": true,
-  // the site and its www address (custom-worker.js sends www to the bare domain)
   "routes": [
     { "pattern": "thepremiero.com", "custom_domain": true },
     { "pattern": "www.thepremiero.com", "custom_domain": true }

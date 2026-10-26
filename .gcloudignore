@@ -1,0 +1,14 @@
+# What gcloud run deploy --source must not upload to Google Cloud Build.
+# Secrets first: the server gets its keys as Cloud Run environment variables, never from files.
+.env*
+.dev.vars
+# local and build files
+.git/
+.gitignore
+node_modules/
+.next/
+.open-next/
+.wrangler/
+.claude/
+.vercel/
+*.log

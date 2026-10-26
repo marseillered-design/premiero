@@ -1,5 +1,6 @@
 import { SignJWT, createRemoteJWKSet, jwtVerify } from 'jose';
 import type { NextRequest } from 'next/server';
+import { publicOrigin } from './site';
 
 /*
  * Вход через Google (OAuth 2.0, код авторизации + PKCE). Паролей сайт не хранит.
@@ -42,7 +43,7 @@ const random = (n = 32) => b64url(crypto.getRandomValues(new Uint8Array(n)));
 
 /** Куда вернуть после входа: только свои относительные адреса. */
 export const safeNext = (v: string | null) => (v && v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/\\') ? v : '/');
-export const redirectUri = (req: NextRequest) => `${req.nextUrl.origin}/api/auth/callback`;
+export const redirectUri = (req: NextRequest) => `${publicOrigin(req)}/api/auth/callback`;
 
 export async function startFlow(req: NextRequest) {
   const state = random(), verifier = random(48);

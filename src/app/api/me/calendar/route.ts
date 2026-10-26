@@ -2,9 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { userFrom } from '@/lib/auth';
 import { calToken, dropCalToken, newCalToken } from '@/lib/account';
 import { isCountry, isLang } from '@/lib/regions';
+import { publicOrigin } from '@/lib/site';
 
 const PRIVATE = { 'Cache-Control': 'private, no-store' };
-const link = (req: NextRequest, token: string | null) => (token ? `${req.nextUrl.origin}/api/cal/${token}.ics` : null);
+const link = (req: NextRequest, token: string | null) => (token ? `${publicOrigin(req)}/api/cal/${token}.ics` : null);
 
 /** Ссылка на календарь «Моего списка»: узнать, создать (или заменить на новую), отключить. */
 export async function GET(req: NextRequest) {
