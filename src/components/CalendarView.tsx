@@ -422,7 +422,9 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
   );
 
   let main: React.ReactNode;
-  if (!month || load.status === 'loading') main = <div className="empty"><span className="spinner" aria-hidden />{t('loading')}</div>;
+  // пока месяц грузится, блок занимает экран: ссылки-подборки под календарём начинаются ниже
+  // первого экрана и не прыгают вниз, когда приходит длинный календарь (Google считает такие сдвиги)
+  if (!month || load.status === 'loading') main = <div className="empty is-loading"><span className="spinner" aria-hidden />{t('loading')}</div>;
   else if (load.status === 'no_token') main = <div className="empty"><b>{t('notoken_t')}</b><span>{t('notoken_s')}</span></div>;
   else if (load.status === 'error') main = <div className="empty"><b>{t('err_t')}</b><span>{t('err_s')}</span></div>;
   else main = view === 'month' ? renderMonth() : view === 'list' ? renderList() : renderFeed();
