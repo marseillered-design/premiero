@@ -1,5 +1,6 @@
 /**
- * CDN Vercel держит ответ час и ещё сутки отдаёт старую копию, пока в фоне готовит новую.
- * Поэтому ждать загрузки TMDB приходится только самому первому посетителю.
+ * Кэш Cloudflare (edge-worker.js) держит ответ 6 часов. Данные календаря и так обновляются раз
+ * в сутки ночной задачей /api/warm, а каждый промах кэша — это секунда работы сервера Cloud Run
+ * с ограниченным бесплатным объёмом. Счётчик «хотят посмотреть» в ответе отстаёт на те же часы.
  */
-export const CDN_CACHE = { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' };
+export const CDN_CACHE = { 'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400' };
