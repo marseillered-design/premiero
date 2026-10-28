@@ -41,8 +41,17 @@ export async function userFrom(req: NextRequest): Promise<User | null> {
 const b64url = (buf: ArrayBuffer | Uint8Array) => Buffer.from(buf instanceof Uint8Array ? buf : new Uint8Array(buf)).toString('base64url');
 const random = (n = 32) => b64url(crypto.getRandomValues(new Uint8Array(n)));
 
-/** Куда вернуть после входа: только свои относительные адреса. */
-export const safeNext = (v: string | null) => (v && v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/\\') ? v : '/');
+/**
+ * Куда вернуть после входа: только свои относительные адреса. Разбираем адрес так же, как браузер:
+ * он молча выбрасывает табуляцию и переводы строк, и «/\t/evil.com» превратился бы в «//evil.com».
+ */
+export function safeNext(v: string | null) {
+  if (!v?.startsWith('/')) return '/';
+  try {
+    const u = new URL(v, 'https://premiero.invalid');
+    return u.origin === 'https://premiero.invalid' ? u.pathname + u.search + u.hash : '/';
+  } catch { return '/'; }
+}
 export const redirectUri = (req: NextRequest) => `${publicOrigin(req)}/api/auth/callback`;
 
 export async function startFlow(req: NextRequest) {

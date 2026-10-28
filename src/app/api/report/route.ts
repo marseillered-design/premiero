@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
   if (!body) return NextResponse.json({ error: 'bad' }, { status: 400 });
   // поле-ловушка: человек его не видит, а боты заполняют; делаем вид, что всё хорошо
   if (body.website) return NextResponse.json({ ok: true });
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'local';
+  // x-client-ip ставит Worker (Cloudflare знает настоящий адрес); x-forwarded-for посетитель может подделать
+  const ip = req.headers.get('x-client-ip') || req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'local';
   if (!(await allowed(ip))) return NextResponse.json({ error: 'limit' }, { status: 429 });
   const user = await userFrom(req);
   const report = cleanReport(body, user?.email ?? null);

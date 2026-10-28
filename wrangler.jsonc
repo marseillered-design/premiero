@@ -11,7 +11,8 @@
   },
   // the cron jobs of vercel.json, in UTC; they call the server with CRON_SECRET (a Worker secret)
   "triggers": { "crons": ["0 4 * * *", "0 7 * * *"] },
-  "workers_dev": true,
+  // no *.workers.dev address: it would skip the Cloudflare bot rules of the thepremiero.com zone
+  "workers_dev": false,
   "routes": [
     { "pattern": "thepremiero.com", "custom_domain": true },
     { "pattern": "www.thepremiero.com", "custom_domain": true }

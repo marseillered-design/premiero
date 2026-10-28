@@ -34,6 +34,10 @@ async function toOrigin(request, env, url) {
   // страна посетителя под тем именем, под каким её сообщал Vercel: по ней главная выбирает
   // календарь страны (src/proxy.ts)
   if (request.cf?.country) headers.set('x-vercel-ip-country', request.cf.country);
+  // адрес посетителя, который сам посетитель подделать не может (по нему лимит сообщений об ошибках)
+  headers.set('x-client-ip', request.headers.get('cf-connecting-ip') || '');
+  // пропуск на сервер: без него src/proxy.ts отвечает 403
+  if (env.ORIGIN_SECRET) headers.set('x-origin-auth', env.ORIGIN_SECRET);
   const response = await fetch(new URL(url.pathname + url.search, origin), {
     method: request.method,
     headers,
@@ -80,6 +84,7 @@ export default {
         'x-forwarded-host': 'thepremiero.com',
         'x-forwarded-proto': 'https',
         ...(env.CRON_SECRET ? { authorization: `Bearer ${env.CRON_SECRET}` } : {}),
+        ...(env.ORIGIN_SECRET ? { 'x-origin-auth': env.ORIGIN_SECRET } : {}),
       },
     });
     console.log(`cron ${path}: ${response.status} ${(await response.text()).slice(0, 300)}`);

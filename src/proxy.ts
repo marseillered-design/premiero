@@ -27,7 +27,19 @@ function preferred(req: NextRequest): { lang: Lang; country: CountryCode } {
   return { lang: langFromHeader(req.headers.get('accept-language')) ?? COUNTRIES[country].lang, country };
 }
 
+/*
+ * Сервер на Cloud Run доступен по адресу *.run.app всем, но ходить к нему должен только Worker
+ * на thepremiero.com: иначе мимо Cloudflare (правила для ботов, кэш, лимиты) ходили бы напрямую.
+ * Worker добавляет секрет ORIGIN_SECRET в x-origin-auth; без секрета на сервере проверка выключена.
+ */
+const fromEdge = (req: NextRequest) => {
+  const secret = process.env.ORIGIN_SECRET;
+  return !secret || req.headers.get('x-origin-auth') === secret;
+};
+
 export function proxy(req: NextRequest) {
+  if (!fromEdge(req)) return new NextResponse('Forbidden', { status: 403 });
+  if (req.nextUrl.pathname.startsWith('/api/')) return NextResponse.next();
   const seg = req.nextUrl.pathname.split('/').filter(Boolean);
   if (seg.length >= 2 && isLang(seg[0]) && isCountry(seg[1])) return NextResponse.next();
 
@@ -42,6 +54,7 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  // страницы (кроме файлов вроде robots.txt и /_next/static) и весь /api, включая /api/cal/….ics
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)', '/api/:path*'],
 };
 
