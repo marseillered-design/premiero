@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { COUNTRIES, LANG_CODES, isCountry, isLang, nameIn } from '@/lib/regions';
+import { COUNTRIES, isCountry, isLang, nameIn, hreflangs } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { findFacet, type Facet, type FacetFilter, type FacetSection } from '@/lib/facets';
 import { facetLabel } from './FacetLinks';
@@ -38,7 +38,7 @@ export async function facetMetadata(section: FacetSection, params: Params): Prom
     description: t('fh_desc', cap(h, r.lang), c),
     alternates: {
       canonical: `/${r.lang}/${r.country}${tail}`,
-      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${r.country.toUpperCase()}`, `/${l}/${r.country}${tail}`])),
+      languages: hreflangs(r.country, l => `/${l}/${r.country}${tail}`),
     },
   };
 }

@@ -75,6 +75,7 @@ p{margin:0}
 .chip .sw{width:8px;height:8px;border-radius:50%}
 .month-nav{display:flex;align-items:center;gap:6px;margin-left:auto}
 .month-nav h2{font-family:var(--display);font-weight:700;font-size:17px;min-width:9.5em;text-align:center}
+.month-nav .mn-ph{min-width:9.5em}
 .icon-btn{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:9px;border:1px solid var(--line);background:var(--surface)}
 .icon-btn:hover{border-color:var(--muted)}
 .today-btn{padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:14px}

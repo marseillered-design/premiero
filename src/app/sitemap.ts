@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { connection } from 'next/server';
-import { COUNTRIES, COUNTRY_CODES, LANG_CODES, isCountry } from '@/lib/regions';
+import { COUNTRIES, COUNTRY_CODES, LANG_CODES, isCountry, hreflangs } from '@/lib/regions';
 import { getReleases, hasAnySource } from '@/lib/releases';
 import { titlePath } from '@/lib/slug';
 import { SITE } from '@/lib/site';
@@ -26,7 +26,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
       url: `${SITE}/${lang}/${country}${section}`,
       changeFrequency: 'daily' as const,
       priority: !section ? 1 : section.split('/').length > 2 ? 0.7 : 0.8,
-      alternates: { languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, `${SITE}/${l}/${country}${section}`])) },
+      alternates: { languages: hreflangs(country, l => `${SITE}/${l}/${country}${section}`) },
     }))));
   }
   // Строится по запросу, а не при сборке: иначе сборка ходила бы в TMDB и IGDB за всеми странами.

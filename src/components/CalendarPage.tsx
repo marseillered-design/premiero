@@ -6,7 +6,7 @@ import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import CalendarView, { type Section } from './CalendarView';
 import FacetLinks from './FacetLinks';
 import type { FacetFilter } from '@/lib/facets';
-import { COUNTRIES, LANG_CODES, isCountry, isLang, nameIn } from '@/lib/regions';
+import { COUNTRIES, isCountry, isLang, nameIn, hreflangs } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
 import { getReleases, hasAnySource } from '@/lib/releases';
@@ -32,7 +32,7 @@ export async function calendarMetadata(section?: Exclude<Section, 'all'>): Promi
     description: t(section ? META[section][1] : 'meta_cal_desc', c),
     alternates: {
       canonical: `/${lang}/${country}${tail}`,
-      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, `/${l}/${country}${tail}`])),
+      languages: hreflangs(country, l => `/${l}/${country}${tail}`),
     },
   };
 }

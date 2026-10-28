@@ -1,4 +1,8 @@
 import { SITE } from './site';
+import type { CountryCode, Lang } from './types';
+
+/** og:locale в виде uk_UA: язык страницы и страна. */
+export const ogLocale = (lang: Lang, country: CountryCode) => `${lang}_${country.toUpperCase()}`;
 
 /** Цепочка «Главная › Раздел › Страница» для выдачи Google. Пути — от корня сайта. */
 export const breadcrumbs = (items: [name: string, path: string][]) => ({

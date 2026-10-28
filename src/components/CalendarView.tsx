@@ -480,7 +480,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
         <SearchBox q={q} onChange={setQ} />
         <div className="month-nav">
           <button className="icon-btn" aria-label={t('prev')} onClick={() => shiftMonth(-1)}><I.Prev /></button>
-          <h2>{month ? f.monthTitle(month) : ' '}</h2>
+          {month ? <h2>{f.monthTitle(month)}</h2> : <span className="mn-ph" aria-hidden />}
           <button className="icon-btn" aria-label={t('next')} onClick={() => shiftMonth(1)}><I.Next /></button>
           <button className="today-btn" onClick={() => shiftMonth(0)}>{t('today')}</button>
         </div>

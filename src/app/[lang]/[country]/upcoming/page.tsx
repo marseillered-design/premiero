@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { connection } from 'next/server';
 import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import Poster from '@/components/Poster';
-import { COUNTRIES, LANG_CODES, LOCALE, isCountry, isLang, nameIn } from '@/lib/regions';
+import { COUNTRIES, LOCALE, isCountry, isLang, nameIn, hreflangs } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
 import { titlePath } from '@/lib/slug';
@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t('meta_up_desc', c),
     alternates: {
       canonical: `/${lang}/${country}/upcoming`,
-      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, `/${l}/${country}/upcoming`])),
+      languages: hreflangs(country, l => `/${l}/${country}/upcoming`),
     },
   };
 }

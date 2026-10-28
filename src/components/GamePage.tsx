@@ -3,11 +3,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { IMG, LANG_CODES, LOCALE, SRCSET, isCountry, isLang } from '@/lib/regions';
+import { IMG, LOCALE, SRCSET, isCountry, isLang, hreflangs } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
-import { breadcrumbs, ldJson } from '@/lib/structured';
+import { breadcrumbs, ldJson, ogLocale } from '@/lib/structured';
 import { getGame, hasIgdb, GAME_GENRE_OFFSET } from '@/lib/igdb';
 import { gameGenreName } from '@/lib/game-genres';
 import { hasKv } from '@/lib/kv';
@@ -43,9 +43,12 @@ export async function gameMetadata(params: Params): Promise<Metadata> {
     alternates: {
       canonical: titlePath(lang, country, 'game', d.id, d.title),
       // у игр одно название на всех языках
-      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, titlePath(l, country, 'game', d.id, d.title)])),
+      languages: hreflangs(country, l => titlePath(l, country, 'game', d.id, d.title)),
     },
-    openGraph: { title, description, type: 'website', images: image ? [{ url: image }] : [] },
+    openGraph: {
+      title, description, type: 'website', siteName: 'Premiero', url: titlePath(lang, country, 'game', d.id, d.title),
+      locale: ogLocale(lang, country), images: image ? [{ url: image, alt: d.title }] : [],
+    },
     twitter: { card: 'summary_large_image', title, description, images: image ? [image] : [] },
   };
 }

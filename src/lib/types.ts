@@ -78,6 +78,7 @@ export interface TitleDetail {
   cast: Person[];            // главные роли: имя, персонаж, фото
   trailer: string | null;    // ключ видео на YouTube
   trailerName: string | null; // название ролика в TMDB, например «… Season 2 Official Trailer»
+  trailerDate?: string | null; // когда ролик выложен (для VideoObject в schema.org)
   providers: Provider[];
   providersLink: string | null;
   releases: { country: CountryCode; date: string | null }[];

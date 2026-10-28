@@ -240,7 +240,7 @@ export async function getTitle(media: TmdbMedia, id: number, lang: Lang, country
   const C = COUNTRIES[country];
   const language = LOCALE[lang];
   const videoLangs = [...new Set([lang, 'en'])].join(',');
-  const trailerOf = (v: Video | null) => ({ trailer: v?.key ?? null, trailerName: v?.name ?? null });
+  const trailerOf = (v: Video | null) => ({ trailer: v?.key ?? null, trailerName: v?.name ?? null, trailerDate: v?.published_at ?? null });
   const providersOf = (p: Providers) => {
     const r = p.results[C.region];
     return {

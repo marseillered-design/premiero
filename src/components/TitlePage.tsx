@@ -3,12 +3,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { COUNTRIES, IMG, LANG_CODES, LOCALE, SRCSET, isCountry, isLang, nameIn } from '@/lib/regions';
+import { COUNTRIES, IMG, LOCALE, SRCSET, isCountry, isLang, nameIn, hreflangs } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { releaseSentence, whenOf } from '@/lib/release-text';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
-import { breadcrumbs, ldJson } from '@/lib/structured';
+import { breadcrumbs, ldJson, ogLocale } from '@/lib/structured';
+import { SITE } from '@/lib/site';
 import { getTitle, hasToken } from '@/lib/tmdb';
 import { hasKv } from '@/lib/kv';
 import { wantCounts } from '@/lib/account';
@@ -41,9 +42,12 @@ export async function titleMetadata(media: Media, params: Params): Promise<Metad
     description,
     alternates: {
       canonical: titlePath(lang, country, media, d.id, d.title),
-      languages: Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, titlePath(l, country, media, d.id, d.titles[l] ?? d.title)])),
+      languages: hreflangs(country, l => titlePath(l, country, media, d.id, d.titles[l] ?? d.title)),
     },
-    openGraph: { title, description, type: media === 'tv' ? 'video.tv_show' : 'video.movie', images: image ? [{ url: image }] : [] },
+    openGraph: {
+      title, description, type: media === 'tv' ? 'video.tv_show' : 'video.movie', siteName: 'Premiero',
+      url: titlePath(lang, country, media, d.id, d.title), locale: ogLocale(lang, country), images: image ? [{ url: image, alt: d.title }] : [],
+    },
     twitter: { card: 'summary_large_image', title, description, images: image ? [image] : [] },
   };
 }
@@ -92,6 +96,15 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
     director: media === 'movie' ? d.people.map(p => ({ '@type': 'Person', name: p.name })) : undefined,
     creator: media === 'tv' ? d.people.map(p => ({ '@type': 'Person', name: p.name })) : undefined,
     actor: d.cast.slice(0, 5).map(p => ({ '@type': 'Person', name: p.name })),
+    url: SITE + titlePath(lang, country, media, d.id, d.title),
+    genre: d.genres.length ? d.genres : undefined,
+    duration: media === 'movie' && d.runtime ? `PT${Math.floor(d.runtime / 60)}H${d.runtime % 60}M` : undefined,
+    // ролик с YouTube: Google показывает его в выдаче по видео
+    trailer: d.trailer && d.trailerDate ? {
+      '@type': 'VideoObject', name: `${d.title} — ${d.trailerName || t('trailer')}`, description: d.overview || d.trailerName || d.title,
+      thumbnailUrl: `https://i.ytimg.com/vi/${d.trailer}/hqdefault.jpg`, uploadDate: d.trailerDate,
+      embedUrl: `https://www.youtube.com/embed/${d.trailer}`,
+    } : undefined,
   };
   const home = calendarPath(lang, country);
   const crumbs = breadcrumbs([
@@ -113,7 +126,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
       <nav className="crumbs"><Link prefetch={false} href={calendarPath(lang, country)}><I.Prev /> {t('to_cal')}</Link></nav>
 
       <div className="hero">
-        <Poster path={d.poster} title={d.title} cert={d.cert} size="w500" sizes="(max-width: 640px) 160px, (max-width: 960px) 200px, 280px" eager />
+        <Poster path={d.poster} title={d.title} alt={d.title} cert={d.cert} size="w500" sizes="(max-width: 640px) 160px, (max-width: 960px) 200px, 280px" eager />
         <div>
           <span className={`tag t-${kindCls}`}>{t(kindKey)}{d.network ? ` · ${d.network}` : ''}</span>
           <h1>{d.title}</h1>

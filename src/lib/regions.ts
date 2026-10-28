@@ -43,6 +43,11 @@ export const COUNTRIES: Record<CountryCode, Country> = {
 };
 
 export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];
+/** hreflang для одной страны: адрес на каждом языке и x-default — основной язык страны. */
+export const hreflangs = (country: CountryCode, path: (l: Lang) => string) => ({
+  ...Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, path(l)])),
+  'x-default': path(COUNTRIES[country].lang),
+});
 export const GROUPS: RegionGroup[] = ['europe', 'americas', 'asia'];
 export const isCountry = (v: unknown): v is CountryCode => typeof v === 'string' && v in COUNTRIES;
 export const isLang = (v: unknown): v is Lang => typeof v === 'string' && v in LANGS;

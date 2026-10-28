@@ -8,6 +8,7 @@ import AppProvider from '@/components/AppProvider';
 import { COUNTRY_CODES, LANG_CODES, isCountry, isLang } from '@/lib/regions';
 import { THEME_INIT } from '@/lib/theme';
 import { SITE } from '@/lib/site';
+import { ogLocale } from '@/lib/structured';
 import '../../globals.css';
 
 // Без предзагрузки: браузер скачивает только те наборы букв, что встречаются на странице
@@ -22,13 +23,19 @@ export async function generateStaticParams() {
   return LANG_CODES.flatMap(lang => COUNTRY_CODES.map(country => ({ lang, country })));
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE),
-  title: { default: 'Premiero', template: '%s · Premiero' },
-  // картинка для превью ссылок; у страниц фильмов, сериалов и игр — свой кадр
-  openGraph: { siteName: 'Premiero', type: 'website', images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Premiero' }] },
-  twitter: { card: 'summary_large_image', images: ['/og.png'] },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await rootLang(), country = await rootCountry();
+  return {
+    metadataBase: new URL(SITE),
+    title: { default: 'Premiero', template: '%s · Premiero' },
+    // картинка для превью ссылок; у страниц фильмов, сериалов и игр — свой кадр
+    openGraph: {
+      siteName: 'Premiero', type: 'website', locale: isLang(lang) && isCountry(country) ? ogLocale(lang, country) : undefined,
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Premiero' }],
+    },
+    twitter: { card: 'summary_large_image', images: ['/og.png'] },
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<'/[lang]/[country]'>) {
   const lang = await rootLang();
