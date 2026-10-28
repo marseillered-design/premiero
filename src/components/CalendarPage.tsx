@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
-import { headers } from 'next/headers';
+import { cacheLife } from 'next/cache';
 import { lang as rootLang, country as rootCountry } from 'next/root-params';
 import CalendarView, { type Section } from './CalendarView';
 import FacetLinks from './FacetLinks';
@@ -9,6 +9,9 @@ import type { FacetFilter } from '@/lib/facets';
 import { COUNTRIES, LANG_CODES, isCountry, isLang, nameIn } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { SITE } from '@/lib/site';
+import { getReleases, hasAnySource } from '@/lib/releases';
+import { hasKv } from '@/lib/kv';
+import { wantCounts } from '@/lib/account';
 import { titlePath } from '@/lib/slug';
 import { ldJson } from '@/lib/structured';
 import type { CalendarData, CountryCode, Lang } from '@/lib/types';
@@ -44,18 +47,25 @@ const TZ: Record<CountryCode, string> = {
 const todayIn = (country: CountryCode) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ[country] ?? 'UTC' }).format(new Date());
 
 /**
- * Месяц для первого экрана. Берём тот же ответ /api/calendar, что и браузер: он лежит в CDN,
- * так что это быстро даже на «холодном» сервере. Не успели за 2,5 с — календарь догрузится в браузере.
+ * Месяц для первого экрана: те же данные, что отдаёт /api/calendar, но прямо в процессе. Запрос к себе
+ * через сайт проходил бы через Cloudflare Worker и съедал бы его дневной лимит. Данные TMDB лежат
+ * в кэше сервера ('use cache'); не успели за 2,5 с — календарь догрузится в браузере.
  */
 async function monthFor(country: CountryCode, lang: Lang, today: string): Promise<CalendarData | null> {
-  const h = await headers();
-  const host = h.get('x-forwarded-host') ?? h.get('host');
-  if (!host) return null;
-  const proto = /^(localhost|127\.0\.0\.1)(:|$)/.test(host) ? 'http' : 'https';
-  try {
-    const res = await fetch(`${proto}://${host}/api/calendar?country=${country}&lang=${lang}&month=${today.slice(0, 7)}`, { signal: AbortSignal.timeout(2500) });
-    return res.ok ? ((await res.json()) as CalendarData) : null;
-  } catch { return null; }
+  if (!hasAnySource()) return null;
+  const load = (async () => {
+    const data = await getReleases(country, lang, today.slice(0, 7));
+    const want = hasKv() ? await wantFor(Object.keys(data.items)).catch(() => ({})) : {};
+    return { ...data, want } as CalendarData;
+  })().catch(() => null);
+  return Promise.race([load, new Promise<null>(r => setTimeout(() => r(null), 2500))]);
+}
+
+/** Счётчики «хотят посмотреть» на час, как в ответе /api/calendar: не ходим в Redis на каждый показ. */
+async function wantFor(keys: string[]) {
+  'use cache';
+  cacheLife('hours');
+  return wantCounts(keys);
 }
 
 const MEDIA: Record<Section, string[]> = { all: ['movie', 'tv', 'game'], movies: ['movie'], series: ['tv'], games: ['game'] };
