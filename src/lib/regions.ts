@@ -43,9 +43,24 @@ export const COUNTRIES: Record<CountryCode, Country> = {
 };
 
 export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];
-/** hreflang для одной страны: адрес на каждом языке и x-default — основной язык страны. */
+
+/*
+ * На каких языках страницы страны идут в поиск: основной язык страны, английский и языки больших
+ * групп жителей (русский в Украине, Балтии и на Кавказе, украинский в Польше, Германии и Чехии,
+ * испанский в США). Остальные сочетания (украинский календарь Казахстана, испанский Грузии) для
+ * посетителей работают как прежде, но закрыты от индекса: тысячи почти одинаковых страниц
+ * поисковик принимает за шаблонный сайт.
+ */
+const EXTRA_LANGS: Partial<Record<CountryCode, Lang[]>> = {
+  ua: ['ru'], pl: ['uk'], de: ['uk', 'ru'], cz: ['uk'], lt: ['ru'], lv: ['ru'], ee: ['ru'], md: ['ru'], ge: ['ru'], us: ['es'],
+};
+export const indexedLangs = (country: CountryCode): Lang[] =>
+  [...new Set<Lang>([COUNTRIES[country].lang, 'en', ...(EXTRA_LANGS[country] ?? [])])];
+export const isIndexed = (lang: Lang, country: CountryCode) => indexedLangs(country).includes(lang);
+
+/** hreflang для одной страны: адрес на каждом языке из индекса и x-default — основной язык страны. */
 export const hreflangs = (country: CountryCode, path: (l: Lang) => string) => ({
-  ...Object.fromEntries(LANG_CODES.map(l => [`${l}-${country.toUpperCase()}`, path(l)])),
+  ...Object.fromEntries(indexedLangs(country).map(l => [`${l}-${country.toUpperCase()}`, path(l)])),
   'x-default': path(COUNTRIES[country].lang),
 });
 export const GROUPS: RegionGroup[] = ['europe', 'americas', 'asia'];

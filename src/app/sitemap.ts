@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { connection } from 'next/server';
-import { COUNTRIES, COUNTRY_CODES, LANG_CODES, isCountry, hreflangs } from '@/lib/regions';
+import { COUNTRIES, COUNTRY_CODES, indexedLangs, isCountry, hreflangs } from '@/lib/regions';
 import { getReleases, hasAnySource } from '@/lib/releases';
 import { titlePath } from '@/lib/slug';
 import { SITE } from '@/lib/site';
@@ -22,7 +22,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
   const key = await id;
   if (key === 'pages') {
     const paths = (country: (typeof COUNTRY_CODES)[number]) => [...SECTIONS, ...FACET_SECTIONS.flatMap(sec => facetsFor(sec, country).map(f => `/${sec}/${f.slug}`))];
-    return COUNTRY_CODES.flatMap(country => paths(country).flatMap(section => LANG_CODES.map(lang => ({
+    return COUNTRY_CODES.flatMap(country => paths(country).flatMap(section => indexedLangs(country).map(lang => ({
       url: `${SITE}/${lang}/${country}${section}`,
       changeFrequency: 'daily' as const,
       priority: !section ? 1 : section.split('/').length > 2 ? 0.7 : 0.8,

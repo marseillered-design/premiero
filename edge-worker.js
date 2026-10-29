@@ -61,6 +61,15 @@ export default {
       return Response.redirect(`https://thepremiero.com${url.pathname}${url.search}`, 308);
     }
 
+    // Next.js делит карту сайта на части (/sitemap/pages.xml, /sitemap/ua.xml…) и перечисляет их
+    // только в robots.txt; по привычному адресу /sitemap.xml отдаём их оглавление из того же списка
+    if (url.pathname === '/sitemap.xml') {
+      const robots = await toOrigin(new Request(new URL('/robots.txt', url)), env, new URL('/robots.txt', url));
+      const parts = [...(await robots.text()).matchAll(/^Sitemap:\s*(\S+)/gim)].map(m => m[1]);
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${parts.map(p => `  <sitemap><loc>${p}</loc></sitemap>`).join('\n')}\n</sitemapindex>\n`;
+      return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=86400' } });
+    }
+
     const cacheable = request.method === 'GET' && !request.headers.has('rsc');
     if (cacheable) {
       const hit = await caches.default.match(request);

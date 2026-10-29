@@ -5,7 +5,7 @@ import { Golos_Text, JetBrains_Mono, Unbounded } from 'next/font/google';
 import { preconnect } from 'react-dom';
 import Script from 'next/script';
 import AppProvider from '@/components/AppProvider';
-import { COUNTRY_CODES, LANG_CODES, isCountry, isLang } from '@/lib/regions';
+import { COUNTRY_CODES, LANG_CODES, isCountry, isIndexed, isLang } from '@/lib/regions';
 import { THEME_INIT } from '@/lib/theme';
 import { SITE } from '@/lib/site';
 import { ogLocale } from '@/lib/structured';
@@ -34,6 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Premiero' }],
     },
     twitter: { card: 'summary_large_image', images: ['/og.png'] },
+    // языки, на которых в этой стране почти не ищут: страница работает, но в индекс не идёт (regions.ts)
+    robots: isLang(lang) && isCountry(country) && !isIndexed(lang, country) ? { index: false, follow: true } : undefined,
   };
 }
 
