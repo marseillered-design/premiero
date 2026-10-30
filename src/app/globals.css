@@ -479,6 +479,7 @@ a.tmdb-r:hover{border-color:#9147FF}
 .legal-intro{font-size:17px;margin-bottom:8px}
 .legal .sec p{line-height:1.6;margin:0 0 10px;color:var(--fg)}
 .legal-date{color:var(--muted);font-size:13px;margin-top:24px}
+.legal .sec a{color:var(--accent-text);text-decoration:underline;text-underline-offset:3px}
 /* ---------- шапка v3: логотип слева, разделы по центру, язык и тема справа ---------- */
 .top .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px 20px;padding-block:12px}
 .top .brand{justify-self:start;min-width:0}

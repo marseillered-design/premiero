@@ -173,6 +173,8 @@ export default function AppProvider({ lang, country, children }: { lang: Lang; c
         {/* Страну сайт определяет по IP; поменять её можно здесь (даты выхода и стриминги зависят от страны) */}
         <Suspense fallback={null}><CountryPicker t={t} lang={lang} country={country} onPick={c => go(lang, c)} /></Suspense>
         <Link href={`${home}/submit`}>{t('sb_link')}</Link>
+        <Link prefetch={false} href={`${home}/about`}>{t('about_l')}</Link>
+        <Link prefetch={false} href={`${home}/contact`}>{t('contact_l')}</Link>
         <Link href={`${home}/privacy`}>{t('privacy')}</Link>
         <span>{t('attr')} This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
         <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">themoviedb.org</a>

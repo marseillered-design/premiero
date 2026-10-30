@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { lang as rootLang } from 'next/root-params';
 import { LOCALE, isLang } from '@/lib/regions';
 import { PRIVACY, PRIVACY_UPDATED } from '@/lib/privacy';
+import { CONTACT_EMAIL } from '@/lib/about';
 import type { Lang } from '@/lib/types';
 
 const current = async (): Promise<Lang> => { const l = await rootLang(); return isLang(l) ? l : 'en'; };
@@ -22,7 +23,7 @@ export default async function Page() {
       {p.sections.map(s => (
         <section className="sec" key={s.h}>
           <h2>{s.h}</h2>
-          {s.p.map(x => <p key={x}>{x}</p>)}
+          {s.p.map((x, i) => { const [before, after] = x.split('{email}'); return <p key={i}>{before}{after !== undefined && <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>}{after}</p>; })}
         </section>
       ))}
       <p className="legal-date">{p.updated}: {updated}</p>

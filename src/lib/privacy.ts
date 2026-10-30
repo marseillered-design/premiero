@@ -1,7 +1,7 @@
 import type { Lang } from './types';
 
 /** Текст страницы «Конфиденциальность»: заголовок и разделы на каждом языке. */
-export const PRIVACY_UPDATED = '2026-10-26';
+export const PRIVACY_UPDATED = '2026-10-30';
 
 type Section = { h: string; p: string[] };
 export const PRIVACY: Record<Lang, { title: string; intro: string; updated: string; sections: Section[] }> = {
@@ -17,6 +17,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Повідомлення про помилки', p: ['Коли ви повідомляєте про неправильну дату або пропонуєте реліз, ми зберігаємо ваше повідомлення, адресу сторінки і, якщо ви ввійшли, вашу пошту — щоб перевірити виправлення.'] },
       { h: 'Як видалити дані', p: ['Відкрийте «Мій список», унизу сторінки розгорніть «Налаштування акаунта» і натисніть «Видалити акаунт». Профіль, список і підписки буде видалено одразу й назавжди.'] },
       { h: 'Звідки дані про релізи', p: ['Дані про фільми й серіали надає TMDB, про ігри — IGDB.com. Особистих даних ми їм не передаємо.'] },
+      { h: 'Сторонні сервіси', p: ['Під час перегляду сторінок ваш браузер сам завантажує постери й кадри з TMDB та IGDB, а трейлери з YouTube, тому ці компанії бачать вашу IP-адресу.'] },
+      { h: 'Контакти', p: ['Запитання про ваші дані: {email}'] },
     ],
   },
   en: {
@@ -31,6 +33,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Error reports', p: ['When you report a wrong date or submit a release, we store your message, the page address and, if you are signed in, your email, so that we can check the correction.'] },
       { h: 'How to delete your data', p: ['Open “My list”, expand “Account settings” at the bottom of the page and choose “Delete account”. Your profile, list and subscriptions are deleted immediately and permanently.'] },
       { h: 'Where release data comes from', p: ['Movie and series data comes from TMDB, game data from IGDB.com. We do not share any personal data with them.'] },
+      { h: 'Other services', p: ['While you browse, your browser itself loads posters and images from TMDB and IGDB and trailers from YouTube, so these companies see your IP address.'] },
+      { h: 'Contact', p: ['Questions about your data: {email}'] },
     ],
   },
   es: {
@@ -45,6 +49,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Avisos de errores', p: ['Cuando avisas de una fecha incorrecta o propones un estreno, guardamos tu mensaje, la dirección de la página y, si has iniciado sesión, tu correo, para poder comprobar la corrección.'] },
       { h: 'Cómo borrar tus datos', p: ['Abre “Mi lista”, despliega “Ajustes de la cuenta” al final de la página y elige “Eliminar cuenta”. Tu perfil, tu lista y tus suscripciones se borran al instante y para siempre.'] },
       { h: 'De dónde vienen los datos de estrenos', p: ['Los datos de películas y series vienen de TMDB y los de videojuegos de IGDB.com. No les damos ningún dato personal.'] },
+      { h: 'Otros servicios', p: ['Mientras navegas, tu navegador carga por sí mismo pósteres e imágenes de TMDB e IGDB y tráileres de YouTube, por lo que estas empresas ven tu dirección IP.'] },
+      { h: 'Contacto', p: ['Preguntas sobre tus datos: {email}'] },
     ],
   },
   fr: {
@@ -59,6 +65,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Signalements d’erreurs', p: ['Lorsque vous signalez une date erronée ou proposez une sortie, nous conservons votre message, l’adresse de la page et, si vous êtes connecté, votre e-mail, afin de vérifier la correction.'] },
       { h: 'Comment supprimer vos données', p: ['Ouvrez « Ma liste », dépliez « Paramètres du compte » en bas de la page et choisissez « Supprimer le compte ». Votre profil, votre liste et vos abonnements sont supprimés immédiatement et définitivement.'] },
       { h: 'D’où viennent les données sur les sorties', p: ['Les données sur les films et les séries viennent de TMDB, celles sur les jeux d’IGDB.com. Nous ne leur transmettons aucune donnée personnelle.'] },
+      { h: 'Autres services', p: ['Pendant votre navigation, votre navigateur charge lui-même les affiches et images de TMDB et d’IGDB et les bandes-annonces de YouTube : ces entreprises voient donc votre adresse IP.'] },
+      { h: 'Contact', p: ['Questions sur vos données : {email}'] },
     ],
   },
   pl: {
@@ -73,6 +81,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Zgłoszenia błędów', p: ['Gdy zgłaszasz błędną datę lub proponujesz premierę, zapisujemy Twoją wiadomość, adres strony i — jeśli jesteś zalogowany — Twój e-mail, aby sprawdzić poprawkę.'] },
       { h: 'Jak usunąć dane', p: ['Otwórz „Moja lista”, na dole strony rozwiń „Ustawienia konta” i wybierz „Usuń konto”. Profil, lista i subskrypcje zostaną usunięte od razu i na zawsze.'] },
       { h: 'Skąd pochodzą dane o premierach', p: ['Dane o filmach i serialach pochodzą z TMDB, o grach z IGDB.com. Nie przekazujemy im żadnych danych osobowych.'] },
+      { h: 'Inne usługi', p: ['Podczas przeglądania Twoja przeglądarka sama pobiera plakaty i obrazy z TMDB i IGDB oraz zwiastuny z YouTube, dlatego te firmy widzą Twój adres IP.'] },
+      { h: 'Kontakt', p: ['Pytania o Twoje dane: {email}'] },
     ],
   },
   de: {
@@ -87,6 +97,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Fehlermeldungen', p: ['Wenn du ein falsches Datum meldest oder einen Release vorschlägst, speichern wir deine Nachricht, die Adresse der Seite und – wenn du angemeldet bist – deine E-Mail, um die Korrektur zu prüfen.'] },
       { h: 'So löschst du deine Daten', p: ['Öffne „Meine Liste“, klappe unten „Kontoeinstellungen“ auf und wähle „Konto löschen“. Profil, Liste und Abos werden sofort und endgültig gelöscht.'] },
       { h: 'Woher die Release-Daten kommen', p: ['Film- und Seriendaten stammen von TMDB, Spieledaten von IGDB.com. Persönliche Daten geben wir an sie nicht weiter.'] },
+      { h: 'Andere Dienste', p: ['Beim Surfen lädt dein Browser Poster und Bilder direkt von TMDB und IGDB sowie Trailer von YouTube, daher sehen diese Unternehmen deine IP-Adresse.'] },
+      { h: 'Kontakt', p: ['Fragen zu deinen Daten: {email}'] },
     ],
   },
   ru: {
@@ -101,6 +113,8 @@ export const PRIVACY: Record<Lang, { title: string; intro: string; updated: stri
       { h: 'Сообщения об ошибках', p: ['Когда вы сообщаете о неправильной дате или предлагаете релиз, мы храним ваше сообщение, адрес страницы и, если вы вошли, вашу почту — чтобы проверить исправление.'] },
       { h: 'Как удалить данные', p: ['Откройте «Мой список», внизу страницы раскройте «Настройки аккаунта» и нажмите «Удалить аккаунт». Профиль, список и подписки удалятся сразу и навсегда.'] },
       { h: 'Откуда данные о релизах', p: ['Данные о фильмах и сериалах даёт TMDB, об играх — IGDB.com. Личных данных мы им не передаём.'] },
+      { h: 'Сторонние сервисы', p: ['При просмотре страниц ваш браузер сам загружает постеры и кадры с TMDB и IGDB, а трейлеры с YouTube, поэтому эти компании видят ваш IP-адрес.'] },
+      { h: 'Контакты', p: ['Вопросы о ваших данных: {email}'] },
     ],
   },
 };
