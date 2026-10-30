@@ -210,7 +210,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
     const it = data!.items[ev.item];
     return (
       <article className="card" key={ev.item + ev.kind + ev.date}>
-        <Link prefetch={false} className="poster-btn" href={href(it)} tabIndex={-1} aria-hidden><Poster path={it.poster} title={it.title} cert={it.cert} /></Link>
+        <Link prefetch={false} className="poster-btn" href={href(it)} tabIndex={-1} aria-hidden><Poster path={it.poster} title={it.title} alt={it.title} cert={it.cert} /></Link>
         <h3 className="card-t"><Link prefetch={false} href={href(it)}>{it.title}</Link></h3>
         {meta(ev, it)}
         <div className="card-a">{watchBtn(ev, it)}{actionBtn(ev, it)}{want[it.key] >= 3 && <span className="want-n" title={t('want_n', want[it.key])}><I.Bell />{want[it.key]}</span>}</div>

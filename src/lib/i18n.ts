@@ -57,12 +57,12 @@ const uk = (p: P): Dict => ({
   del_account: 'Видалити акаунт', acc_settings: 'Налаштування акаунта', cal_h: 'Мій список у календарі', cal_text: 'Усі відмічені релізи з’являться у вашому Google, Apple чи Outlook Календарі й переїжджатимуть самі, якщо дату перенесуть.', cal_get: 'Отримати посилання', cal_google: 'Додати в Google Календар', cal_apple: 'Apple / Outlook', cal_copy: 'Скопіювати посилання', cal_copied: 'Посилання скопійовано', cal_new: 'Нове посилання', cal_new_hint: 'Створити нове посилання? Старе перестане працювати.', cal_name: 'Premiero — Мій список', del_explain: 'Акаунт, список і вибрані стримінги буде видалено назавжди. Відновити їх не вийде.', del_confirm: 'Видалити акаунт разом зі списком і підписками? Це не можна скасувати.', deleted: 'Акаунт видалено',
   login_failed: 'Не вдалося увійти. Спробуйте ще раз.', sync_hint: 'Увійдіть через Google, щоб список зберігався на всіх ваших пристроях.',
   my_empty_t: 'Список поки порожній', my_empty_s: 'Натисніть дзвіночок на будь-якому фільмі, серіалі чи грі, і вони з’являться тут.', my_soon: 'Скоро', my_out: 'Уже вийшло',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата виходу, платформи, трейлер`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата виходу, трейлер`,
   meta_movies_title: (c: string) => `Календар прем’єр фільмів, ${c}`, meta_movies_desc: (c: string) => `Дати виходу фільмів у кіно та онлайн (${c}). Трейлери, рейтинги, де дивитися.`,
   meta_series_title: (c: string) => `Календар виходу серіалів, ${c}`, meta_series_desc: (c: string) => `Дати виходу нових серій і сезонів (${c}). Трейлери, графік серій, де дивитися.`,
   meta_games_title: (c: string) => `Календар виходу ігор, ${c}`, meta_games_desc: (c: string) => `Дати виходу нових ігор на ПК, PlayStation, Xbox і Nintendo Switch (${c}). Трейлери, платформи, де купити.`,
   meta_cal_title: (c: string) => `Календар прем’єр кіно, серіалів та ігор, ${c}`, meta_cal_desc: (c: string) => `Дати виходу фільмів у кіно, онлайн-релізів, нових серій та ігор (${c}). Трейлери, платформи, де дивитися.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата виходу, трейлер, де дивитися`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: графік серій, трейлер, де дивитися`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата виходу, трейлер`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: графік серій, трейлер`,
   nf_t: 'Сторінку не знайдено', nf_s: 'Можливо, фільм прибрали з TMDB або адреса з помилкою.',
 });
 
@@ -111,12 +111,12 @@ const en = (p: P): Dict => ({
   del_account: 'Delete account', acc_settings: 'Account settings', cal_h: 'My list in your calendar', cal_text: 'All the releases you marked will appear in your Google, Apple or Outlook Calendar and move by themselves if a date changes.', cal_get: 'Get the link', cal_google: 'Add to Google Calendar', cal_apple: 'Apple / Outlook', cal_copy: 'Copy link', cal_copied: 'Link copied', cal_new: 'New link', cal_new_hint: 'Create a new link? The old one will stop working.', cal_name: 'Premiero — My list', del_explain: 'Your account, list and chosen streaming services will be deleted for good. This cannot be undone.', del_confirm: 'Delete your account together with your list and subscriptions? This cannot be undone.', deleted: 'Account deleted',
   login_failed: 'Sign-in failed. Please try again.', sync_hint: 'Sign in with Google to keep your list on all your devices.',
   my_empty_t: 'Your list is empty', my_empty_s: 'Tap the bell on any movie, series or game and it will show up here.', my_soon: 'Coming up', my_out: 'Already out',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: release date, platforms, trailer`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: release date, trailer`,
   meta_movies_title: (c: string) => `Movie release calendar, ${c}`, meta_movies_desc: (c: string) => `Theatrical and digital movie release dates in ${c}. Trailers, ratings and where to watch.`,
   meta_series_title: (c: string) => `TV series release calendar, ${c}`, meta_series_desc: (c: string) => `New episode and season release dates in ${c}. Trailers, episode schedules and where to watch.`,
   meta_games_title: (c: string) => `Video game release calendar, ${c}`, meta_games_desc: (c: string) => `Release dates for new games on PC, PlayStation, Xbox and Nintendo Switch in ${c}. Trailers, platforms and where to buy.`,
   meta_cal_title: (c: string) => `Movie, series & game release calendar, ${c}`, meta_cal_desc: (c: string) => `Theatrical, digital, new episode and video game release dates in ${c}. Trailers, platforms and where to watch.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: release date, trailer, where to watch`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: episode schedule, trailer, where to watch`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: release date, trailer`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: episode schedule, trailer`,
   nf_t: 'Page not found', nf_s: 'The title may have been removed from TMDB, or the address has a typo.',
 });
 
@@ -165,12 +165,12 @@ const es = (p: P): Dict => ({
   del_account: 'Eliminar cuenta', acc_settings: 'Ajustes de la cuenta', cal_h: 'Mi lista en tu calendario', cal_text: 'Todos los estrenos que marcaste aparecerán en tu Google, Apple u Outlook Calendar y se moverán solos si cambia la fecha.', cal_get: 'Obtener el enlace', cal_google: 'Añadir a Google Calendar', cal_apple: 'Apple / Outlook', cal_copy: 'Copiar enlace', cal_copied: 'Enlace copiado', cal_new: 'Nuevo enlace', cal_new_hint: '¿Crear un enlace nuevo? El anterior dejará de funcionar.', cal_name: 'Premiero — Mi lista', del_explain: 'Tu cuenta, tu lista y tus servicios de streaming se borrarán para siempre. No se puede deshacer.', del_confirm: '¿Eliminar tu cuenta junto con tu lista y suscripciones? No se puede deshacer.', deleted: 'Cuenta eliminada',
   login_failed: 'No se pudo iniciar sesión. Inténtalo de nuevo.', sync_hint: 'Inicia sesión con Google para tener tu lista en todos tus dispositivos.',
   my_empty_t: 'Tu lista está vacía', my_empty_s: 'Toca la campana en cualquier película, serie o videojuego y aparecerá aquí.', my_soon: 'Próximamente', my_out: 'Ya disponible',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: fecha de lanzamiento, plataformas, tráiler`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: fecha de lanzamiento, tráiler`,
   meta_movies_title: (c: string) => `Calendario de estrenos de películas, ${c}`, meta_movies_desc: (c: string) => `Fechas de estreno de películas en cines y digitales en ${c}. Tráileres, calificaciones y dónde ver.`,
   meta_series_title: (c: string) => `Calendario de estrenos de series, ${c}`, meta_series_desc: (c: string) => `Fechas de nuevos episodios y temporadas en ${c}. Tráileres, calendario de episodios y dónde ver.`,
   meta_games_title: (c: string) => `Calendario de lanzamientos de videojuegos, ${c}`, meta_games_desc: (c: string) => `Fechas de lanzamiento de videojuegos para PC, PlayStation, Xbox y Nintendo Switch en ${c}. Tráileres, plataformas y dónde comprar.`,
   meta_cal_title: (c: string) => `Calendario de estrenos de cine, series y videojuegos, ${c}`, meta_cal_desc: (c: string) => `Fechas de estreno en cines, estrenos digitales, nuevos episodios y videojuegos en ${c}. Tráileres, plataformas y dónde ver.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: fecha de estreno, tráiler, dónde ver`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: calendario de episodios, tráiler, dónde ver`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: fecha de estreno, tráiler`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: calendario de episodios, tráiler`,
   nf_t: 'Página no encontrada', nf_s: 'Puede que el título se haya eliminado de TMDB o que la dirección tenga un error.',
 });
 
@@ -219,12 +219,12 @@ const fr = (p: P): Dict => ({
   del_account: 'Supprimer le compte', acc_settings: 'Paramètres du compte', cal_h: 'Ma liste dans votre agenda', cal_text: 'Toutes les sorties que vous avez marquées apparaîtront dans votre agenda Google, Apple ou Outlook et se déplaceront toutes seules si une date change.', cal_get: 'Obtenir le lien', cal_google: 'Ajouter à Google Agenda', cal_apple: 'Apple / Outlook', cal_copy: 'Copier le lien', cal_copied: 'Lien copié', cal_new: 'Nouveau lien', cal_new_hint: 'Créer un nouveau lien ? L’ancien cessera de fonctionner.', cal_name: 'Premiero — Ma liste', del_explain: 'Votre compte, votre liste et les services de streaming choisis seront supprimés définitivement. Impossible de les récupérer.', del_confirm: 'Supprimer votre compte avec votre liste et vos abonnements ? C’est irréversible.', deleted: 'Compte supprimé',
   login_failed: 'Échec de la connexion. Réessayez.', sync_hint: 'Connectez-vous avec Google pour retrouver votre liste sur tous vos appareils.',
   my_empty_t: 'Votre liste est vide', my_empty_s: 'Appuyez sur la cloche d’un film, d’une série ou d’un jeu et il apparaîtra ici.', my_soon: 'Bientôt', my_out: 'Déjà sorti',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : date de sortie, plateformes, bande-annonce`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : date de sortie, bande-annonce`,
   meta_movies_title: (c: string) => `Calendrier des sorties de films, ${c}`, meta_movies_desc: (c: string) => `Dates de sortie des films au cinéma et en ligne (${c}). Bandes-annonces, notes et où regarder.`,
   meta_series_title: (c: string) => `Calendrier des séries, ${c}`, meta_series_desc: (c: string) => `Dates de sortie des nouveaux épisodes et saisons (${c}). Bandes-annonces, calendrier des épisodes et où regarder.`,
   meta_games_title: (c: string) => `Calendrier des sorties de jeux vidéo, ${c}`, meta_games_desc: (c: string) => `Dates de sortie des nouveaux jeux sur PC, PlayStation, Xbox et Nintendo Switch (${c}). Bandes-annonces, plateformes et où acheter.`,
   meta_cal_title: (c: string) => `Calendrier des sorties : films, séries et jeux, ${c}`, meta_cal_desc: (c: string) => `Dates de sortie au cinéma, en ligne, nouveaux épisodes et jeux vidéo (${c}). Bandes-annonces, plateformes et où regarder.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : date de sortie, bande-annonce, où regarder`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : calendrier des épisodes, bande-annonce, où regarder`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : date de sortie, bande-annonce`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''} : calendrier des épisodes, bande-annonce`,
   nf_t: 'Page introuvable', nf_s: 'Le titre a peut-être été retiré de TMDB, ou l’adresse contient une faute.',
 });
 
@@ -273,12 +273,12 @@ const plDict = (p: P): Dict => ({
   del_account: 'Usuń konto', acc_settings: 'Ustawienia konta', cal_h: 'Moja lista w kalendarzu', cal_text: 'Wszystkie zaznaczone premiery pojawią się w Twoim Kalendarzu Google, Apple lub Outlook i same się przesuną, jeśli zmieni się data.', cal_get: 'Pobierz link', cal_google: 'Dodaj do Kalendarza Google', cal_apple: 'Apple / Outlook', cal_copy: 'Kopiuj link', cal_copied: 'Link skopiowany', cal_new: 'Nowy link', cal_new_hint: 'Utworzyć nowy link? Stary przestanie działać.', cal_name: 'Premiero — Moja lista', del_explain: 'Konto, lista i wybrane serwisy zostaną usunięte na zawsze. Tego nie można cofnąć.', del_confirm: 'Usunąć konto razem z listą i subskrypcjami? Tego nie można cofnąć.', deleted: 'Konto usunięte',
   login_failed: 'Nie udało się zalogować. Spróbuj ponownie.', sync_hint: 'Zaloguj się przez Google, aby lista była na wszystkich Twoich urządzeniach.',
   my_empty_t: 'Lista jest pusta', my_empty_s: 'Kliknij dzwonek przy dowolnym filmie, serialu lub grze, a pojawi się tutaj.', my_soon: 'Wkrótce', my_out: 'Już dostępne',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: data premiery, platformy, zwiastun`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: data premiery, zwiastun`,
   meta_movies_title: (c: string) => `Kalendarz premier filmów, ${c}`, meta_movies_desc: (c: string) => `Daty premier filmów w kinach i online (${c}). Zwiastuny, oceny i gdzie obejrzeć.`,
   meta_series_title: (c: string) => `Kalendarz premier seriali, ${c}`, meta_series_desc: (c: string) => `Daty premier nowych odcinków i sezonów (${c}). Zwiastuny, harmonogram odcinków i gdzie obejrzeć.`,
   meta_games_title: (c: string) => `Kalendarz premier gier, ${c}`, meta_games_desc: (c: string) => `Daty premier nowych gier na PC, PlayStation, Xbox i Nintendo Switch (${c}). Zwiastuny, platformy i gdzie kupić.`,
   meta_cal_title: (c: string) => `Kalendarz premier filmów, seriali i gier, ${c}`, meta_cal_desc: (c: string) => `Daty premier kinowych, online, nowych odcinków i gier (${c}). Zwiastuny, platformy i gdzie obejrzeć.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: data premiery, zwiastun, gdzie obejrzeć`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: harmonogram odcinków, zwiastun, gdzie obejrzeć`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: data premiery, zwiastun`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: harmonogram odcinków, zwiastun`,
   nf_t: 'Nie znaleziono strony', nf_s: 'Tytuł mógł zostać usunięty z TMDB albo adres zawiera błąd.',
 });
 
@@ -327,12 +327,12 @@ const de = (p: P): Dict => ({
   del_account: 'Konto löschen', acc_settings: 'Kontoeinstellungen', cal_h: 'Meine Liste im Kalender', cal_text: 'Alle markierten Starts erscheinen in deinem Google-, Apple- oder Outlook-Kalender und verschieben sich von selbst, wenn sich ein Termin ändert.', cal_get: 'Link erstellen', cal_google: 'Zu Google Kalender hinzufügen', cal_apple: 'Apple / Outlook', cal_copy: 'Link kopieren', cal_copied: 'Link kopiert', cal_new: 'Neuer Link', cal_new_hint: 'Neuen Link erstellen? Der alte funktioniert dann nicht mehr.', cal_name: 'Premiero — Meine Liste', del_explain: 'Konto, Liste und Streamingdienste werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.', del_confirm: 'Konto samt Liste und Abos löschen? Das lässt sich nicht rückgängig machen.', deleted: 'Konto gelöscht',
   login_failed: 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.', sync_hint: 'Melde dich mit Google an, damit deine Liste auf all deinen Geräten verfügbar ist.',
   my_empty_t: 'Deine Liste ist leer', my_empty_s: 'Tippe bei einem Film, einer Serie oder einem Spiel auf die Glocke, dann erscheint es hier.', my_soon: 'Demnächst', my_out: 'Schon erschienen',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: Release, Plattformen, Trailer`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: Release, Trailer`,
   meta_movies_title: (c: string) => `Kalender für Filmstarts, ${c}`, meta_movies_desc: (c: string) => `Kino- und Digitalstarts von Filmen in ${c}. Trailer, Bewertungen und wo du sie siehst.`,
   meta_series_title: (c: string) => `Kalender für Serienstarts, ${c}`, meta_series_desc: (c: string) => `Neue Folgen und Staffeln in ${c}. Trailer, Episodenplan und wo du sie siehst.`,
   meta_games_title: (c: string) => `Release-Kalender für Videospiele, ${c}`, meta_games_desc: (c: string) => `Release-Termine neuer Spiele für PC, PlayStation, Xbox und Nintendo Switch in ${c}. Trailer, Plattformen und wo du sie kaufst.`,
   meta_cal_title: (c: string) => `Kalender für Film-, Serien- und Spielestarts, ${c}`, meta_cal_desc: (c: string) => `Kinostarts, Digitalstarts, neue Folgen und Spiele in ${c}. Trailer, Plattformen und wo du sie siehst.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: Starttermin, Trailer, wo ansehen`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: Folgenplan, Trailer, wo ansehen`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: Starttermin, Trailer`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: Folgenplan, Trailer`,
   nf_t: 'Seite nicht gefunden', nf_s: 'Der Titel wurde vielleicht bei TMDB entfernt, oder die Adresse ist falsch.',
 });
 
@@ -381,12 +381,12 @@ const ru = (p: P): Dict => ({
   del_account: 'Удалить аккаунт', acc_settings: 'Настройки аккаунта', cal_h: 'Мой список в календаре', cal_text: 'Все отмеченные релизы появятся в вашем Google, Apple или Outlook Календаре и сами переедут, если дату перенесут.', cal_get: 'Получить ссылку', cal_google: 'Добавить в Google Календарь', cal_apple: 'Apple / Outlook', cal_copy: 'Скопировать ссылку', cal_copied: 'Ссылка скопирована', cal_new: 'Новая ссылка', cal_new_hint: 'Создать новую ссылку? Старая перестанет работать.', cal_name: 'Premiero — Мой список', del_explain: 'Аккаунт, список и выбранные стриминги удалятся навсегда. Восстановить их не получится.', del_confirm: 'Удалить аккаунт вместе со списком и подписками? Это нельзя отменить.', deleted: 'Аккаунт удалён',
   login_failed: 'Не удалось войти. Попробуйте ещё раз.', sync_hint: 'Войдите через Google, чтобы список сохранялся на всех ваших устройствах.',
   my_empty_t: 'Список пока пуст', my_empty_s: 'Нажмите колокольчик у любого фильма, сериала или игры, и они появятся здесь.', my_soon: 'Скоро', my_out: 'Уже вышло',
-  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата выхода, платформы, трейлер`,
+  meta_title_game: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата выхода, трейлер`,
   meta_movies_title: (c: string) => `Календарь премьер фильмов, ${c}`, meta_movies_desc: (c: string) => `Даты выхода фильмов в кино и онлайн (${c}). Трейлеры, рейтинги, где смотреть.`,
   meta_series_title: (c: string) => `Календарь выхода сериалов, ${c}`, meta_series_desc: (c: string) => `Даты выхода новых серий и сезонов (${c}). Трейлеры, график серий, где смотреть.`,
   meta_games_title: (c: string) => `Календарь выхода игр, ${c}`, meta_games_desc: (c: string) => `Даты выхода новых игр на ПК, PlayStation, Xbox и Nintendo Switch (${c}). Трейлеры, платформы, где купить.`,
   meta_cal_title: (c: string) => `Календарь премьер кино, сериалов и игр, ${c}`, meta_cal_desc: (c: string) => `Даты выхода фильмов в кино, онлайн-релизов, новых серий и игр (${c}). Трейлеры, платформы, где смотреть.`,
-  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата выхода, трейлер, где смотреть`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: график серий, трейлер, где смотреть`,
+  meta_title: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: дата выхода, трейлер`, meta_title_tv: (x: string, y: string) => `${x}${y ? ` (${y})` : ''}: график серий, трейлер`,
   nf_t: 'Страница не найдена', nf_s: 'Возможно, фильм удалили из TMDB или в адресе ошибка.',
 });
 

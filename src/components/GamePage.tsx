@@ -12,7 +12,7 @@ import { getGame, hasIgdb, GAME_GENRE_OFFSET } from '@/lib/igdb';
 import { gameGenreName } from '@/lib/game-genres';
 import { hasKv } from '@/lib/kv';
 import { wantCounts } from '@/lib/account';
-import { releaseSentence, whenOf } from '@/lib/release-text';
+import { clip, dayWords, dot, releaseSentence, whenOf } from '@/lib/release-text';
 import type { GameDetail } from '@/lib/types';
 import Poster from './Poster';
 import { TitleActions, Trailer, type TitleCore } from './TitleIslands';
@@ -31,11 +31,16 @@ async function load(params: Params) {
 
 export async function gameMetadata(params: Params): Promise<Metadata> {
   const r = await load(params);
-  if (!r?.detail) return {};
+  // здесь, а не в самой странице: страница уже начала отправляться и код ответа 404 поставить не сможет
+  if (!r || (!r.detail && hasIgdb())) notFound();
+  if (!r.detail) return {};
   const { lang, country, detail: d } = r;
   const t = translator(lang);
   const title = t('meta_title_game', d.title, d.release?.slice(0, 4) ?? '');
-  const description = (d.summary || title).slice(0, 180);
+  // сначала дата и платформы: их и ищут на таких страницах
+  const platformNames = [...new Set(d.releases.map(x => x.platform))].slice(0, 3).join(', ');
+  const dates = dot(`${t('g_release')}: ${d.release ? dayWords(lang, d.release) : t('tba')}${platformNames ? ` (${platformNames})` : ''}`);
+  const description = clip([dates, d.summary].filter(Boolean).join(' '));
   const image = IMG(d.backdrop, 'w1280') ?? IMG(d.poster, 'w500');
   return {
     title: { absolute: `${title} · Premiero` },
@@ -108,7 +113,7 @@ async function GameContent({ params }: { params: Params }) {
       <nav className="crumbs"><Link prefetch={false} href={`${calendarPath(lang, country)}/games`}><I.Prev /> {t('to_games')}</Link></nav>
 
       <div className="hero">
-        <Poster path={d.poster} title={d.title} size="w500" eager />
+        <Poster path={d.poster} title={d.title} alt={d.title} size="w500" eager />
         <div>
           <span className="tag t-game">{t('ty_game')}{platforms.length ? ` · ${platforms.slice(0, 4).join(', ')}` : ''}</span>
           <h1>{d.title}</h1>

@@ -95,6 +95,20 @@ function dateWords(lang: Lang, key: string, future: boolean) {
   return future ? `${date} (${new Intl.DateTimeFormat(LOCALE[lang], { weekday: 'long', timeZone: 'UTC' }).format(d)})` : date;
 }
 
+/** Дата без дня недели для описания в поиске: оно не зависит от сегодняшнего дня, поэтому без «выходит»/«вышел». */
+export const dayWords = (lang: Lang, key: string) => dateWords(lang, key, false);
+
+/** Точка в конце фразы: у дат «2026 г.» и «2026 р.» она уже есть. */
+export const dot = (s: string) => (s.endsWith('.') ? s : s + '.');
+
+/** Описание для поиска: Google показывает около 160 знаков, поэтому режем по слову и ставим многоточие. */
+export function clip(text: string, max = 160) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(' ');
+  return (space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[\s,;:.—–-]+$/, '') + '…';
+}
+
 export const whenOf = (date: string | null | undefined, today: string): When => (date ? { date, future: date >= today } : null);
 
 export function releaseSentence(lang: Lang, f: ReleaseFacts): string {

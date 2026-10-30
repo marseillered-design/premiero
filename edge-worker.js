@@ -56,8 +56,9 @@ export default {
       return new Response('Forbidden', { status: 403 });
     }
     const url = new URL(request.url);
-    // сайт живёт на thepremiero.com без www, как было на Vercel
-    if (url.hostname === 'www.thepremiero.com') {
+    // сайт живёт на https://thepremiero.com без www, как было на Vercel
+    const isHttpHere = url.protocol === 'http:' && url.hostname === 'thepremiero.com';
+    if (url.hostname === 'www.thepremiero.com' || isHttpHere) {
       return Response.redirect(`https://thepremiero.com${url.pathname}${url.search}`, 308);
     }
 

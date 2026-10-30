@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { COUNTRIES, IMG, LOCALE, SRCSET, isCountry, isLang, nameIn, hreflangs } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
-import { releaseSentence, whenOf } from '@/lib/release-text';
+import { clip, dayWords, dot, releaseSentence, whenOf } from '@/lib/release-text';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
 import { breadcrumbs, ldJson, ogLocale } from '@/lib/structured';
@@ -31,11 +31,17 @@ async function load(media: Media, params: Params) {
 
 export async function titleMetadata(media: Media, params: Params): Promise<Metadata> {
   const r = await load(media, params);
-  if (!r?.detail) return {};
+  // здесь, а не в самой странице: страница уже начала отправляться и код ответа 404 поставить не сможет
+  if (!r || (!r.detail && hasToken())) notFound();
+  if (!r.detail) return {};
   const { lang, country, detail: d } = r;
   const t = translator(lang);
   const title = t(media === 'tv' ? 'meta_title_tv' : 'meta_title', d.title, d.year ?? '');
-  const description = (d.overview || title).slice(0, 180);
+  // сначала дата: её и ищут на таких страницах
+  const dates = media === 'tv'
+    ? (d.nextEpisode ? dot(`${t('next_ep')} (${d.nextEpisode.season}×${d.nextEpisode.episode}): ${dayWords(lang, d.nextEpisode.date)}`) : '')
+    : ([['in_cinema_on', d.theatrical], ['online_on', d.digital]] as const).filter(x => x[1]).map(x => dot(`${t(x[0])}: ${dayWords(lang, x[1]!)}`)).join(' ') || dot(`${t('g_release')}: ${t('tba')}`);
+  const description = clip([dates, d.overview].filter(Boolean).join(' ') || title);
   const image = IMG(d.backdrop, 'w1280') ?? IMG(d.poster, 'w780');
   return {
     title: { absolute: `${title} · Premiero` },

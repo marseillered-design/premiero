@@ -7,7 +7,7 @@ import { translator } from '@/lib/i18n';
 import { findFacet, type Facet, type FacetFilter, type FacetSection } from '@/lib/facets';
 import { facetLabel } from './FacetLinks';
 import CalendarPage from './CalendarPage';
-import { breadcrumbs, ldJson } from '@/lib/structured';
+import { breadcrumbs, ldJson, ogCalendar } from '@/lib/structured';
 import * as I from './icons';
 import type { Lang } from '@/lib/types';
 
@@ -28,7 +28,8 @@ const cap = (s: string, lang: Lang) => s.charAt(0).toLocaleUpperCase(lang) + s.s
 
 export async function facetMetadata(section: FacetSection, params: Params): Promise<Metadata> {
   const r = await load(section, params);
-  if (!r) return {};
+  // здесь, а не в самой странице: страница уже начала отправляться и код ответа 404 поставить не сможет
+  if (!r) notFound();
   const t = translator(r.lang);
   const c = nameIn(COUNTRIES[r.country].name, r.lang);
   const h = t(HEAD[section], r.label);
@@ -40,6 +41,7 @@ export async function facetMetadata(section: FacetSection, params: Params): Prom
       canonical: `/${r.lang}/${r.country}${tail}`,
       languages: hreflangs(r.country, l => `/${l}/${r.country}${tail}`),
     },
+    openGraph: ogCalendar(r.lang, r.country, `/${r.lang}/${r.country}${tail}`),
   };
 }
 

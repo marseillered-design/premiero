@@ -13,7 +13,7 @@ import { getReleases, hasAnySource } from '@/lib/releases';
 import { hasKv } from '@/lib/kv';
 import { wantCounts } from '@/lib/account';
 import { titlePath } from '@/lib/slug';
-import { ldJson } from '@/lib/structured';
+import { ldJson, ogCalendar } from '@/lib/structured';
 import type { CalendarData, CountryCode, Lang } from '@/lib/types';
 
 const META: Record<Exclude<Section, 'all'>, [string, string]> = {
@@ -34,6 +34,7 @@ export async function calendarMetadata(section?: Exclude<Section, 'all'>): Promi
       canonical: `/${lang}/${country}${tail}`,
       languages: hreflangs(country, l => `/${l}/${country}${tail}`),
     },
+    openGraph: ogCalendar(lang, country, `/${lang}/${country}${tail}`),
   };
 }
 
