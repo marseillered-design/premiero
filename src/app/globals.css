@@ -103,7 +103,9 @@ p{margin:0}
 .summary .sw{width:8px;height:8px;border-radius:50%}
 
 /* ---------- feed ---------- */
-.day{scroll-margin-top:130px;margin-bottom:34px}
+/* дни ниже экрана браузер не рисует, пока до них не долистали: месяц — это тысячи элементов,
+   и на телефоне их отрисовка задерживала первый экран на секунды */
+.day{scroll-margin-top:130px;margin-bottom:34px;content-visibility:auto;contain-intrinsic-size:auto 700px}
 .day-h{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
 .day-h h2{font-family:var(--display);font-weight:700;font-size:19px;white-space:nowrap}
 .day-h .wd{font-family:var(--body);font-weight:400;font-size:14px;color:var(--muted);margin-left:6px}

@@ -89,9 +89,10 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
       <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'} onPointerDown={stop} onWheel={e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }}>
         {slides.map((s, i) => (
           <Link prefetch={false} key={s.key} className={`feat t-${s.kind}`} href={s.href}>
-            {/* кадры грузим по мере показа: видимые сразу, следующий — заранее, остальные — когда до них дойдёт лента */}
+            {/* кадры грузим по мере показа: первый сразу и первым делом, следующий — заранее, но без спешки
+                (на телефоне его покажут только через 6 с, а сразу он отнимал канал у первого), остальные — когда до них дойдёт лента */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {(all || i <= Math.max(2, index + 1)) && <img src={s.image} srcSet={s.srcSet} sizes="(max-width: 640px) 86vw, 420px" alt="" loading={i < 2 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : undefined} />}
+            {(all || i <= Math.max(2, index + 1)) && <img src={s.image} srcSet={s.srcSet} sizes="(max-width: 640px) 86vw, 420px" alt="" loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'low'} />}
             <span className="feat-body">
               <span className="feat-meta"><span className="tag">{t('ty_' + s.kind)}</span>{s.rating ? <span className="stars"><I.Star />{s.rating.toFixed(1)}</span> : null}</span>
               <span className="feat-title">{s.title}</span>
