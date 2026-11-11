@@ -63,6 +63,14 @@ export const hreflangs = (country: CountryCode, path: (l: Lang) => string) => ({
   ...Object.fromEntries(indexedLangs(country).map(l => [`${l}-${country.toUpperCase()}`, path(l)])),
   'x-default': path(COUNTRIES[country].lang),
 });
+/*
+ * Главная страна языка: страница игры почти одинакова во всех странах, и поисковику предлагаем
+ * один её адрес на язык. Иначе английская версия лежала бы в Google 11 раз, и Google сам выбирал
+ * одну копию (Search Console, ноябрь 2026: 575 страниц «Google выбрал другой канонический адрес»).
+ * У фильмов и сериалов даты и стриминги в каждой стране свои, их это не касается.
+ */
+export const HOME_COUNTRY: Record<Lang, CountryCode> = { en: 'us', ru: 'kz', uk: 'ua', es: 'es', fr: 'fr', de: 'de', pl: 'pl' };
+
 export const GROUPS: RegionGroup[] = ['europe', 'americas', 'asia'];
 export const isCountry = (v: unknown): v is CountryCode => typeof v === 'string' && v in COUNTRIES;
 export const isLang = (v: unknown): v is Lang => typeof v === 'string' && v in LANGS;

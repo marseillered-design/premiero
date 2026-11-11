@@ -56,7 +56,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
   const [onlyWatch, setOnlyWatch] = useState(false);
   const [onlySubs, setOnlySubs] = useState(false);
   const [showEps, setShowEps] = useState(true);
-  const [showAnime, setShowAnime] = useState(false);
+  const [showAnime, setShowAnime] = useState(!!filter?.anime);
   const [q, setQ] = useState('');
   const [showPast, setShowPast] = useState(false);
   const [subsOpen, setSubsOpen] = useState(false);
@@ -69,13 +69,13 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
     const v = store.get<string>('premiero.view', 'feed');
     /* eslint-disable react-hooks/set-state-in-effect */
     setView(v === 'month' || v === 'list' ? v : 'feed');
-    setShowAnime(store.get<boolean>('premiero.anime', false));
+    setShowAnime(!!filter?.anime || store.get<boolean>('premiero.anime', false));
     setOnlySubs(store.get<boolean>('premiero.subsOnly', false));
     // если у посетителя уже другой месяц, чем на сервере (полночь в другом часовом поясе), переключаемся
     const own = new Date(today.getFullYear(), today.getMonth(), 1);
     setMonth(m => (!m || (initial && mkey(m) === initial.today.slice(0, 7)) ? own : m));
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [ready, today, initial]);
+  }, [ready, today, initial, filter?.anime]);
 
   const monthKey = month ? mkey(month) : null;
   useEffect(() => {
@@ -298,7 +298,10 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
   const renderFeed = () => {
     if (!events.length) return empty;
     const cut = dkey(addDays(today, -2));
-    const shown = isCurMonth && !showPast ? events.filter(e => e.date >= cut) : events;
+    // прошедшее в этом месяце свёрнуто; если впереди ничего нет, показываем весь месяц: иначе на
+    // странице одна надпись «конец месяца», и Google считает её пустой (soft 404)
+    const ahead = events.filter(e => e.date >= cut);
+    const shown = isCurMonth && !showPast && ahead.length ? ahead : events;
     const hidden = events.length - shown.length;
     const days = new Map<string, CalEvent[]>();
     shown.forEach(e => days.set(e.date, [...(days.get(e.date) ?? []), e]));

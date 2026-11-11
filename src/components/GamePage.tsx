@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { IMG, LOCALE, SRCSET, isCountry, isLang, hreflangs } from '@/lib/regions';
+import { HOME_COUNTRY, IMG, LANG_CODES, LOCALE, SRCSET, isCountry, isLang } from '@/lib/regions';
 import { translator } from '@/lib/i18n';
 import { fromKey } from '@/lib/dates';
 import { calendarPath, idFromSlug, titlePath } from '@/lib/slug';
@@ -13,7 +13,7 @@ import { gameGenreName } from '@/lib/game-genres';
 import { hasKv } from '@/lib/kv';
 import { wantCounts } from '@/lib/account';
 import { clip, dayWords, dot, releaseSentence, whenOf } from '@/lib/release-text';
-import type { GameDetail } from '@/lib/types';
+import type { GameDetail, Lang } from '@/lib/types';
 import Poster from './Poster';
 import { TitleActions, Trailer, type TitleCore } from './TitleIslands';
 import { ReportFix } from './Reports';
@@ -42,16 +42,17 @@ export async function gameMetadata(params: Params): Promise<Metadata> {
   const dates = dot(`${t('g_release')}: ${d.release ? dayWords(lang, d.release) : t('tba')}${platformNames ? ` (${platformNames})` : ''}`);
   const description = clip([dates, d.summary].filter(Boolean).join(' '));
   const image = IMG(d.backdrop, 'w1280') ?? IMG(d.poster, 'w500');
+  // один адрес на язык, в главной стране языка (HOME_COUNTRY); у игр одно название на всех языках
+  const homePath = (l: Lang) => titlePath(l, HOME_COUNTRY[l], 'game', d.id, d.title);
   return {
     title: { absolute: `${title} · Premiero` },
     description,
     alternates: {
-      canonical: titlePath(lang, country, 'game', d.id, d.title),
-      // у игр одно название на всех языках
-      languages: hreflangs(country, l => titlePath(l, country, 'game', d.id, d.title)),
+      canonical: homePath(lang),
+      languages: { ...Object.fromEntries(LANG_CODES.map(l => [l, homePath(l)])), 'x-default': homePath('en') },
     },
     openGraph: {
-      title, description, type: 'website', siteName: 'Premiero', url: titlePath(lang, country, 'game', d.id, d.title),
+      title, description, type: 'website', siteName: 'Premiero', url: homePath(lang),
       locale: ogLocale(lang, country), images: image ? [{ url: image, alt: d.title }] : [],
     },
     twitter: { card: 'summary_large_image', title, description, images: image ? [image] : [] },

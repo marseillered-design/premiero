@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next';
 import { connection } from 'next/server';
-import { COUNTRIES, COUNTRY_CODES, indexedLangs, isCountry, hreflangs } from '@/lib/regions';
+import { COUNTRIES, COUNTRY_CODES, HOME_COUNTRY, indexedLangs, isCountry, hreflangs } from '@/lib/regions';
 import { getReleases, hasAnySource } from '@/lib/releases';
 import { titlePath } from '@/lib/slug';
 import { SITE } from '@/lib/site';
 import { facetsFor, type FacetSection } from '@/lib/facets';
+import { countryMonth, facetIsEmpty } from '@/lib/facet-count';
 
 /*
  * Карта сайта из нескольких файлов: /sitemap/pages.xml — календари всех стран на всех языках,
@@ -21,7 +22,10 @@ const FACET_SECTIONS: FacetSection[] = ['movies', 'series', 'games'];
 export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
   const key = await id;
   if (key === 'pages') {
-    const paths = (country: (typeof COUNTRY_CODES)[number]) => [...SECTIONS, ...FACET_SECTIONS.flatMap(sec => facetsFor(sec, country).map(f => `/${sec}/${f.slug}`))];
+    // пустые подборки (в этом месяце ничего) закрыты от индекса, в карту их не кладём
+    const months = new Map(await Promise.all(COUNTRY_CODES.map(async c => [c, await countryMonth(c)] as const)));
+    const paths = (country: (typeof COUNTRY_CODES)[number]) => [...SECTIONS, ...FACET_SECTIONS.flatMap(sec => facetsFor(sec, country)
+      .filter(f => !facetIsEmpty(sec, f, months.get(country) ?? null)).map(f => `/${sec}/${f.slug}`))];
     return COUNTRY_CODES.flatMap(country => paths(country).flatMap(section => indexedLangs(country).map(lang => ({
       url: `${SITE}/${lang}/${country}${section}`,
       changeFrequency: 'daily' as const,
@@ -50,7 +54,8 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
     for (const it of Object.values(data.items)) {
       if (seen.has(it.key)) continue;
       seen.add(it.key);
-      out.push({ url: SITE + titlePath(lang, key, it.media, it.id, it.title), changeFrequency: 'weekly', priority: 0.6 });
+      // игра — по её единственному адресу для поиска, в главной стране языка (HOME_COUNTRY)
+      out.push({ url: SITE + titlePath(lang, it.media === 'game' ? HOME_COUNTRY[lang] : key, it.media, it.id, it.title), changeFrequency: 'weekly', priority: 0.6 });
     }
   }
   return out;

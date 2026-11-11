@@ -8,6 +8,7 @@ import { findFacet, type Facet, type FacetFilter, type FacetSection } from '@/li
 import { facetLabel } from './FacetLinks';
 import CalendarPage from './CalendarPage';
 import { breadcrumbs, ldJson, ogCalendar } from '@/lib/structured';
+import { countryMonth, facetIsEmpty } from '@/lib/facet-count';
 import * as I from './icons';
 import type { Lang } from '@/lib/types';
 
@@ -23,7 +24,7 @@ async function load(section: FacetSection, params: Params) {
 }
 
 const filterOf = (f: Facet, label: string): FacetFilter =>
-  f.kind === 'platform' ? { platform: f.platform, label } : f.kind === 'provider' ? { providers: f.ids, label } : { genres: f.ids, label };
+  f.kind === 'platform' ? { platform: f.platform, label } : f.kind === 'provider' ? { providers: f.ids, anime: f.anime, label } : { genres: f.ids, label };
 const cap = (s: string, lang: Lang) => s.charAt(0).toLocaleUpperCase(lang) + s.slice(1);
 
 export async function facetMetadata(section: FacetSection, params: Params): Promise<Metadata> {
@@ -42,6 +43,8 @@ export async function facetMetadata(section: FacetSection, params: Params): Prom
       languages: hreflangs(r.country, l => `/${l}/${r.country}${tail}`),
     },
     openGraph: ogCalendar(r.lang, r.country, `/${r.lang}/${r.country}${tail}`),
+    // пустая подборка (в этом месяце ничего) — не в индекс; иначе действует правило страны из layout
+    ...(facetIsEmpty(section, r.f, await countryMonth(r.country)) ? { robots: { index: false, follow: true } } : {}),
   };
 }
 

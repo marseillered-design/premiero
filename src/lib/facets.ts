@@ -9,7 +9,7 @@ import type { CountryCode, Platform } from './types';
 export type FacetSection = 'movies' | 'series' | 'games';
 export type Facet =
   | { slug: string; kind: 'platform'; platform: Platform }
-  | { slug: string; kind: 'provider'; name: string; ids: number[]; countries?: CountryCode[] }
+  | { slug: string; kind: 'provider'; name: string; ids: number[]; countries?: CountryCode[]; anime?: boolean }
   | { slug: string; kind: 'genre'; ids: number[] };
 
 // id сервисов в TMDB; у одного сервиса бывает несколько id (с рекламой, через Amazon, детский)
@@ -20,7 +20,8 @@ const PROVIDERS: Extract<Facet, { kind: 'provider' }>[] = [
   { slug: 'apple-tv', kind: 'provider', name: 'Apple TV', ids: [350, 2243] },
   { slug: 'max', kind: 'provider', name: 'Max', ids: [1899, 1825, 384] },
   { slug: 'paramount-plus', kind: 'provider', name: 'Paramount+', ids: [531, 2303, 2616, 1853] },
-  { slug: 'crunchyroll', kind: 'provider', name: 'Crunchyroll', ids: [283, 1968] },
+  // почти всё на Crunchyroll — аниме, которое календарь по умолчанию прячет: здесь оно видно сразу
+  { slug: 'crunchyroll', kind: 'provider', name: 'Crunchyroll', ids: [283, 1968], anime: true },
   { slug: 'hulu', kind: 'provider', name: 'Hulu', ids: [15], countries: ['us'] },
   { slug: 'peacock', kind: 'provider', name: 'Peacock', ids: [386, 387, 2553], countries: ['us'] },
   { slug: 'skyshowtime', kind: 'provider', name: 'SkyShowtime', ids: [1773], countries: ['pl', 'cz', 'ro', 'nl', 'es', 'lt', 'lv', 'ee', 'md'] },
@@ -58,4 +59,4 @@ export const facetsFor = (section: FacetSection, country: CountryCode) =>
   FACETS[section].filter(f => f.kind !== 'provider' || !f.countries || f.countries.includes(country));
 
 /** Что календарь включает сразу: платформу, жанры или стриминг. */
-export type FacetFilter = { platform?: Platform; genres?: number[]; providers?: number[]; label: string };
+export type FacetFilter = { platform?: Platform; genres?: number[]; providers?: number[]; anime?: boolean; label: string };
