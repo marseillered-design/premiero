@@ -198,10 +198,10 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
       {antLabel(ev, it)}
       {kindTag(ev.kind)}
       <span>
-        {ev.kind === 'series' ? [it.platform, epLabel(ev, it)].filter(Boolean).join(' · ')
+        {ev.kind === 'series' ? [it.platform, epLabel(ev, it)].filter(Boolean).join(', ')
           : ev.kind === 'game' ? (ev.plat ?? []).join(', ')
           : ev.approx ? t('world')
-          : [it.cert, genreName(it.genres[0])].filter(Boolean).join(' · ')}
+          : [it.cert, genreName(it.genres[0])].filter(Boolean).join(', ')}
       </span>
       {it.rating ? <span className="stars"><I.Star />{it.rating.toFixed(1)}</span> : null}
     </p>
@@ -258,7 +258,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
       const it = data!.items[e.item], d = fromKey(e.date);
       return {
         key: e.item, href: href(it), image: IMG(it.backdrop!, 'w780')!, srcSet: SRCSET(it.backdrop!, 'backdrop'), title: it.title, kind: e.kind,
-        rating: it.rating, date: `${f.date(d)} · ${f.rel(d)}`,
+        rating: it.rating, date: `${f.date(d)}, ${f.rel(d)}`,
       };
     })} />;
   };
@@ -278,7 +278,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
       if (list.length < 3) return null;
       return (
         <section className="hot" key={key}>
-          <div className="feat-top"><h2 className="feat-h">{t(key)}</h2><Link prefetch={false} className="feat-more" href={`/${lang}/${country}${path}`}>{t('all_link')} →</Link></div>
+          <div className="feat-top"><h2 className="feat-h">{t(key)}</h2><Link prefetch={false} className="feat-more" href={`/${lang}/${country}${path}`}>{t('all_link')}</Link></div>
           <ul className="hot-row">{list.map(e => {
             const it = data!.items[e.item];
             return (
@@ -388,7 +388,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
             const where = e.kind === 'cinema' ? t('in_theaters') : e.kind === 'series' ? [it.platform, epLabel(e, it)].filter(Boolean).join(' · ') : e.kind === 'game' ? (e.plat ?? []).join(', ') : e.kind === 'disc' ? t('ty_disc') : t('streaming');
             return (
               <tr key={e.item + e.kind + e.date}>
-                <td className="date">{f.date(d)}<small>{f.wd(d, true)} · {f.rel(d)}</small></td>
+                <td className="date">{f.date(d)}<small>{f.wd(d, true)}, {f.rel(d)}</small></td>
                 <td><Link prefetch={false} className="l-title" href={href(it)}><Poster path={it.poster} title={it.title} mini />{it.title}</Link></td>
                 <td>{kindTag(e.kind)}</td>
                 <td className="muted">{it.genres.map(genreName).filter(Boolean).slice(0, 3).join(', ')}</td>
@@ -471,7 +471,7 @@ export default function CalendarView({ section = 'all', filter, initial }: { sec
             <h3>{t('subs')}</h3>
             <div className="toggles">
               <label className="toggle"><input type="checkbox" checked={onlySubs} disabled={!subs.size} onChange={e => { setOnlySubs(e.target.checked); store.set('premiero.subsOnly', e.target.checked); }} /> {t('subs_only')}{subs.size ? ` (${subs.size})` : ''}</label>
-              <button className="reset" onClick={() => setSubsOpen(true)}>{subs.size ? t('subs_n', subs.size) + ' · ' : ''}{t('subs_edit')}</button>
+              <button className="reset" onClick={() => setSubsOpen(true)}>{subs.size ? t('subs_n', subs.size) + ', ' : ''}{t('subs_edit')}</button>
             </div>
           </section>}
           {/* на телефоне переключатель вида живёт здесь, в панели ему не хватает места */}
@@ -513,7 +513,7 @@ function SubsDialog({ providers, onClose, onSaved }: { providers: { id: number; 
   const save = () => { setSubs(sel); onSaved(sel); ref.current?.close(); };
   return (
     <dialog ref={ref} className="subs-dlg" onClose={onClose} onClick={e => { if (e.target === ref.current) ref.current?.close(); }} aria-labelledby="subs-title">
-      <div className="m-head"><span className="crumb" id="subs-title">{t('subs')} · {countryName(country)}</span><button className="icon-btn" aria-label={t('close')} onClick={() => ref.current?.close()}><I.Close /></button></div>
+      <div className="m-head"><span className="crumb" id="subs-title">{t('subs')}: {countryName(country)}</span><button className="icon-btn" aria-label={t('close')} onClick={() => ref.current?.close()}><I.Close /></button></div>
       <div className="m-body">
         <p className="m-sub">{t('subs_pick')}</p>
         {providers.length ? (

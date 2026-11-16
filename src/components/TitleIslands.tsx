@@ -138,8 +138,8 @@ export function Episodes({ number, episodes }: { number: number; episodes: Episo
       return (
         <div key={e.n} className={`ep${out ? ' out' : ''}`}>
           <span className="n">{number}×{String(e.n).padStart(2, '0')}</span>
-          <span>{e.name || t('ep_one', e.n)}{e.n === episodes.length ? ` · ${t('season_finale')}` : ''}</span>
-          <span className="d">{e.date ? `${out ? t('out') + ' · ' : ''}${f.date(fromKey(e.date))}` : t('tba')}</span>
+          <span>{e.name || t('ep_one', e.n)}{e.n === episodes.length ? `, ${t('season_finale').toLocaleLowerCase()}` : ''}</span>
+          <span className="d">{e.date ? `${out ? t('out') + ', ' : ''}${f.date(fromKey(e.date))}` : t('tba')}</span>
         </div>
       );
     })}</div>

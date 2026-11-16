@@ -134,7 +134,7 @@ async function TitleContent({ media, params }: { media: Media; params: Params })
       <div className="hero">
         <Poster path={d.poster} title={d.title} alt={d.title} cert={d.cert} size="w500" sizes="(max-width: 640px) 160px, (max-width: 960px) 200px, 280px" eager />
         <div>
-          <span className={`tag t-${kindCls}`}>{t(kindKey)}{d.network ? ` · ${d.network}` : ''}</span>
+          <span className={`tag t-${kindCls}`}>{t(kindKey)}{d.network ? `, ${d.network}` : ''}</span>
           <h1>{d.title}</h1>
           {d.original && d.original !== d.title && <p className="orig">{d.original}</p>}
           <div className="meta">{meta.map(m => <span key={m}>{m}</span>)}</div>

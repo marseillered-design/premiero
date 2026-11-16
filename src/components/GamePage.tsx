@@ -116,7 +116,7 @@ async function GameContent({ params }: { params: Params }) {
       <div className="hero">
         <Poster path={d.poster} title={d.title} alt={d.title} size="w500" eager />
         <div>
-          <span className="tag t-game">{t('ty_game')}{platforms.length ? ` · ${platforms.slice(0, 4).join(', ')}` : ''}</span>
+          <span className="tag t-game">{t('ty_game')}{platforms.length ? `, ${platforms.slice(0, 4).join(', ')}` : ''}</span>
           <h1>{d.title}</h1>
           <div className="meta">{meta.map(m => <span key={m}>{m}</span>)}</div>
           {d.rating ? (

@@ -84,7 +84,7 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
       onFocus={() => setHold(true)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHold(false); }}>
       <div className="feat-top">
         <h2 className="feat-h">{t('featured')}</h2>
-        <Link prefetch={false} className="feat-more" href={`/${lang}/${country}/upcoming`}>{t('up_link')} →</Link>
+        <Link prefetch={false} className="feat-more" href={`/${lang}/${country}/upcoming`}>{t('up_link')}</Link>
       </div>
       <div className="feat-track" ref={track} aria-live={running ? 'off' : 'polite'} onPointerDown={stop} onWheel={e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }}>
         {slides.map((s, i) => (
