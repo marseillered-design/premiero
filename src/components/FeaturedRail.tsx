@@ -25,6 +25,7 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
   const [hidden, setHidden] = useState(false);     // вкладка браузера не видна
   const [reduced, setReduced] = useState(false);
   const [all, setAll] = useState(false);           // посетитель сам листает: картинки нужны все сразу
+  const [fits, setFits] = useState(2);             // сколько карточек видно сразу (на широком экране 4–5)
 
   useEffect(() => {
     const mq = matchMedia('(prefers-reduced-motion: reduce)');
@@ -35,6 +36,21 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
     const onVis = () => setHidden(document.hidden);
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
+  // Сколько карточек помещается в ленту: на них сразу нужны картинки, иначе на широком экране
+  // третья и четвёртая карточки стояли пустыми, пока лента до них не докрутится
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const measure = () => {
+      const card = el.children[0] as HTMLElement | undefined;
+      if (card?.offsetWidth) setFits(Math.max(1, Math.ceil(el.clientWidth / card.offsetWidth)));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   const goTo = useCallback((i: number) => {
@@ -92,7 +108,7 @@ export default function FeaturedRail({ slides }: { slides: Slide[] }) {
             {/* кадры грузим по мере показа: первый сразу и первым делом, следующий — заранее, но без спешки
                 (на телефоне его покажут только через 6 с, а сразу он отнимал канал у первого), остальные — когда до них дойдёт лента */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {(all || i <= Math.max(2, index + 1)) && <img src={s.image} srcSet={s.srcSet} sizes="(max-width: 640px) 86vw, 420px" alt="" loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'low'} />}
+            {(all || i <= Math.max(2, index + fits)) && <img src={s.image} srcSet={s.srcSet} sizes="(max-width: 640px) 86vw, (min-width: 3400px) 840px, (min-width: 2880px) 630px, (min-width: 2200px) 504px, 420px" alt="" loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'low'} />}
             <span className="feat-body">
               <span className="feat-meta"><span className="tag">{t('ty_' + s.kind)}</span>{s.rating ? <span className="stars"><I.Star />{s.rating.toFixed(1)}</span> : null}</span>
               <span className="feat-title">{s.title}</span>
