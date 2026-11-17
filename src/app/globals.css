@@ -720,3 +720,18 @@ a.tmdb-r:hover{border-color:#9147FF}
 .top{background:var(--bg)}
 .t-hero.no-bd{background:var(--surface)}
 .poster-btn:hover{transform:none;box-shadow:0 0 0 2px var(--accent)}
+
+/* Posters answer the pointer like the featured cards do: the picture comes a little closer and
+   lighter inside its frame, a gold outline, the title in gold. Keyboard focus shows the same. */
+.hot-row .poster img, .poster-btn .poster img{transition:transform .4s ease,filter .4s ease}
+.hot-row .poster{transition:box-shadow .2s ease}
+@media (hover: hover){
+  .hot-row a:hover .poster img, .poster-btn:hover .poster img{transform:scale(1.06);filter:brightness(1.08) saturate(1.06)}
+  .hot-row a:hover .poster{box-shadow:0 0 0 2px var(--accent)}
+}
+.hot-row a:focus-visible{outline:none}
+.hot-row a:focus-visible .poster{box-shadow:0 0 0 2px var(--accent)}
+.hot-row a:focus-visible .hot-t{color:var(--accent-text)}
+@media (prefers-reduced-motion: reduce){
+  .hot-row a:hover .poster img, .poster-btn:hover .poster img, .feat:hover img{transform:none}
+}
