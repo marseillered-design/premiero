@@ -380,7 +380,7 @@ a.rel-c:hover{border-color:var(--muted)}
 
 /* полоска дней месяца */
 .daybar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin-bottom:12px;scrollbar-width:thin}
-.dchip{flex:none;display:grid;justify-items:center;gap:1px;min-width:52px;padding:6px 8px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);font-size:11px;color:var(--muted);text-transform:lowercase}
+.dchip{position:relative;flex:none;display:grid;justify-items:center;gap:1px;min-width:52px;padding:6px 8px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);font-size:11px;color:var(--muted);text-transform:lowercase}
 .dchip b{font-family:var(--mono);font-size:16px;color:var(--fg);font-weight:600}
 .dchip i{font-style:normal;font-size:10px;color:var(--accent-text);font-family:var(--mono)}
 .dchip:hover{border-color:var(--muted)}
